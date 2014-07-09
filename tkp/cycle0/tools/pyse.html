@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PySE: Source Finding &amp; Measurement &mdash; LOFAR Transients Tools Release 0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'Release 0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="LOFAR Transients Tools Release 0 documentation" href="../index.html" />
+    <link rel="up" title="Standalone Tools" href="index.html" />
+    <link rel="next" title="The TKP Database" href="../database/index.html" />
+    <link rel="prev" title="Standalone Tools" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../database/index.html" title="The TKP Database"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Standalone Tools"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Tools Release 0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Standalone Tools</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pyse-source-finding-measurement">
+<span id="pyse"></span><h1>PySE: Source Finding &amp; Measurement<a class="headerlink" href="#pyse-source-finding-measurement" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="preamble">
+<h2>Preamble<a class="headerlink" href="#preamble" title="Permalink to this headline">¶</a></h2>
+<p>This document briefly describes the means by which the Transients Project
+source extraction &amp; measurement code (henceforth <tt class="docutils literal"><span class="pre">pyse</span></tt>) may be used to
+obtain a list of sources found in a collection of images stored as FITS files.
+It does not attempt to act as a complete reference to the TKP codebase.</p>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Pyse provides the following capabilities:</p>
+<ul class="simple">
+<li>Identification of sources in astronomical images:<ul>
+<li>By a simple thresholding technique (ie, locating contiguous islands of
+pixels above some multiple of the noise in the image), or</li>
+<li>By making use of a False Detection Rate (FDR) algorithm (<a class="reference external" href="http://adsabs.harvard.edu/abs/2002AJ....123.1086H">Hopkins et al.,
+AJ, 123, 1086, 2002</a>).</li>
+</ul>
+</li>
+<li>Deblending merged sources.</li>
+<li>Quick estimation of source properties based on the calculation of moments.</li>
+<li>Fitting of identified sources with elliptical Gaussians for accurate
+measurement of source properties.</li>
+<li>All measurements made are accompanied by a comprehensive error analysis.</li>
+</ul>
+<p>For details of all algorithms implemented, the reader is referred to the PhD
+thesis by <a class="reference external" href="http://dare.uva.nl/en/record/340633">Spreeuw</a> (University of
+Amsterdam, 2010).</p>
+<p>It is worth emphasizing that there are a number of differences compared to
+projects such as, for example, BDSM. In particular, the <tt class="docutils literal"><span class="pre">pyse</span></tt> code is made
+available in the form or Python modules, primarily designed for integration
+into a pipeline or other script, rather than for use as an interactive
+analysis environment. Further, it is reasonable to assume that astronomical
+transients are unresolved, so the code does not attempt to decompose complex,
+extended sources into a multiple component model.</p>
+</div>
+<div class="section" id="command-line-usage">
+<h2>Command Line Usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
+<p>A script is available to make it possible to test the basic functionality of
+the <tt class="docutils literal"><span class="pre">pyse</span></tt> code. It does not make all the features listed above available.</p>
+<p>Assuming <tt class="docutils literal"><span class="pre">pyse</span></tt> exists on your <tt class="docutils literal"><span class="pre">$PATH</span></tt>, it is involed by simply providing
+a list of filenames:</p>
+<div class="highlight-python"><pre>$ pyse file1.fits ... fileN.fits</pre>
+</div>
+<p>For each file specified, a list of sources identified is printed to the
+screen.</p>
+<p>A list of available command line option may be obtained with the
+<tt class="docutils literal"><span class="pre">-h</span></tt>/<tt class="docutils literal"><span class="pre">--help</span></tt> option:</p>
+<div class="highlight-python"><pre>Usage: pyse.py [options] file1 ... fileN
+
+Options:
+  -h, --help            show this help message and exit
+  --fdr                 Use False Detection Rate algorithm
+  --alpha=ALPHA         FDR Alpha
+  --detection=DETECTION
+                        Detection threshold
+  --analysis=ANALYSIS   Analysis threshold
+  --regions             Generate DS9 region file(s)
+  --residuals           Generate residual maps
+  --islands             Generate island maps
+  --deblend             Deblend composite sources
+  --deblend-thresholds=DEBLEND_THRESHOLDS
+                        Number of deblending subthresholds
+  --bmaj=BMAJ           Major axis of beam
+  --bmin=BMIN           Minor axis of beam
+  --bpa=BPA             Beam position angle
+  --grid=GRID           Background grid segment size
+  --margin=MARGIN       Margin applied to each edge of image (in pixels)
+  --radius=RADIUS       Radius of usable portion of image (in pixels)
+  --skymodel            Generate sky model
+  --csv                 Generate csv text file for use in programs such as
+                        TopCat
+  --rmsmap              Generate RMS map
+  --sigmap              Generate significance map</pre>
+</div>
+<p>By default, source extraction is carried out by thresholding: that is,
+identifying islands of pixels which exceed a particular multiple of the RMS
+noise. In this mode, the following two parameters are may be supplied:</p>
+<p>The <tt class="docutils literal"><span class="pre">--detection</span></tt> argument specifies the multiple of the RMS noise which is
+required for detection; ie, setting <tt class="docutils literal"><span class="pre">--detection=5</span></tt> is equivalent to
+requiring pixels used for detecting sources to be at 5 sigma.</p>
+<p>The <tt class="docutils literal"><span class="pre">--analysis</span></tt> argument specifies the significance level used when
+performing fitting. It should be lower than <tt class="docutils literal"><span class="pre">--detection</span></tt>, such that once
+islands have been identified a larger number of pixels is included for the
+fitting process.</p>
+<p>However, if the <tt class="docutils literal"><span class="pre">--fdr</span></tt> option is given, a False Detection Rate algorithm is
+used instead. In this case, an additional <tt class="docutils literal"><span class="pre">--alpha</span></tt> argument may be given to
+specify the <span class="math">\(\alpha\)</span> parameter (as defined by <a class="reference external" href="http://adsabs.harvard.edu/abs/2002AJ....123.1086H">Hopkins</a>).</p>
+<p><em>Note</em> that if <tt class="docutils literal"><span class="pre">--fdr</span></tt> is specified, any values given for <tt class="docutils literal"><span class="pre">--detection</span></tt>
+and <tt class="docutils literal"><span class="pre">--analysis</span></tt> are <em>not used</em>. Conversely, if <tt class="docutils literal"><span class="pre">--fdr</span></tt> is not specified,
+any value given for <tt class="docutils literal"><span class="pre">--alpha</span></tt> is <em>not used</em>.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--regions</span></tt> option is specified, a DS9-compatible region file is
+output showing the shapes &amp; positions of the sources. It is named according to
+the input filename with the extension changed to <tt class="docutils literal"><span class="pre">.reg</span></tt>.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--residuals</span></tt> option is specified, a FITS file is produced showing
+the residuals left after the fitted sources have been subtraced from the input
+image. It is named according to the input filename with <tt class="docutils literal"><span class="pre">.residuals</span></tt>
+inserted before the extension.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--islands</span></tt> option is specified, a FITS file is produced showing the
+Gaussians which have been fitted in the data. It is named according to the
+input filename with <tt class="docutils literal"><span class="pre">.islands</span></tt> inserted before the extension. The sum of
+this file with that produced by <tt class="docutils literal"><span class="pre">--residuals</span></tt> above should total the input
+image.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--skymodel</span></tt> option is given, a skymodel file suitable for use with
+BBS will be generated. It is named according to the input filename with the
+extension changed to <tt class="docutils literal"><span class="pre">.skymodel</span></tt>.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--csv</span></tt> option is given, a comma-separated list of sources will be
+written to file. It is named according to the input filename with the
+extension changed to <tt class="docutils literal"><span class="pre">.csv</span></tt>.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--rmsmap</span></tt> option is given, a FITS file is produced showing the noise
+map which has been generated during the source-finding process. It is named
+according to the input filename with <tt class="docutils literal"><span class="pre">.rms</span></tt> inserted before the extension.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--sigmap</span></tt> option is given, a FITS file is produced showing the
+significance of each pixel: that is, the background-subtracted image pixel
+value divided by the RMS noise at that pixel. It is named according to the
+input filename with <tt class="docutils literal"><span class="pre">.sigmap</span></tt> inserted before the extension.</p>
+<p>If the <tt class="docutils literal"><span class="pre">--deblend</span></tt> option is specified, <tt class="docutils literal"><span class="pre">pyse</span></tt> will attempt to separate
+composite sources into multiple components and fit each one independently. The
+number of subthresholds used in this process can be specified using the
+<tt class="docutils literal"><span class="pre">--deblend-thresholds</span></tt> argument. Refer to Spreeuw&#8217;s thesis for a detailed
+description of the algorithm used.</p>
+<p><tt class="docutils literal"><span class="pre">--bmaj</span></tt>, <tt class="docutils literal"><span class="pre">--bmin</span></tt> and <tt class="docutils literal"><span class="pre">--bpa</span></tt> specify the shape of the restoring beam.
+They are equivalent to the <tt class="docutils literal"><span class="pre">BMAJ</span></tt>, <tt class="docutils literal"><span class="pre">BMIN</span></tt> and <tt class="docutils literal"><span class="pre">BPA</span></tt> FITS headers.
+Normally, the code will read the beam shape from the image metadata; however,
+if it is not available, it must be manually specified using these arguments or
+the process will abort.</p>
+<p>When generating background and RMS maps of the image prior to source
+detection, it is segmented into a grid. The size of the grid can be specified
+using the <tt class="docutils literal"><span class="pre">--grid</span></tt> option. The optimal value is a compromise: it should be
+significantly larger than the most extended sources in the image, but small
+enough to account for small-scale variation across the image.</p>
+<p>Sometimes, it is useful to exclude the edge regions of an image from
+processing. The <tt class="docutils literal"><span class="pre">--margin</span></tt> takes an argument given in pixels and masks off
+all portions of the image within the given distance of the edge before
+processing. The <tt class="docutils literal"><span class="pre">--radius</span></tt> argument is similar, but rather masks off all
+parts of the image more than the given distance from the centre. This options
+are cumulative.</p>
+<p>All of these arguments are optional (with the caveat that the beam shape must
+be provided if not included with the image).</p>
+</div>
+<div class="section" id="output-definition">
+<h2>Output Definition<a class="headerlink" href="#output-definition" title="Permalink to this headline">¶</a></h2>
+<p>The Gaussian fitted to sources is defined as:</p>
+<div class="math">
+\[peak * \exp(\ln(2.0) * ((x \cos(\theta) + y \sin(\theta)) / semiminor)^2 + ((y \cos(\theta) - x \sin(\theta)) / semimajor)^2)\]</div>
+<p>In other words:</p>
+<ul class="simple">
+<li><span class="math">\(x\)</span> and <span class="math">\(y\)</span> are the Cartesian coordinates of the centre of the Gaussian;</li>
+<li><span class="math">\(peak\)</span> is the value at the centre of the Gaussian;</li>
+<li><span class="math">\(theta\)</span> is the position angle of the major axis measured counterclockwise
+from the y axis;</li>
+<li><span class="math">\(semimajor\)</span> and <span class="math">\(semiminor\)</span> are the half-widths at half-maximum of the
+Gaussian along its major and minor axes, respectively.</li>
+</ul>
+</div>
+<div class="section" id="final-remarks">
+<h2>Final Remarks<a class="headerlink" href="#final-remarks" title="Permalink to this headline">¶</a></h2>
+<p>Other functionality can be exposed through this interface if required.</p>
+<p>Bug reports and comments are welcome! Please use the LOFAR issue tracker.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PySE: Source Finding &amp; Measurement</a><ul>
+<li><a class="reference internal" href="#preamble">Preamble</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#command-line-usage">Command Line Usage</a></li>
+<li><a class="reference internal" href="#output-definition">Output Definition</a></li>
+<li><a class="reference internal" href="#final-remarks">Final Remarks</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Standalone Tools</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../database/index.html"
+                        title="next chapter">The TKP Database</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tools/pyse.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../database/index.html" title="The TKP Database"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Standalone Tools"
+             >previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Tools Release 0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Standalone Tools</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

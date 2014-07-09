@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.database.orm – orm database functions &mdash; LOFAR Transients Pipeline 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Database package" href="index.html" />
+    <link rel="next" title="tkp.database.transients – transients database functions" href="transients.html" />
+    <link rel="prev" title="tkp.database.monitoringlist – monitoringlist database functions" href="monitoringlist.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transients.html" title="tkp.database.transients – transients database functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="monitoringlist.html" title="tkp.database.monitoringlist – monitoringlist database functions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.db.orm">
+<span id="tkp-database-orm-orm-database-functions"></span><span id="database-orm"></span><h1><tt class="xref py py-mod docutils literal"><span class="pre">tkp.database.orm</span></tt> &#8211; orm database functions<a class="headerlink" href="#module-tkp.db.orm" title="Permalink to this headline">¶</a></h1>
+<p>This module contains lightweight container objects that corresponds
+to a dataset, image or extracted source in the database; it is actually a
+mini Object Relation Mapper (ORM). The correspondence between the object
+and table row is matched through the private _id attributes.</p>
+<p>Each dataset contains several database Images; each Image contains a
+number of ExtractedSources. The database Images correspond to the
+images table in the database, <em>not</em> to sourcefinder images or actual
+image data files on disk (this distinction is important; while there
+are certainly parts in common, several are not).</p>
+<p>The current setup is done in large part to keep the database and
+sourcefinder (and other parts of the TKP package) separate; tightly
+integrated database tables/sourcefinder images/disk files make it more
+difficult to improve the code or distribute parts separately. While
+not tested, it seems unlikely this will have a noticeable influence on
+the functioning of the actual TKP pipeline (TraP).</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>In practice, a DataSet object is created, and separate Images are
+created referencing that DataSet() instance; ids are automatically
+assigned where necessary (i.e., on creation of a new entry (row) in
+the database).</p>
+<p>Objects can also be created using an existing id; data is then taken
+from the corresponding table row in the database.</p>
+</div>
+<div class="section" id="creating-new-objects">
+<h2>Creating new objects<a class="headerlink" href="#creating-new-objects" title="Permalink to this headline">¶</a></h2>
+<p>The following code is an usage example, but should not be used as a
+doc test (since the database value can differ, and thus the test would
+fail):</p>
+<div class="highlight-python"><div class="highlight"><pre># database sets up and holds the connection to the actual database
+&gt;&gt;&gt; database = tkp.db.database.Database()
+
+# Each object type takes a data dictionary on creation, which for newly objects
+# has some required keys (&amp; values). For a DataSet, this is only &#39;description&#39;;
+# for an Image, the keys are &#39;freq_eff&#39;, &#39;freq_bw_&#39;, &#39;taustart_ts&#39;,
+# &#39;tau_time&#39; &amp; &#39;url&#39;
+# The required values are stored in the the REQUIRED attribute
+&gt;&gt;&gt; dataset = DataSet(data={&#39;description&#39;: &#39;a dataset&#39;}, database=database)
+
+# Here, dataset indirectly holds the database connection:
+&gt;&gt;&gt; dataset.database
+DataBase(host=heastro1, name=trap, user=trap, ...)
+&gt;&gt;&gt; image1 = Image(data={&#39;freq_eff&#39;: &#39;80e6&#39;, &#39;freq_bw&#39;: 1e6,         &#39;taustart_ts&#39;: datetime(2011, 5, 1, 0, 0, 0), &#39;tau_time&#39;: 1800.,  &#39;url&#39;: &#39;/&#39;}, dataset=dataset)  # initialize with defaults
+    # note the dataset kwarg, which holds the database connection
+&gt;&gt;&gt; image1.tau_time
+1800.
+&gt;&gt;&gt; image1.taustart_ts
+datetime.datetime(2011, 5, 1, 0, 0, 0)
+&gt;&gt;&gt; image2 = Image(data={&#39;freq_eff&#39;: &#39;80e6&#39;, &#39;freq_bw&#39;: 1e6,         &#39;taustart_ts&#39;: datetime(2011, 5, 1, 0, 1, 0), &#39;tau_time&#39;: 1500.,&#39;url&#39;: &#39;/&#39;}, dataset=dataset)
+&gt;&gt;&gt; image2.tau_time
+1500
+&gt;&gt;&gt; image2.taustart_ts
+datetime.datetime(2011, 5, 1, 0, 1, 0)
+# Images created with a dataset object, are automatically added to that dataset:
+&gt;&gt;&gt; dataset.images
+set([&lt;tkp.database.dataset.Image object at 0x26fb6d0&gt;, &lt;tkp.database.dataset.Image object at 0x26fb790&gt;])
+</pre></div>
+</div>
+</div>
+<div class="section" id="updating-objects">
+<h2>Updating objects<a class="headerlink" href="#updating-objects" title="Permalink to this headline">¶</a></h2>
+<p>To update objects, use the update() method.</p>
+<p>This method does two things, in the following order:</p>
+<p>1. it updates from the database to the object: if there have been
+changes in the database, the object will reflect that after executing
+update()</p>
+<p>2. then, it updates the object (and the database) with values supplied
+by the user. The latter values are optional; no supplied values simply
+means there aren&#8217;t any updates.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">image2</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tau_time</span><span class="o">=</span><span class="mi">2500</span><span class="p">)</span>    <span class="c"># updates the database as well</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image2</span><span class="o">.</span><span class="n">tau_time</span>
+<span class="go">2500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT tau_time FROM images WHERE imageid=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>                                  <span class="p">(</span><span class="n">image2</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="o">.</span><span class="n">cursors</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">2500</span>
+<span class="go"># Manually update the database</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;UPDATE images SET tau_time=2000.0 imageid=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>                                  <span class="p">(</span><span class="n">image2</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image2</span><span class="o">.</span><span class="n">tau_time</span>   <span class="c"># not updated yet!</span>
+<span class="go">2500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image2</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image2</span><span class="o">.</span><span class="n">tau_time</span>
+<span class="go">2000</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="assigning-objects-to-a-table-row-on-creation">
+<h2>Assigning objects to a table row on creation<a class="headerlink" href="#assigning-objects-to-a-table-row-on-creation" title="Permalink to this headline">¶</a></h2>
+<p>It is also possible to create a DataSet, Image or ExtractedSource instance from the
+database, using the <tt class="docutils literal"><span class="pre">id</span></tt> in the initializer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset2</span> <span class="o">=</span> <span class="n">DataSet</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image3</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">imageid</span><span class="o">=</span><span class="n">image2</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image3</span><span class="o">.</span><span class="n">tau_time</span>
+<span class="go">2000</span>
+</pre></div>
+</div>
+<p>If an <tt class="docutils literal"><span class="pre">id</span></tt> is supplied, <tt class="docutils literal"><span class="pre">data</span></tt> is ignored.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tkp.database.orm</span></tt> &#8211; orm database functions</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#creating-new-objects">Creating new objects</a></li>
+<li><a class="reference internal" href="#updating-objects">Updating objects</a></li>
+<li><a class="reference internal" href="#assigning-objects-to-a-table-row-on-creation">Assigning objects to a table row on creation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="monitoringlist.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.database.monitoringlist</span></tt> &#8211; monitoringlist database functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="transients.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.database.transients</span></tt> &#8211; transients database functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/database/orm.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transients.html" title="tkp.database.transients – transients database functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="monitoringlist.html" title="tkp.database.monitoringlist – monitoringlist database functions"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" >Database package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

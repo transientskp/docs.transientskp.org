@@ -1,0 +1,331 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.sourcefinder.fitting &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.sourcefinder.fitting</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># LOFAR Transients Key Project</span>
+<span class="c">#</span>
+<span class="c"># Hanno Spreeuw</span>
+<span class="c">#</span>
+<span class="c"># discovery@transientskp.org</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># Source fitting algorithms</span>
+<span class="c">#</span>
+
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span>
+<span class="kn">from</span> <span class="nn">.gaussian</span> <span class="kn">import</span> <span class="n">gaussian</span>
+<span class="kn">import</span> <span class="nn">utils</span>
+
+
+<span class="n">FIT_PARAMS</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;peak&#39;</span><span class="p">,</span> <span class="s">&#39;xbar&#39;</span><span class="p">,</span> <span class="s">&#39;ybar&#39;</span><span class="p">,</span> <span class="s">&#39;semimajor&#39;</span><span class="p">,</span> <span class="s">&#39;semiminor&#39;</span><span class="p">,</span> <span class="s">&#39;theta&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="moments"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/fitting.html#tkp.sourcefinder.fitting.moments">[docs]</a><span class="k">def</span> <span class="nf">moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">beam</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate source positional values using moments</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        data (numpy.ndarray): Actual 2D image data</span>
+
+<span class="sd">        beam (3-tuple): beam (psf) information, with semi-major and</span>
+<span class="sd">            semi-minor axes</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (dict): peak, total, x barycenter, y barycenter, semimajor</span>
+<span class="sd">            axis, semiminor axis, theta</span>
+
+<span class="sd">    Raises:</span>
+
+<span class="sd">        ValueError (in case of NaN in input)</span>
+
+<span class="sd">    Use the first moment of the distribution is the barycenter of an</span>
+<span class="sd">    ellipse. The second moments are used to estimate the rotation angle</span>
+<span class="sd">    and the length of the axes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># Are we fitting a -ve or +ve Gaussian?</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c"># The peak is always underestimated when you take the highest pixel.</span>
+        <span class="n">peak</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="n">utils</span><span class="o">.</span><span class="n">fudge_max_pix</span><span class="p">(</span><span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">beam</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">peak</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">threshold</span> <span class="o">/</span> <span class="n">peak</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">xbar</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">x</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">total</span><span class="p">)</span>
+    <span class="n">ybar</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">y</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">total</span><span class="p">)</span>
+    <span class="n">xxbar</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">total</span> <span class="o">-</span> <span class="n">xbar</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">yybar</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">total</span> <span class="o">-</span> <span class="n">ybar</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">xybar</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">total</span> <span class="o">-</span> <span class="n">xbar</span> <span class="o">*</span> <span class="n">ybar</span>
+
+    <span class="n">working1</span> <span class="o">=</span> <span class="p">(</span><span class="n">xxbar</span> <span class="o">+</span> <span class="n">yybar</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">working2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">xxbar</span> <span class="o">-</span> <span class="n">yybar</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">xybar</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">beamsize</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">calculate_beamsize</span><span class="p">(</span><span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c"># Some problems arise with the sqrt of (working1-working2) when they are</span>
+    <span class="c"># equal, this happens with islands that have a thickness of only one pixel</span>
+    <span class="c"># in at least one dimension.  Due to rounding errors this difference</span>
+    <span class="c"># becomes negative---&gt;math domain error in sqrt.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c"># This is the case when the island (or more likely subisland) has</span>
+        <span class="c"># a size of only one pixel.</span>
+        <span class="n">semiminor</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">beamsize</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="n">semimajor</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">beamsize</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">semimajor_tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">working1</span> <span class="o">+</span> <span class="n">working2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">semiminor_tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">working1</span> <span class="o">-</span> <span class="n">working2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+        <span class="c"># ratio will be 0 for data that hasn&#39;t been selected according to a</span>
+        <span class="c"># threshold.</span>
+        <span class="k">if</span> <span class="n">ratio</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c"># The corrections below for the semi-major and semi-minor axes are</span>
+            <span class="c"># to compensate for the underestimate of these quantities</span>
+            <span class="c"># due to the cutoff at the threshold.</span>
+            <span class="n">semimajor_tmp</span> <span class="o">/=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">ratio</span><span class="p">))</span>
+            <span class="n">semiminor_tmp</span> <span class="o">/=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">ratio</span><span class="p">))</span>
+        <span class="n">semimajor</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">semimajor_tmp</span><span class="p">)</span>
+        <span class="n">semiminor</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">semiminor_tmp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">semiminor</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c"># A semi-minor axis exactly zero gives all kinds of problems.</span>
+            <span class="c"># For instance wrt conversion to celestial coordinates.</span>
+            <span class="c"># This is a quick fix.</span>
+            <span class="n">semiminor</span> <span class="o">=</span> <span class="n">beamsize</span> <span class="o">/</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">semimajor</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">xbar</span><span class="p">)</span> <span class="ow">or</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ybar</span><span class="p">)</span> <span class="ow">or</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">semimajor</span><span class="p">)</span> <span class="ow">or</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">semiminor</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Unable to estimate Gauss shape&quot;</span><span class="p">)</span>
+
+    <span class="c"># Theta is not affected by the cut-off at the threshold (see Spreeuw 2010,</span>
+    <span class="c"># page 45).</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">semimajor</span> <span class="o">-</span> <span class="n">semiminor</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
+        <span class="c"># short circuit!</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">xybar</span> <span class="o">/</span> <span class="p">(</span><span class="n">xxbar</span> <span class="o">-</span> <span class="n">yybar</span><span class="p">))</span><span class="o">/</span><span class="mf">2.</span>
+        <span class="k">if</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">xybar</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">theta</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">+=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">-=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="c">## NB: a dict should give us a bit more flexibility about arguments;</span>
+    <span class="c">## however, all those here are ***REQUIRED***.</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s">&quot;peak&quot;</span><span class="p">:</span> <span class="n">peak</span><span class="p">,</span>
+        <span class="s">&quot;flux&quot;</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span>
+        <span class="s">&quot;xbar&quot;</span><span class="p">:</span> <span class="n">xbar</span><span class="p">,</span>
+        <span class="s">&quot;ybar&quot;</span><span class="p">:</span> <span class="n">ybar</span><span class="p">,</span>
+        <span class="s">&quot;semimajor&quot;</span><span class="p">:</span> <span class="n">semimajor</span><span class="p">,</span>
+        <span class="s">&quot;semiminor&quot;</span><span class="p">:</span> <span class="n">semiminor</span><span class="p">,</span>
+        <span class="s">&quot;theta&quot;</span><span class="p">:</span> <span class="n">theta</span>
+        <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="fitgaussian"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/fitting.html#tkp.sourcefinder.fitting.fitgaussian">[docs]</a><span class="k">def</span> <span class="nf">fitgaussian</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">maxfev</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate source positional values by fitting a 2D Gaussian</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        data (numpy.ndarray): Pixel values</span>
+
+<span class="sd">        params (dict): initial fit parameters (possibly estimated</span>
+<span class="sd">            using the moments() function, above)</span>
+
+<span class="sd">    Kwargs:</span>
+
+<span class="sd">        fixed (dict): parameters &amp; their values to be kept frozen (ie, not</span>
+<span class="sd">            fitted)</span>
+
+<span class="sd">        maxfev (int): maximum number of calls to the error function</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (dict): peak, total, x barycenter, y barycenter, semimajor,</span>
+<span class="sd">            semiminor, theta (radians)</span>
+
+<span class="sd">    Raises:</span>
+
+<span class="sd">        ValueError (in case of a bad fit)</span>
+
+<span class="sd">    Perform a least squares fit to an elliptical Gaussian.</span>
+
+<span class="sd">    If a dict called fixed is passed in, then parameters specified within the</span>
+<span class="sd">    dict with the same names as fit_params (below) will be &quot;locked&quot; in the</span>
+<span class="sd">    fitting process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fixed</span> <span class="o">=</span> <span class="n">fixed</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="c"># Collect necessary values from parameter dict; only those which aren&#39;t</span>
+    <span class="c"># fixed.</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">FIT_PARAMS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fixed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">param</span><span class="p">],</span> <span class="s">&quot;value&quot;</span><span class="p">):</span>
+                <span class="n">initial</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">initial</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">param</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">residuals</span><span class="p">(</span><span class="n">paramlist</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Error function to be used in chi-squared fitting</span>
+
+<span class="sd">        :argument paramlist: fitting parameters</span>
+<span class="sd">        :type paramlist: numpy.ndarray</span>
+<span class="sd">        :argument fixed: parameters to be held frozen</span>
+<span class="sd">        :type fixed: dict</span>
+
+<span class="sd">        :returns: 2d-array of difference between estimated Gaussian function</span>
+<span class="sd">            and the actual data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">paramlist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">paramlist</span><span class="p">)</span>
+        <span class="n">gaussian_args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">FIT_PARAMS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">fixed</span><span class="p">:</span>
+                <span class="n">gaussian_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fixed</span><span class="p">[</span><span class="n">param</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gaussian_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">paramlist</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c"># gaussian() returns a function which takes arguments x, y and returns</span>
+        <span class="c"># a Gaussian with parameters gaussian_args evaluated at that point.</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="o">*</span><span class="n">gaussian_args</span><span class="p">)</span>
+
+        <span class="c"># The .compressed() below is essential so the Gaussian fit will not</span>
+        <span class="c"># take account of the masked values (=below threshold) at the edges</span>
+        <span class="c"># and corners of data (=(masked) array, so rectangular in shape).</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fromfunction</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
+
+    <span class="c"># maxfev=0, the default, corresponds to 200*(N+1) (NB, not 100*(N+1) as</span>
+    <span class="c"># the scipy docs state!) function evaluations, where N is the number of</span>
+    <span class="c"># parameters in the solution.</span>
+    <span class="c"># Convergence tolerances xtol and ftol established by experiment on images</span>
+    <span class="c"># from Paul Hancock&#39;s simulations.</span>
+    <span class="n">soln</span><span class="p">,</span> <span class="n">success</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">leastsq</span><span class="p">(</span>
+        <span class="n">residuals</span><span class="p">,</span> <span class="n">initial</span><span class="p">,</span> <span class="n">maxfev</span><span class="o">=</span><span class="n">maxfev</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-4</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">success</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;leastsq returned </span><span class="si">%d</span><span class="s">; bailing out&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">success</span><span class="p">,))</span>
+
+    <span class="c"># soln contains only the variable parameters; we need to merge the</span>
+    <span class="c"># contents of fixed into the soln list.</span>
+    <span class="c"># leastsq() returns either a numpy.float64 (if fitting a single value) or</span>
+    <span class="c"># a numpy.ndarray (if fitting multiple values); we need to turn that into</span>
+    <span class="c"># a list for the merger.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># If an ndarray (or other iterable)</span>
+        <span class="n">soln</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">soln</span> <span class="o">=</span> <span class="p">[</span><span class="n">soln</span><span class="p">]</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">fixed</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">FIT_PARAMS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">results</span><span class="p">[</span><span class="s">&#39;semiminor&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">results</span><span class="p">[</span><span class="s">&#39;semimajor&#39;</span><span class="p">]:</span>
+        <span class="c"># Swapped axis order is a perfectly valid fit, but inconvenient for</span>
+        <span class="c"># the rest of our codebase.</span>
+        <span class="n">results</span><span class="p">[</span><span class="s">&#39;semimajor&#39;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s">&#39;semiminor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s">&#39;semiminor&#39;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s">&#39;semimajor&#39;</span><span class="p">]</span>
+        <span class="n">results</span><span class="p">[</span><span class="s">&#39;theta&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="c"># Negative axes are a valid fit, since they are squared in the definition</span>
+    <span class="c"># of the Gaussian.</span>
+    <span class="n">results</span><span class="p">[</span><span class="s">&#39;semimajor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;semimajor&#39;</span><span class="p">])</span>
+    <span class="n">results</span><span class="p">[</span><span class="s">&#39;semiminor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s">&#39;semiminor&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>“Blind” source extraction &mdash; LOFAR Transients Pipeline 1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Pipeline Design" href="../index.html" />
+    <link rel="next" title="Null detection handling" href="nulldet.html" />
+    <link rel="prev" title="Quality check" href="quality.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nulldet.html" title="Null detection handling"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="quality.html" title="Quality check"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Pipeline Design</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="blind-source-extraction">
+<span id="stage-extraction"></span><h1>&#8220;Blind&#8221; source extraction<a class="headerlink" href="#blind-source-extraction" title="Permalink to this headline">¶</a></h1>
+<p>A source finding and measurement step is run on the image.  For more details
+on the procedure employed, the reader is referred to <a class="reference internal" href="../../../bibliography.html#spreeuw-2010"><em>Spreeuw (2010)</em></a>. Here, we present only a brief introduction.</p>
+<p>The algorithm employed is:</p>
+<ol class="arabic simple">
+<li>The image is divided into a square grid of user defined size.</li>
+<li>Within each cell, the data is <span class="math">\(\sigma\)</span> clipped to remove the effect of
+bright sources.</li>
+<li>The median pixel value within each clipped cell is calculated, and
+interpolated across the image to form a background map.</li>
+<li>The RMS pixel value within each clipped cell is calculated, and interpolated
+across the image to form a noise map.</li>
+<li>The background map is subtracted from the data.</li>
+<li>Pixels in the image data which are more than a &#8220;detection threshold&#8221; times
+the value of the noise map at the pixel position are identified as sources.</li>
+<li>Pixels in the image data which are adjacent to source pixels and which more
+than an &#8220;analysis threshold&#8221; times the value of the noise map at the pixel
+position are appended to the source pixels.</li>
+<li>The source pixel groups are (optionally) &#8220;deblended&#8221;: multi-component
+sources are split into their constituent parts by a multi-thresholding
+technique.</li>
+<li>An estimate of the source parameters are made based on the source pixels.
+The barycentre is taken as the position of the source, and the moments about
+that centre are used to estimate axis lengths and position angles.</li>
+<li>A least squares fit of an elliptical Gaussian to the pixel values is
+performed, starting with the estimated source parameters. If the fit
+converges, the fitted values are returned as the source measurement; if not,
+we return the earlier estimate together with an appropriate flag.</li>
+</ol>
+<p>For each source, the following measurements are stored:</p>
+<ul class="simple">
+<li>Position (RA and declination, including uncertainties);</li>
+<li>An estimate of the absolute on sky angular error on the position (NB this is
+<em>not</em> equivalent to the errors on RA and/or declination);</li>
+<li>The peak flux value;</li>
+<li>The integrated flux value;</li>
+<li>The lengths of the major and minor axes;</li>
+<li>The position angle, measured counterclockwise from the Y axis;</li>
+<li>The significance of the detection (that is, the ratio of the peak flux value
+to the RMS map at that point).</li>
+</ul>
+<p>After the blind extraction has been performed, the list of source measurements
+is stored in the database.</p>
+<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
+<div class="section" id="section-source-extraction">
+<h2>Section <tt class="docutils literal"><span class="pre">source_extraction</span></tt><a class="headerlink" href="#section-source-extraction" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">detection_threshold</span></tt></dt>
+<dd>Float. The detection threshold as a multiple of the RMS noise.</dd>
+<dt><tt class="docutils literal"><span class="pre">analysis_threshold</span></tt></dt>
+<dd>Float. The analysis threshold as a multiple of the RMS noise.</dd>
+<dt><tt class="docutils literal"><span class="pre">backsize_x</span></tt>, <tt class="docutils literal"><span class="pre">backsize_y</span></tt></dt>
+<dd>Integers. The size of the background grid parallel to the X and Y axes of
+the pixel grid.</dd>
+<dt><tt class="docutils literal"><span class="pre">margin</span></tt></dt>
+<dd>Integer. Pixel data within <tt class="docutils literal"><span class="pre">margin</span></tt> pixels of the edge of the image will
+be excluded from the analysis.</dd>
+<dt><tt class="docutils literal"><span class="pre">extraction_radius_pix</span></tt></dt>
+<dd>Integer. Pixel data more than <tt class="docutils literal"><span class="pre">extraction_radius_pix</span></tt> pixels from the
+centre of the image will be excluded from the analysis.</dd>
+<dt><tt class="docutils literal"><span class="pre">deblend</span></tt></dt>
+<dd>Boolean. <tt class="docutils literal"><span class="pre">True</span></tt> to enable source deblending; <tt class="docutils literal"><span class="pre">False</span></tt> to disable.</dd>
+<dt><tt class="docutils literal"><span class="pre">deblend_nthresh</span></tt></dt>
+<dd>Integer. The number of subthresholds to use for deblending. Only applicable
+if <tt class="docutils literal"><span class="pre">deblend</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">max_degredation</span></tt></dt>
+<dd>Float. Maxmimum permitted fractional degredation of astrometry due to image
+projection effects. Areas of the image for which the fractional degredation
+is higher than <tt class="docutils literal"><span class="pre">max_degredation</span></tt> are excluded from the analysis. Only
+used in the case of &#8220;SIN&#8221; projection images (<a class="reference internal" href="../../../bibliography.html#greisen-1983"><em>Greisen, 1983</em></a>).</dd>
+<dt><tt class="docutils literal"><span class="pre">force_beam</span></tt></dt>
+<dd>Boolean. If <tt class="docutils literal"><span class="pre">True</span></tt>, all detected sources are assumed to have the size and
+shape of the restoring beam (ie, to be unresolved point sources), and these
+parameters are held constant during fitting. If <tt class="docutils literal"><span class="pre">False</span></tt>, all parameters
+are allowed to vary freely.</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">&#8220;Blind&#8221; source extraction</a><ul>
+<li><a class="reference internal" href="#section-source-extraction">Section <tt class="docutils literal"><span class="pre">source_extraction</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quality.html"
+                        title="previous chapter">Quality check</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nulldet.html"
+                        title="next chapter">Null detection handling</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/userref/structure/stages/extraction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nulldet.html" title="Null detection handling"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="quality.html" title="Quality check"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Pipeline Design</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

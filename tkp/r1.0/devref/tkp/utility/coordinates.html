@@ -1,0 +1,399 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.utility.coordinates – Coordinate routines &mdash; LOFAR Transients Pipeline 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Utility package" href="index.html" />
+    <link rel="next" title="tkp.utility.uncertain – Uncertainty class" href="uncertain.html" />
+    <link rel="prev" title="tkp.utility.containers – Generic container classes" href="containers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="uncertain.html" title="tkp.utility.uncertain – Uncertainty class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="containers.html" title="tkp.utility.containers – Generic container classes"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Utility package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.utility.coordinates">
+<span id="tkp-utility-coordinates-coordinate-routines"></span><span id="utility-coordinates"></span><h1><a class="reference internal" href="#module-tkp.utility.coordinates" title="tkp.utility.coordinates: Coordinate (and date) conversion routines"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.utility.coordinates</span></tt></a> &#8211; Coordinate routines<a class="headerlink" href="#module-tkp.utility.coordinates" title="Permalink to this headline">¶</a></h1>
+<p>General purpose astronomical coordinate handling routines.</p>
+<dl class="class">
+<dt id="tkp.utility.coordinates.CoordSystem">
+<em class="property">class </em><tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">CoordSystem</tt><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#CoordSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.CoordSystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for constant strings representing different coordinate
+systems.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tkp.utility.coordinates.WCS">
+<em class="property">class </em><tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">WCS</tt><big>(</big><em>(object)arg1</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#WCS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.WCS" title="Permalink to this definition">¶</a></dt>
+<dd><p>wcslib.wcs, extended to support different coordinate systems.</p>
+<p>C++ signature :
+void __init__(_object*)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.alpha">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">alpha</tt><big>(</big><em>l</em>, <em>m</em>, <em>alpha0</em>, <em>delta0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a coordinate in l,m into an coordinate in RA</p>
+<p>Keyword arguments:
+l,m &#8211; direction cosines, given by (offset in cells) x cellsi (radians)
+alpha_0, delta_0 &#8211; centre of the field</p>
+<p>Return value:
+alpha &#8211; RA in decimal degrees</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.alpha_inflate">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">alpha_inflate</tt><big>(</big><em>theta</em>, <em>decl</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#alpha_inflate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.alpha_inflate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the ra expansion for a given theta at a given declination</p>
+<p>Keyword arguments:
+theta, decl are both in decimal degrees.</p>
+<p>Return value:
+alpha &#8211; RA inflation in decimal degrees</p>
+<p>For a derivation, see MSR TR 2006 52, Section 2.1
+<a class="reference external" href="http://research.microsoft.com/apps/pubs/default.aspx?id=64524">http://research.microsoft.com/apps/pubs/default.aspx?id=64524</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.alphasep">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">alphasep</tt><big>(</big><em>ra1</em>, <em>ra2</em>, <em>dec1</em>, <em>dec2</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#alphasep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.alphasep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the angular separation of two sources in RA, in arcseconds</p>
+<p>Keyword arguments:
+ra1,dec1 - RA and Dec of the first source, in decimal degrees
+ra2,dec2 - RA and Dec of the second source, in decimal degrees</p>
+<p>Return value:
+angsep - Angular separation, in arcseconds</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.altaz">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">altaz</tt><big>(</big><em>mjds</em>, <em>ra</em>, <em>dec</em>, <em>lat=52.9088</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#altaz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.altaz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the azimuth and elevation of source from time and position
+on sky.  Takes MJD in seconds and ra, dec in degrees.  Returns (alt, az) in
+degrees.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.angsep">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">angsep</tt><big>(</big><em>ra1</em>, <em>dec1</em>, <em>ra2</em>, <em>dec2</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#angsep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.angsep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the angular separation of two sources, in arcseconds,
+using the proper spherical trig formula</p>
+<p>Keyword arguments:
+ra1,dec1 - RA and Dec of the first source, in decimal degrees
+ra2,dec2 - RA and Dec of the second source, in decimal degrees</p>
+<p>Return value:
+angsep - Angular separation, in arcseconds</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.convert_coordsystem">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">convert_coordsystem</tt><big>(</big><em>ra</em>, <em>dec</em>, <em>insys</em>, <em>outsys</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#convert_coordsystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.convert_coordsystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert RA &amp; dec (given in decimal degrees) between equinoxes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.coordsystem">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">coordsystem</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#coordsystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.coordsystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a string, return a constant from class CoordSystem.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.dectodms">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">dectodms</tt><big>(</big><em>decdegs</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#dectodms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.dectodms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Declination in decimal degrees format to hours, minutes,
+seconds format.</p>
+<p>Keyword arguments:
+decdegs &#8211; Dec. in degrees format</p>
+<p>Return value:
+dec &#8211; list of 3 values, [degrees,minutes,seconds]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.delta">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">delta</tt><big>(</big><em>l</em>, <em>m</em>, <em>delta0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a coordinate in l, m into an coordinate in Dec</p>
+<p>Keyword arguments:
+l, m &#8211; direction cosines, given by (offset in cells) x cellsi (radians)
+alpha_0, delta_0 &#8211; centre of the field</p>
+<p>Return value:
+delta &#8211; Dec in decimal degrees</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.deltasep">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">deltasep</tt><big>(</big><em>dec1</em>, <em>dec2</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#deltasep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.deltasep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the angular separation of two sources in Dec, in arcseconds</p>
+<p>Keyword arguments:
+dec1 - Dec of the first source, in decimal degrees
+dec2 - Dec of the second source, in decimal degrees</p>
+<p>Return value:
+angsep - Angular separation, in arcseconds</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.dmstodec">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">dmstodec</tt><big>(</big><em>decd</em>, <em>decm</em>, <em>decs</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#dmstodec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.dmstodec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Dec in degrees, minutes, seconds format to decimal
+degrees format.</p>
+<p>Keyword arguments:
+decd, decm, decs &#8211; list of Dec values (d,m,s)</p>
+<p>Return value:
+decdegs &#8211; Dec in decimal degrees</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.eq_to_cart">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">eq_to_cart</tt><big>(</big><em>ra</em>, <em>dec</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#eq_to_cart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.eq_to_cart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the cartesian co-ordinates on the unit sphere given the eq. co-ords.</p>
+<p>ra, dec should be in degrees.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.eq_to_gal">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">eq_to_gal</tt><big>(</big><em>ra</em>, <em>dec</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#eq_to_gal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.eq_to_gal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the Galactic co-ordinates of a source given the equatorial
+co-ordinates</p>
+<p>Keyword arguments:
+(alpha,delta) &#8211; RA, Dec in decimal degrees</p>
+<p>Return value:
+(l,b) &#8211; Galactic longitude and latitude, in decimal degrees</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.gal_to_eq">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">gal_to_eq</tt><big>(</big><em>lon_l</em>, <em>lat_b</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#gal_to_eq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.gal_to_eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the Galactic co-ordinates of a source given the equatorial
+co-ordinates</p>
+<p>Keyword arguments:
+(l, b) &#8211; Galactic longitude and latitude, in decimal degrees</p>
+<p>Return value:
+(alpha, delta) &#8211; RA, Dec in decimal degrees</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.hmstora">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">hmstora</tt><big>(</big><em>rah</em>, <em>ram</em>, <em>ras</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#hmstora"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.hmstora" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert RA in hours, minutes, seconds format to decimal
+degrees format.</p>
+<p>Keyword arguments:
+rah,ram,ras &#8211; RA values (h,m,s)</p>
+<p>Return value:
+radegs &#8211; RA in decimal degrees</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.jd2lst">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">jd2lst</tt><big>(</big><em>jd</em>, <em>position=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#jd2lst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.jd2lst" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Julian Date into Local Apparent Sidereal Time in seconds at a
+given position. If position is None, we default to the reference position
+of CS002.</p>
+<p>jd &#8211; Julian Date (float)
+position &#8211; Position (pyrap measure)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.julian2unix">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">julian2unix</tt><big>(</big><em>timestamp</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#julian2unix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.julian2unix" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts a julian timestamp (number of seconds since 17 November 1858)
+to unix timestamp (number of seconds since  1 January 1970)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.julian_date">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">julian_date</tt><big>(</big><em>time=None</em>, <em>modified=False</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#julian_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.julian_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Julian Date: the number of days (including fractions) which
+have elapsed between noon, UT on 1 January 4713 BC and the specified time.</p>
+<p>If modified is True, return the Modified Julian Date: the number of days
+(including fractions) which have elapsed between the start of 17 November
+1858 AD and the specified time. Takes a datetime.datetime object as
+input.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.l">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">l</tt><big>(</big><em>ra</em>, <em>dec</em>, <em>cra</em>, <em>incr</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#l"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a coordinate in RA,Dec into a direction cosine l</p>
+<p>Keyword arguments:
+ra,dec &#8211; Source location
+cra &#8211; RA centre of the field
+incr &#8211; number of degrees per pixel (negative in the case of RA)</p>
+<p>Return value:
+l &#8211; Direction cosine</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.m">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">m</tt><big>(</big><em>ra</em>, <em>dec</em>, <em>cra</em>, <em>cdec</em>, <em>incr</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#m"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a coordinate in RA,Dec into a direction cosine m</p>
+<p>Keyword arguments:
+ra,dec &#8211; Source location
+cra,cdec &#8211; centre of the field
+incr &#8211; number of degrees per pixel</p>
+<p>Return value:
+m &#8211; direction cosine</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.mjd2lst">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">mjd2lst</tt><big>(</big><em>mjd</em>, <em>position=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#mjd2lst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.mjd2lst" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Modified Julian Date into Local Apparent Sidereal Time in
+seconds at a given position. If position is None, we default to the
+reference position of CS002.</p>
+<p>mjd &#8211; Modified Julian Date (float, in days)
+position &#8211; Position (pyrap measure)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.mjds2lst">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">mjds2lst</tt><big>(</big><em>mjds</em>, <em>position=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#mjds2lst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.mjds2lst" title="Permalink to this definition">¶</a></dt>
+<dd><p>As mjd2lst(), but takes an argument in seconds rather than days.</p>
+<p>mjds &#8211; Modified Julian Date (float, in seconds)
+position &#8211; Position (pyrap measure)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.ratohms">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">ratohms</tt><big>(</big><em>radegs</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#ratohms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.ratohms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert RA in decimal degrees format to hours, minutes,
+seconds format.</p>
+<p>Keyword arguments:
+radegs &#8211; RA in degrees format</p>
+<p>Return value:
+ra &#8211; tuple of 3 values, [hours,minutes,seconds]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.sec2days">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">sec2days</tt><big>(</big><em>seconds</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#sec2days"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.sec2days" title="Permalink to this definition">¶</a></dt>
+<dd><p>Seconds to number of days</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.sec2deg">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">sec2deg</tt><big>(</big><em>seconds</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#sec2deg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.sec2deg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Seconds of time to degrees of arc</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.sec2hms">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">sec2hms</tt><big>(</big><em>seconds</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#sec2hms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.sec2hms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Seconds to hours, minutes, seconds</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.unix2julian">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">unix2julian</tt><big>(</big><em>timestamp</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#unix2julian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.unix2julian" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts a julian timestamp (number of seconds since 17 November 1858)
+to unix timestamp (number of seconds since  1 January 1970)</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="containers.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.utility.containers</span></tt> &#8211; Generic container classes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="uncertain.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.utility.uncertain</span></tt> &#8211; Uncertainty class</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/utility/coordinates.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="uncertain.html" title="tkp.utility.uncertain – Uncertainty class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="containers.html" title="tkp.utility.containers – Generic container classes"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" >Utility package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

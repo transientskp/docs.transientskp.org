@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Design &mdash; LOFAR Transients Pipeline 1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.1 documentation" href="../../index.html" />
+    <link rel="up" title="Library &amp; API" href="index.html" />
+    <link rel="next" title="Configuration" href="config.html" />
+    <link rel="prev" title="Library &amp; API" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Library &amp; API"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Library &amp; API</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="design">
+<h1>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h1>
+<p>The transients pipeline library is a set of Python modules that form
+the backbone of the transients pipeline: it contains the routines used
+by the various steps in the pipeline. All routines are written in
+Python, with a few exceptions as detailed below.</p>
+<p>The modules are separated into four subpackages:</p>
+<ul class="simple">
+<li>database: the routines that interface with the database. The modules
+in this subpackage contain the necessary SQL queries to match
+sources and find transients, as well as more general functions and a
+few classes.</li>
+<li>sourcefinder: the modules in this subpackage handle the detection of
+sources in an (2D) image.</li>
+<li>classification: the modules in this subpackage deal with the
+classification of detected sources, mainly through the source light
+curves (and possibly their spectra). It also contains functions to
+extract the required characteristics of the light curves for
+classification.</li>
+<li>utility: this subpackage contains a variety of utility functions,
+such as (image) data file handlers and coordinate functions.</li>
+</ul>
+<p>At the root of the package, there is also the <tt class="xref py py-mod docutils literal"><span class="pre">config</span></tt> module,
+which deals with the setup and configuration of the various modules in
+the library.</p>
+<p>A few &#8220;external&#8221; modules exists. These are:</p>
+<ul class="simple">
+<li>deconv: the AIPS <cite>DECONV</cite> routine. This is built into a Python
+module <tt class="xref py py-mod docutils literal"><span class="pre">deconv</span></tt>. The build is accomplished using <tt class="file docutils literal"><span class="pre">f2py</span></tt>.</li>
+<li>python-wcslib: this forms a (minimal) binding between the wcslib
+library and Python, and is built into the Python module
+<tt class="xref py py-mod docutils literal"><span class="pre">wcslib</span></tt>. The binding is accomplished using the <cite>boost-python</cite>
+library.</li>
+</ul>
+<p>For practical usage, start with reading through the transient pipeline
+documentation instead. For details on the various TKP modules and
+functions, see the rest of this documentation: most of the modules and
+functions have doc strings that should explain a good deal about the
+details. In the end, of course, the real details are obtained by
+&#8220;reading the source&#8221;.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Library &amp; API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="config.html"
+                        title="next chapter">Configuration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/tkp/design.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Library &amp; API"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Library &amp; API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

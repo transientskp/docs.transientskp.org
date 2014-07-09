@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.database.associations – source association &mdash; LOFAR Transients Pipeline 1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Database package" href="index.html" />
+    <link rel="next" title="tkp.database.general – general database functions" href="general.html" />
+    <link rel="prev" title="tkp.database.database – Database interface" href="database.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="general.html" title="tkp.database.general – general database functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="tkp.database.database – Database interface"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.db.associations">
+<span id="tkp-database-associations-source-association"></span><span id="database-associations"></span><h1><tt class="xref py py-mod docutils literal"><span class="pre">tkp.database.associations</span></tt> &#8211; source association<a class="headerlink" href="#module-tkp.db.associations" title="Permalink to this headline">¶</a></h1>
+<p>A collection of back end subroutines (mostly SQL queries), In this module we
+deal with source association.</p>
+<dl class="function">
+<dt id="tkp.db.associations.associate_extracted_sources">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">associate_extracted_sources</tt><big>(</big><em>image_id</em>, <em>deRuiter_r</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#associate_extracted_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations.associate_extracted_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Associate extracted sources with sources detected in the running
+catalog.</p>
+<p>The dimensionless distance between two sources is given by the
+&#8220;De Ruiter radius&#8221;, see Chapters 2 &amp; 3 of Scheers&#8217; thesis.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="database.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.database.database</span></tt> &#8211; Database interface</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="general.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.database.general</span></tt> &#8211; general database functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/database/association.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="general.html" title="tkp.database.general – general database functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="tkp.database.database – Database interface"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" >Database package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

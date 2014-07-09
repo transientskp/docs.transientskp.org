@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Alerts recipe &mdash; LOFAR Transients Pipeline 1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.1 documentation" href="../../index.html" />
+    <link rel="up" title="Library &amp; API" href="index.html" />
+    <link rel="next" title="Monitoring list" href="monitoringlist.html" />
+    <link rel="prev" title="Quality" href="quality/index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="monitoringlist.html" title="Monitoring list"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="quality/index.html" title="Quality"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Library &amp; API</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="alerts-recipe">
+<span id="alerts"></span><h1>Alerts recipe<a class="headerlink" href="#alerts-recipe" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Evert Rol</td>
+</tr>
+<tr class="field-even field"><th class="field-name">date:</th><td class="field-body">2013-10-14</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The alerts recipe is simple recipe (&#8220;master&#8221; only), that will send an
+email alert to for new found transients to selected email
+addresses. It is smart enough that it will only sent one alert per
+transient per email address, to not flood people&#8217;s email inboxes.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Include the recipe after the classification step. Its inputs are a
+parset file that sets the email addresses and criteria for sending
+email alerts; a tkp.classification.manual.transient.Transient object,
+which includes among other the position and classification (to be used
+with the aforementioend criteria); and the filename (logfile) where
+the record is kept of sent email alerts. The latter logfile is a
+simple Python pickle file, similar to the state_file that keeps track
+of the pipeline status.</p>
+</div>
+<div class="section" id="parset">
+<h2>Parset<a class="headerlink" href="#parset" title="Permalink to this headline">¶</a></h2>
+<p>The parset contains the email address to send alerts to, and can be
+used to set some conditions before an email is actually sent for a
+transient.</p>
+<p>A sample parset shows this best:</p>
+<div class="highlight-python"><div class="highlight"><pre>people = [p1, p2, p3]
+p1.email = person1@example.com
+p2.email = person2@example.com
+p3.email = person3@example.com
+p1.criterion.classification = [short, grb]
+p2.criterion.position = [52.70, 57.05, 10]
+</pre></div>
+</div>
+<p>Person1 gets emails for transients that contain the word &#8220;short&#8221; or
+&#8220;grb&#8221; in their classification. Person 2 gets emails for transients that are at
+a position of RA, Dec = (52.7, 57.05), with a margin of 10 arcseconds. Person
+3 will get emails for every new transient.</p>
+<p>Note that in case of the classification, multiple keywords in a list or or-ed
+together. If, however, there are multiple conditions given (such as
+a classification and a position), those are and-ed together. So if Person
+1 would like to receive alerts only for short grbs, the criteria would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p1</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="p">[</span><span class="n">short</span><span class="p">]</span>
+<span class="n">p1</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="p">[</span><span class="n">grb</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>where as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p1</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">classification</span> <span class="o">=</span> <span class="p">[</span><span class="n">short</span><span class="p">,</span> <span class="n">grb</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>would result in receiving alerts for both short duration transients and all type
+of GRBs.</p>
+<p>If Person 1 also adds a positional criterion (eg, only short GRBs from M31),
+that also gets and-ed with the other criteria: separate lines are always and-ed
+together:</p>
+<blockquote>
+<div>p1.criterion.position = [17.1, 41.3, 7200]</div></blockquote>
+<p>If, instead, Person 1 likes to have alerts for short grbs or anything from M31,
+just adds a new person:</p>
+<blockquote>
+<div>people = [p1, p1a, p2, p3]
+p1a.email = <a class="reference external" href="mailto:person1&#37;&#52;&#48;example&#46;com">person1<span>&#64;</span>example<span>&#46;</span>com</a>
+p1a.criterion.position = [17.1, 41.3, 7200]</div></blockquote>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>To be able to send emails, the recipe will have to connect to an email account.
+For this, it will obtain the (SMTP) email details from the tkp configuration
+file (<tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">HOME</span></em><span class="pre">/.transientskp/tkp.cfg</span></tt>); the necessary section looks
+something like the following:</p>
+<blockquote>
+<div>[alerts]
+login = &lt;email login&gt;
+server = &lt;email SMTP server&gt;
+password = &lt;password&gt;
+port = &lt;SMTP port&gt;</div></blockquote>
+<p>Since this stores the email password in plain text, it is probably wise to
+change the file permission of <tt class="file docutils literal"><span class="pre">tkp.cfg</span></tt> to 600. A future improvement may
+provide support for using a local SMTP server, so that a password is not
+necessary.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Alerts recipe</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#parset">Parset</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quality/index.html"
+                        title="previous chapter">Quality</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="monitoringlist.html"
+                        title="next chapter">Monitoring list</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/tkp/alerts.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="monitoringlist.html" title="Monitoring list"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="quality/index.html" title="Quality"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Library &amp; API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

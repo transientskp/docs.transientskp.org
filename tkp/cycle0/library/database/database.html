@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.database.database – Database interface &mdash; LOFAR Transients Tools Release 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'Release 0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="LOFAR Transients Tools Release 0 documentation" href="../../index.html" />
+    <link rel="up" title="Database package" href="index.html" />
+    <link rel="next" title="tkp.database.utils – Database utilities" href="utils.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="tkp.database.utils – Database utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Tools Release 0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.database.database">
+<span id="tkp-database-database-database-interface"></span><span id="database-database"></span><h1><a class="reference internal" href="#module-tkp.database.database" title="tkp.database.database: Interface to the MonetDB database"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.database.database</span></tt></a> &#8211; Database interface<a class="headerlink" href="#module-tkp.database.database" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="tkp.database.database.DataBase">
+<em class="property">class </em><tt class="descclassname">tkp.database.database.</tt><tt class="descname">DataBase</tt><big>(</big><em>host=None</em>, <em>name=None</em>, <em>user=None</em>, <em>password=None</em>, <em>port=None</em>, <em>autocommit=None</em><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object representing a database connection</p>
+<p>This object only represents the database; it takes care of the
+login procedure etc, but doesn&#8217;t care about the actual contents of
+the database, such as the tables.</p>
+<p>It keeps a a connection object and a cursor object around as well,
+which can readily be accessed. Usage example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># Make a database connection using the TKP configuration defaults</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">DataBase</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Now make a different connection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">DataBase</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span>
+<span class="go">&lt;tkp.database.database.DataBase object at 0x1004959d0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">connection</span>
+<span class="go">&lt;monetdb.sql.connections.Connection instance at 0x10149a5f0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span>
+<span class="go">&lt;monetdb.sql.cursors.Cursor instance at 0x10149a710&gt;</span>
+</pre></div>
+</div>
+<p>(Note: this example is not doctest compatible.)</p>
+<p>Set up a database connection object</p>
+<p>Raises an exception if not enabled.</p>
+<p>Use login defaults from the config module, but the user can
+override these.</p>
+<dl class="exception">
+<dt id="tkp.database.database.DataBase.Error">
+<em class="property">exception </em><tt class="descname">Error</tt><a class="headerlink" href="#tkp.database.database.DataBase.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception that is the base class of all other error
+exceptions. You can use this to catch all errors with one
+single &#8216;except&#8217; statement. Warnings are not considered
+errors and thus should not use this class as base. It must
+be a subclass of the Python StandardError (defined in the
+module exceptions).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.close">
+<tt class="descclassname">DataBase.</tt><tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explicitly close the database connection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.commit">
+<tt class="descclassname">DataBase.</tt><tt class="descname">commit</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.commit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut to self.connection.commit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.connect">
+<tt class="descclassname">DataBase.</tt><tt class="descname">connect</tt><big>(</big><em>host=None</em>, <em>name=None</em>, <em>user=None</em>, <em>password=None</em>, <em>port=None</em>, <em>autocommit=None</em><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to the database.</p>
+<p>For any keyword value that is not given (None), the value from
+the corresponding self attributes is used. These attribute
+values are set <em>only</em> through __init__, not with connect()
+(though they can, temporariliy, be overriden in connect().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.execute">
+<tt class="descclassname">DataBase.</tt><tt class="descname">execute</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut to self.cursor.execute</p>
+<p>This function&#8217;s list of arguments consist of the actual SQL
+query plus the arguments fed into that SQL query.  For a
+single argument, this is only the SQL query. Note that the
+extra arguments are passed separately and not inside a tuple.
+They are put together in a tuple by ethis function and then
+passed into the cursor.execute() function.</p>
+<p>Examples:</p>
+<blockquote>
+<div><p>DataBase().execute(&#8220;SELECT COUNT(*) FROM images&#8221;)</p>
+<dl class="docutils">
+<dt>DataBase().execute(</dt>
+<dd>&#8220;SELECT image_id, url FROM images WHERE dataset = %s&#8221;,
+11)</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.fetchall">
+<tt class="descclassname">DataBase.</tt><tt class="descname">fetchall</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.fetchall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.fetchall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut to self.cursor.fetchall</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.fetchone">
+<tt class="descclassname">DataBase.</tt><tt class="descname">fetchone</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.fetchone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.fetchone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut to self.cursor.fetchone</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.get">
+<tt class="descclassname">DataBase.</tt><tt class="descname">get</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute() and fetchall() in one</p>
+<p>Not always recommend, since it may obscure errors,
+or execution of the process overall.</p>
+<p>For details on usage, see the execute() documentation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.getone">
+<tt class="descclassname">DataBase.</tt><tt class="descname">getone</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.getone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.getone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute() and fetchone() in one</p>
+<p>Not always recommend, since it may obscure errors,
+or execution of the process overall.</p>
+<p>For details on usage, see the execute() documentation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.database.database.DataBase.tables">
+<tt class="descclassname">DataBase.</tt><tt class="descname">tables</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/tkp/database/database.html#DataBase.tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.database.database.DataBase.tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of tables in the database</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="utils.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.database.utils</span></tt> &#8211; Database utilities</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/library/database/database.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="tkp.database.utils – Database utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Tools Release 0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" >Database package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

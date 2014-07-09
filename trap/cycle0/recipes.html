@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>recipes and their parameters &mdash; TRAP 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="TRAP 1.0 documentation" href="index.html" />
+    <link rel="next" title="Troubleshooting the pipeline" href="troubleshooting.html" />
+    <link rel="prev" title="Scripts" href="scripts.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="troubleshooting.html" title="Troubleshooting the pipeline"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="scripts.html" title="Scripts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">TRAP 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="recipes-and-their-parameters">
+<span id="recipes-section"></span><h1>recipes and their parameters<a class="headerlink" href="#recipes-and-their-parameters" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Last updated:</th><td class="field-body">2013-2-15</td>
+</tr>
+</tbody>
+</table>
+<p>This page gives a very brief description of each script / recipe used in the
+TraP workflow, and details the parameters supplied
+either via command line arguments (in the case of top-level scripts) or via
+parameter sets (for the recipes).</p>
+<div class="section" id="persistence">
+<h2>persistence<a class="headerlink" href="#persistence" title="Permalink to this headline">¶</a></h2>
+<p>Checks for accessibility of each listed image file, inserts it into the database,
+and stores in the MongoDB image store if configured to do so.</p>
+</div>
+<div class="section" id="source-extraction">
+<h2>source_extraction<a class="headerlink" href="#source-extraction" title="Permalink to this headline">¶</a></h2>
+<p>Run the source finding routine. In addition, this recipe will store
+the detected sources inside the database, and tries to associate the
+new sources with existing ones.</p>
+<ul class="simple">
+<li>inputs:<ul>
+<li>image: list of (FITS) images.</li>
+<li>parset: parameter set containg the following optional
+settings. Note that these setting supersede the values in your
+(local) TKP configuration file.<ul>
+<li>detection.threshold: peak detection threshold for a source to be
+found.</li>
+<li>analysis.threshold: threshold to include neighbouring pixels
+into the determination of the source details.</li>
+<li>association.radius: radius in units of the default De Ruiter
+radius to associate sources with previously extracted sources.</li>
+<li>backsize.x, backsize.y: mesh size to determine the background
+level.</li>
+</ul>
+</li>
+<li>nproc: number of maximum simultaneous processors per node. Useful
+when performing source extraction on multiple subbands
+simultaneously.</li>
+</ul>
+</li>
+<li>outputs:<ul>
+<li>dataset_id: see the dataset_id entry in the inputs.</li>
+</ul>
+</li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li>In a future TRAP version, the source association part may get its
+own recipe.</li>
+<li>A future version will allow for other images than just FITS.</li>
+</ul>
+</div>
+<div class="section" id="transient-search">
+<span id="transient-search-recipe"></span><h2>transient_search<a class="headerlink" href="#transient-search" title="Permalink to this headline">¶</a></h2>
+<p>Search through all matched sources and find variable sources by
+looking for deviations in their light curve.</p>
+<ul>
+<li><p class="first">inputs:</p>
+<ul class="simple">
+<li>parset: parameter set, with the following parameters:<ul>
+<li>probability.threshold: likeliness above which the variable is
+assumed a transient (between 0 and 1).</li>
+<li>probability.minpoints: minimum number of light curve data points
+to determine the variability of a source.</li>
+<li>probability.eta_lim: eta (least-squared sum) limit above which
+a source is assumed to be variable (related to <cite>threshold</cite>
+above).</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>probability.V_lim: limit for V (measure of variation around the
+mean value) above which a source is assumed to be variable.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">outputs:</p>
+<ul class="simple">
+<li>transient_ids: list of database IDs of the sources which are found
+to be transient.</li>
+<li>siglevels: significance levels of the &#8220;transientness&#8221;.</li>
+<li>transients: list of <em class="xref std std-ref">Transient</em> objects.</li>
+</ul>
+</li>
+</ul>
+<p>This routine is implemented by performing a database search, and thus
+the recipe is simply run on the front-end node.</p>
+</div>
+<div class="section" id="feature-extraction">
+<span id="id1"></span><h2>feature_extraction<a class="headerlink" href="#feature-extraction" title="Permalink to this headline">¶</a></h2>
+<p>Obtain characteristics from detected transient sources. This may fail
+(ie, produces None or 0 for values) when little to no
+background/steady-state information is known.</p>
+<p>Current characteristics obtained are:</p>
+<ul class="simple">
+<li>duration</li>
+<li>peak flux</li>
+<li>increase and decrease from background to peak and back, and their
+ratio.</li>
+</ul>
+<p>Each feature extraction is run as a separate node.</p>
+<ul class="simple">
+<li>inputs:<ul>
+<li>transients: list of <em class="xref std std-ref">Transient</em> objects,
+previously obtained with the transient_search recipe.</li>
+<li>nproc: number of maximum simultaneous processors per node.</li>
+</ul>
+</li>
+<li>outputs:<ul>
+<li>transients: list of <em class="xref std std-ref">Transient</em> objects.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+    <p class="logo"><a href="index.html">
+      <img class="logo" src="_static/ackbar.png" alt="Ackbar" title="It's a TRAP!" />
+    </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">recipes and their parameters</a><ul>
+<li><a class="reference internal" href="#persistence">persistence</a></li>
+<li><a class="reference internal" href="#source-extraction">source_extraction</a></li>
+<li><a class="reference internal" href="#transient-search">transient_search</a></li>
+<li><a class="reference internal" href="#feature-extraction">feature_extraction</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="scripts.html"
+                        title="previous chapter">Scripts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="troubleshooting.html"
+                        title="next chapter">Troubleshooting the pipeline</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/recipes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="troubleshooting.html" title="Troubleshooting the pipeline"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="scripts.html" title="Scripts"
+             >previous</a> |</li>
+        <li><a href="index.html">TRAP 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, LOFAR Transients Key Project.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

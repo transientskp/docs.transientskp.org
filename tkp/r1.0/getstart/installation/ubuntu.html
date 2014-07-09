@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Ubuntu &mdash; LOFAR Transients Pipeline 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Installation" href="index.html" />
+    <link rel="next" title="OSX" href="osx.html" />
+    <link rel="prev" title="Installation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="osx.html" title="OSX"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Installation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ubuntu">
+<span id="id1"></span><h1>Ubuntu<a class="headerlink" href="#ubuntu" title="Permalink to this headline">¶</a></h1>
+<p>This page describes how to install the Transient Pipeline software on Ubuntu.
+Tested with Ubuntu 12.04.</p>
+<div class="section" id="casacore-pyrap">
+<h2>Casacore &amp; Pyrap<a class="headerlink" href="#casacore-pyrap" title="Permalink to this headline">¶</a></h2>
+<p>Casacore is a collection of libraries which can be used to perform astronomical
+calculations and operations. Pyrap is the python wrapper around casacore.</p>
+<p>There are two suggested ways to install these packages: use our precompiled
+binary packages or build them yourself. Some people like to compile from
+source to have more control over compilation flags and installation location.</p>
+<div class="section" id="binary-packages">
+<h3>Binary packages<a class="headerlink" href="#binary-packages" title="Permalink to this headline">¶</a></h3>
+<p>To install the pre compiled binaries run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository ppa:gijzelaar/aartfaac
+$ sudo apt-get update
+$ sudo apt-get install libcasacore-dev casacore-data pyrap
+</pre></div>
+</div>
+</div>
+<div class="section" id="manual-compilation">
+<h3>Manual compilation<a class="headerlink" href="#manual-compilation" title="Permalink to this headline">¶</a></h3>
+<p>This will compile casacore from source.</p>
+<p>First, install its dependencies:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install subversion cmake build-essential flex bison   \
+     libblas-dev liblapack-dev libcfitsio3-dev wcslib-dev libfftw3-dev \
+     libhdf5-dev libreadline-dev libncurses5-dev wget scons python-numpy-dev\
+     python-dev libboost-python-dev python-setuptools subversion gfortran
+</pre></div>
+</div>
+<p>Get the measures data:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd /tmp
+$ wget ftp://ftp.atnf.csiro.au/pub/software/measures_data/measures_data.tar.bz2
+$ sudo mkdir /usr/local/share/casacore &amp;&amp; cd /usr/local/share/casacore
+$ sudo tar jxvf /tmp/measures_data.tar.bz2
+</pre></div>
+</div>
+<p>Finally, casacore itself:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd /tmp
+$ svn checkout http://casacore.googlecode.com/svn/trunk/ casacore
+$ mkdir casacore/build &amp;&amp; cd casacore/build
+$ cmake .. -DDATA_DIR=/usr/local/share/casacore/data -DUSE_FFTW3=ON \
+      -DUSE_OPENMP=ON
+$ make
+$ sudo make install
+</pre></div>
+</div>
+<p>and Pyrap:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd /tmp
+$ svn checkout http://pyrap.googlecode.com/svn/trunk/ pyrap
+$ cd pyrap
+$ ./batchbuild-trunk.py  #  append `--casacore-root=/usr` if you installed the binary packages
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="transient-pipeline">
+<h2>Transient Pipeline<a class="headerlink" href="#transient-pipeline" title="Permalink to this headline">¶</a></h2>
+<p>If you don&#8217;t have the Trap source code yet, you need to to fetch it:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install git cmake build-essential python-pip python-numpy \
+     python-scipy python-pygresql
+$ cd /tmp
+$ git clone https://github.com/transientskp/tkp.git
+$ mkdir tkp/build &amp;&amp; cd tkp/build
+$ cmake ..
+$ make
+$ sudo make install
+$ cd ..
+$ pip install -r requirements.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-dependencies">
+<h2>Optional dependencies<a class="headerlink" href="#optional-dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="database">
+<h3>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h3>
+<p>If you want to run the pipeline you need to store the results somewhere. TKP
+currently supports two database systems, <a class="reference external" href="http://www.postgresql.org/">PostgreSQL</a> and <a class="reference external" href="http://www.monetdb.org/">MonetDB</a>. Pick one.</p>
+<div class="section" id="postgresql">
+<h4>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h4>
+<p>PostgreSQL is included in Ubuntu:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install postgresql
+</pre></div>
+</div>
+<p>After package installation, you must configure access rights to your postgres
+server, by editing
+<a class="reference external" href="http://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html">/etc/postgresql/9.1/main/pg_hba.conf</a>.</p>
+<p>For a typical development (i.e. possibly insecure) installation, you will
+probably want to edit the pre-existing entries to something along the lines
+of:</p>
+<div class="highlight-python"><div class="highlight"><pre>local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+</pre></div>
+</div>
+<p>with all other lines commented out. Then restart the server:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo service postgresql restart
+</pre></div>
+</div>
+<p>You can check everything is working using <tt class="docutils literal"><span class="pre">psql</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ psql -U postgres
+</pre></div>
+</div>
+<p>You should now be able to run the <a class="reference internal" href="../tutorial.html#getstart-initdb"><em>initdb</em></a> process,
+however you should note that by default all databases must be created with
+user <cite>postgres</cite> - to allow creation of databases with other user-owners, you
+must first add a new <a class="reference external" href="http://www.postgresql.org/docs/9.1/static/sql-createrole.html">role</a>, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ psql -U postgres
+postgres=# CREATE ROLE myuser WITH CREATEDB SUPERUSER LOGIN;
+</pre></div>
+</div>
+<p>You should now be able to run <tt class="docutils literal"><span class="pre">tkp-manage.py</span> <span class="pre">initdb</span></tt> with the newly added
+username.</p>
+</div>
+<div class="section" id="monetdb">
+<h4>MonetDB<a class="headerlink" href="#monetdb" title="Permalink to this headline">¶</a></h4>
+<p>MonetDB is not included in Ubuntu, but there is a MonetDB repository available
+with prebuild binaries. To install these packages:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository &#39;deb http://dev.monetdb.org/downloads/deb/ precise monetdb&#39;
+$ wget --output-document=- http://dev.monetdb.org/downloads/MonetDB-GPG-KEY | sudo apt-key add -
+$ sudo apt-get update
+$ sudo apt-get install monetdb5-sql monetdb-client
+</pre></div>
+</div>
+<p>To be able to manage MonetDB databases you need to add yourself to the MonetDB
+group:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo usermod -a -G monetdb $USER
+</pre></div>
+</div>
+<p>When you next log in you will be a member of the appropriate group.</p>
+<p>If you want to be able to issue remote management command like creating
+databases you need to enable this and set a passphrase
+(mysecretpassphrase here):</p>
+<div class="highlight-python"><div class="highlight"><pre>$ monetdbd set control=yes /var/lib/monetdb
+$ monetdbd set passphrase=mysecretpassphrase /var/lib/monetdb
+</pre></div>
+</div>
+<p>For more information see the <a class="reference external" href="http://dev.monetdb.org/downloads/deb/">MonetDB ubuntu packages manual</a>.</p>
+</div>
+</div>
+<div class="section" id="celery-broker">
+<h3>Celery Broker<a class="headerlink" href="#celery-broker" title="Permalink to this headline">¶</a></h3>
+<p>If you want to run <a class="reference internal" href="../concepts/celery.html#celery-intro"><em>Celery</em></a> workers, you need a broker.
+We suggest <a class="reference external" href="http://www.rabbitmq.com/">RabbitMQ</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install rabbitmq-server
+</pre></div>
+</div>
+</div>
+<div class="section" id="mongodb">
+<h3>MongoDB<a class="headerlink" href="#mongodb" title="Permalink to this headline">¶</a></h3>
+<p>If you want to use the <a class="reference internal" href="../concepts/mongodb.html#mongodb-intro"><em>pixel store</em></a>, you will need to
+installed MongoDB on the chosen database host:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install mongodb
+</pre></div>
+</div>
+<p>See the <a class="reference external" href="http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/">MongoDB documentation</a> for
+full instructions.</p>
+<p>You will also need to make sure the Python wrapper is available on your client
+machine:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo apt-get install python-pymongo
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ubuntu</a><ul>
+<li><a class="reference internal" href="#casacore-pyrap">Casacore &amp; Pyrap</a><ul>
+<li><a class="reference internal" href="#binary-packages">Binary packages</a></li>
+<li><a class="reference internal" href="#manual-compilation">Manual compilation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#transient-pipeline">Transient Pipeline</a></li>
+<li><a class="reference internal" href="#optional-dependencies">Optional dependencies</a><ul>
+<li><a class="reference internal" href="#database">Database</a><ul>
+<li><a class="reference internal" href="#postgresql">PostgreSQL</a></li>
+<li><a class="reference internal" href="#monetdb">MonetDB</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#celery-broker">Celery Broker</a></li>
+<li><a class="reference internal" href="#mongodb">MongoDB</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="osx.html"
+                        title="next chapter">OSX</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/getstart/installation/ubuntu.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="osx.html" title="OSX"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="index.html" >Installation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

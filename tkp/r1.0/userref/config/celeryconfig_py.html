@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Celery Configuration File &mdash; LOFAR Transients Pipeline 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Pipeline Configuration" href="index.html" />
+    <link rel="next" title="Job Parameters Configuration" href="job_params_cfg.html" />
+    <link rel="prev" title="Project Configuration File" href="pipeline_cfg.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="job_params_cfg.html" title="Job Parameters Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pipeline_cfg.html" title="Project Configuration File"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Pipeline Configuration</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="celery-configuration-file">
+<span id="celeryconfig-py"></span><h1>Celery Configuration File<a class="headerlink" href="#celery-configuration-file" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="../scripts.html#tkp-manage"><em>management script</em></a> may be used to start a <a class="reference internal" href="../../getstart/concepts/celery.html#celery-intro"><em>Celery</em></a> worker. The worker is configured using the file
+<tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> in the <a class="reference internal" href="overview.html#config-overview"><em>project directory</em></a>. The
+default contents of this file are:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Trap Celery Configuration</span>
+
+<span class="c"># This file uses the standard Celery configuration system.</span>
+<span class="c"># Please refer to the URL below for full documentation:</span>
+<span class="c"># http://docs.celeryproject.org/en/latest/configuration.html</span>
+
+<span class="c"># Uncomment the below for local use; that is, bypassing the task distribution</span>
+<span class="c"># system and running all tasks in serial in a single process. No broker or</span>
+<span class="c"># workers are required.</span>
+<span class="c">#CELERY_ALWAYS_EAGER = CELERY_EAGER_PROPAGATES_EXCEPTIONS = True</span>
+
+<span class="c"># Otherwise, configure the broker to which workers should connect and to which</span>
+<span class="c"># they will return results. This must be started independently of the</span>
+<span class="c"># pipeline.</span>
+<span class="n">BROKER_URL</span> <span class="o">=</span> <span class="n">CELERY_RESULT_BACKEND</span> <span class="o">=</span> <span class="s">&#39;amqp://guest@localhost//&#39;</span>
+
+<span class="c"># This is used when you run a worker.</span>
+<span class="n">CELERY_IMPORTS</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;tkp.distribute.celery.tasks&quot;</span><span class="p">,</span> <span class="p">)</span>
+
+<span class="c"># Don&#39;t reconfigure the logger, important for a worker.</span>
+<span class="n">CELERYD_HIJACK_ROOT_LOGGER</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+<p>Note that this file is Python code, and will be parsed as such. In fact, it is
+a fully-fledged Celery configuration file, and the reader is referred to the
+<a class="reference external" href="http://docs.celeryproject.org/en/latest/configuration.html">main Celery documentation</a> for a complete
+reference. Here, we highlight just the important parameters defined in the
+defualt configuration.</p>
+<p>Note the line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#CELERY_ALWAYS_EAGER = CELERY_EAGER_PROPAGATES_EXCEPTIONS = True</span>
+</pre></div>
+</div>
+<p>By uncommenting this line (removing the initial <tt class="docutils literal"><span class="pre">#</span></tt>), the pipeline is forced
+to run in serial mode. That is, tasks are executed sequentially by a single
+Python process. No broker and no workers are required. This will likely have a
+significant impact on performance, but makes the system simpler and easier to
+debug in the event of problems.</p>
+<p>The line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">BROKER_URL</span> <span class="o">=</span> <span class="n">CELERY_RESULT_BACKEND</span> <span class="o">=</span> <span class="s">&#39;amqp://guest@localhost//&#39;</span>
+</pre></div>
+</div>
+<p>specifies the URL of the Celery broker, which is also the location to which
+workers will return their results. Various different types of broker are
+available (see our <a class="reference internal" href="../../getstart/concepts/celery.html#celery-intro"><em>introduction to Celery</em></a> for
+suggestions), and they must be configured and started independently of the
+pipeline: the appropriate URL to use will therefore depend on the
+configuration chosen for your local system.</p>
+<p>The other parameters in the file &#8211; <tt class="docutils literal"><span class="pre">CELERY_IMPORTS</span></tt> and
+<tt class="docutils literal"><span class="pre">CELERYD_HIJACK_ROOT_LOGGER</span></tt> &#8211; should be left set to their default values.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pipeline_cfg.html"
+                        title="previous chapter">Project Configuration File</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="job_params_cfg.html"
+                        title="next chapter">Job Parameters Configuration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/userref/config/celeryconfig_py.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="job_params_cfg.html" title="Job Parameters Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pipeline_cfg.html" title="Project Configuration File"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Pipeline Configuration</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

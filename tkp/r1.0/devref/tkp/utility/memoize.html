@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.utility.memoize – Memoization decorator &mdash; LOFAR Transients Pipeline 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Utility package" href="index.html" />
+    <link rel="next" title="Classification package" href="../classification/index.html" />
+    <link rel="prev" title="tkp.utility.fits – Some FITS routines" href="fits.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../classification/index.html" title="Classification package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fits.html" title="tkp.utility.fits – Some FITS routines"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Utility package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.utility.memoize">
+<span id="tkp-utility-memoize-memoization-decorator"></span><span id="utility-memoize"></span><h1><a class="reference internal" href="#module-tkp.utility.memoize" title="tkp.utility.memoize: Memoization decorato"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.utility.memoize</span></tt></a> &#8211; Memoization decorator<a class="headerlink" href="#module-tkp.utility.memoize" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="tkp.utility.memoize.Memoize">
+<em class="property">class </em><tt class="descclassname">tkp.utility.memoize.</tt><tt class="descname">Memoize</tt><big>(</big><em>funct</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/memoize.html#Memoize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.memoize.Memoize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to cache the results of methods.</p>
+<p>Examples in e.g. image.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@Memoize</span>
+<span class="k">def</span> <span class="nf">_grids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__grids</span><span class="p">()</span>
+<span class="n">grids</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">_grids</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="n">_grids</span><span class="o">.</span><span class="n">delete</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="tkp.utility.memoize.Memoize.delete">
+<tt class="descname">delete</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/memoize.html#Memoize.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.memoize.Memoize.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forget a memoized value</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fits.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.utility.fits</span></tt> &#8211; Some FITS routines</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../classification/index.html"
+                        title="next chapter">Classification package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/utility/memoize.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../classification/index.html" title="Classification package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fits.html" title="tkp.utility.fits – Some FITS routines"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" >Utility package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.utility.containers – Generic container classes &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Utility package" href="index.html" />
+    <link rel="next" title="tkp.utility.coordinates – Coordinate routines" href="coordinates.html" />
+    <link rel="prev" title="Utility package" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coordinates.html" title="tkp.utility.coordinates – Coordinate routines"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Utility package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Utility package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.utility.containers">
+<span id="tkp-utility-containers-generic-container-classes"></span><span id="utility-containers"></span><h1><a class="reference internal" href="#module-tkp.utility.containers" title="tkp.utility.containers: Generic container classes"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.utility.containers</span></tt></a> &#8211; Generic container classes<a class="headerlink" href="#module-tkp.utility.containers" title="Permalink to this headline">¶</a></h1>
+<p>Container classes for the TKP pipeline.</p>
+<p>These provide convenient means of marshalling the various types of data &#8211;
+lightcurves, detections, sources, etc &#8211; that the pipeline must handle.</p>
+<dl class="class">
+<dt id="tkp.utility.containers.ExtractionResults">
+<em class="property">class </em><tt class="descclassname">tkp.utility.containers.</tt><tt class="descname">ExtractionResults</tt><a class="reference internal" href="../../../_modules/tkp/utility/containers.html#ExtractionResults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.containers.ExtractionResults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container for the results of running source extraction on an
+ImageData object</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tkp.utility.containers.ObjectContainer">
+<em class="property">class </em><tt class="descclassname">tkp.utility.containers.</tt><tt class="descname">ObjectContainer</tt><a class="reference internal" href="../../../_modules/tkp/utility/containers.html#ObjectContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.containers.ObjectContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container class for objects.</p>
+<p>What sort of objects? Well, anything that has a position and we
+want to keep lists of, really. So detections (ie, an individual
+source measurement on an image), sources (ie all the detections of
+a given object in a given image stack) and lightcurves (ie, all
+the sources associated with a given object through time).</p>
+<p>You probably don&#8217;t want to use this on it&#8217;s own: see ExtractionResults,
+TargetList or source for more useful derived classes.</p>
+<dl class="method">
+<dt id="tkp.utility.containers.ObjectContainer.__iadd__">
+<tt class="descname">__iadd__</tt><big>(</big><em>y</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/containers.html#ObjectContainer.__iadd__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.containers.ObjectContainer.__iadd__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.utility.containers.ObjectContainer.__imul__">
+<tt class="descname">__imul__</tt><big>(</big><em>y</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/containers.html#ObjectContainer.__imul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.containers.ObjectContainer.__imul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.utility.containers.ObjectContainer.__mul__">
+<tt class="descname">__mul__</tt><big>(</big><em>y</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/containers.html#ObjectContainer.__mul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.containers.ObjectContainer.__mul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.utility.containers.ObjectContainer.__rmul__">
+<tt class="descname">__rmul__</tt><big>(</big><em>y</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/containers.html#ObjectContainer.__rmul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.containers.ObjectContainer.__rmul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.utility.containers.ObjectContainer.__setslice__">
+<tt class="descname">__setslice__</tt><big>(</big><em>section</em>, <em>items</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/containers.html#ObjectContainer.__setslice__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.containers.ObjectContainer.__setslice__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Utility package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coordinates.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.utility.coordinates</span></tt> &#8211; Coordinate routines</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/utility/containers.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coordinates.html" title="tkp.utility.coordinates – Coordinate routines"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Utility package"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="index.html" >Utility package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

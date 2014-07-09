@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial Overview &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../index.html" />
+    <link rel="up" title="Getting Started" href="index.html" />
+    <link rel="next" title="Site-specific setup guides" href="sites.html" />
+    <link rel="prev" title="MongoDB" href="concepts/mongodb.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sites.html" title="Site-specific setup guides"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="concepts/mongodb.html" title="MongoDB"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial-overview">
+<h1>Tutorial Overview<a class="headerlink" href="#tutorial-overview" title="Permalink to this headline">¶</a></h1>
+<p>This page walks you through setting up a complete, stand-alone TraP
+environment running on your own system. See also our <a class="reference internal" href="sites.html#sites"><em>site-specific
+guides</em></a>.</p>
+<div class="section" id="install-the-software">
+<h2>Install the software<a class="headerlink" href="#install-the-software" title="Permalink to this headline">¶</a></h2>
+<p>First of all, the software should be installed on your system. See <a class="reference internal" href="installation.html#installation"><em>the
+installation manual</em></a>.</p>
+</div>
+<div class="section" id="create-a-pipeline-project-directory">
+<h2>Create a pipeline project directory<a class="headerlink" href="#create-a-pipeline-project-directory" title="Permalink to this headline">¶</a></h2>
+<p>Create a project directory which is a container of your pipeline settings and job
+files. Run these command to initialise a project directory in your home
+directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd ~
+$ tkp-manage.py initproject &lt;projectname&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="initialize-a-database">
+<span id="getstart-initdb"></span><h2>Initialize a database<a class="headerlink" href="#initialize-a-database" title="Permalink to this headline">¶</a></h2>
+<p>The pipeline requires a database for storing data. To initialise a database
+the TraP manage <tt class="docutils literal"><span class="pre">initdb</span></tt> subcommand can be used (from the project directory):</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py initdb
+</pre></div>
+</div>
+<p>Use the <tt class="docutils literal"><span class="pre">-h</span></tt> flag to see an explanation about how to set the various
+properties.  If you don&#8217;t want to set these properties all the time, you can
+add a <tt class="docutils literal"><span class="pre">[database]</span></tt> section to your pipeline.cfg.</p>
+</div>
+<div class="section" id="create-and-configure-a-job">
+<h2>Create and configure a job<a class="headerlink" href="#create-and-configure-a-job" title="Permalink to this headline">¶</a></h2>
+<p>Your pipeline project directory can contain multiple jobs. Jobs are a list of
+files to process, and a set of &#8220;parset&#8221; (parameter set) files that can be used
+to define various properties used during processing. To initialise a job run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py initjob &lt;jobname&gt;
+</pre></div>
+</div>
+<p>This will create a job subdirectory within your pipeline directory. This
+directory contains three files:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">images_to_process.py</span></tt></dt>
+<dd>This is a Python script that is used to generate a list of paths to
+images. You will need to adjust this to point to your data files.</dd>
+<dt><tt class="docutils literal"><span class="pre">job_params.cfg</span></tt></dt>
+<dd>The <a class="reference internal" href="../userref/config/job_params_cfg.html#job-params-cfg"><em>parameters configuration file</em></a> for this job.</dd>
+<dt><tt class="docutils literal"><span class="pre">inject.cfg</span></tt></dt>
+<dd>Configuration for <a class="reference internal" href="../tools/tkp-inject.html#tkp-inject"><em>image metadata injection</em></a>.</dd>
+</dl>
+</div>
+<div class="section" id="run-the-pipeline">
+<h2>Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h2>
+<p>To start crunshing your data run (from your pipeline directory):</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py run &lt;jobname&gt;
+</pre></div>
+</div>
+<p>Note that you need to supply the database (see <tt class="docutils literal"><span class="pre">-h</span></tt>) configuration if you
+didn&#8217;t add it it the <tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt> file (or if you are not happy with the
+defaults).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial Overview</a><ul>
+<li><a class="reference internal" href="#install-the-software">Install the software</a></li>
+<li><a class="reference internal" href="#create-a-pipeline-project-directory">Create a pipeline project directory</a></li>
+<li><a class="reference internal" href="#initialize-a-database">Initialize a database</a></li>
+<li><a class="reference internal" href="#create-and-configure-a-job">Create and configure a job</a></li>
+<li><a class="reference internal" href="#run-the-pipeline">Run the pipeline</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="concepts/mongodb.html"
+                        title="previous chapter">MongoDB</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sites.html"
+                        title="next chapter">Site-specific setup guides</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/getstart/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sites.html" title="Site-specific setup guides"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="concepts/mongodb.html" title="MongoDB"
+             >previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

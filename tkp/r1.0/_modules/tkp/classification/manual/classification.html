@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.classification.manual.classification &mdash; LOFAR Transients Pipeline 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.classification.manual.classification</h1><div class="highlight"><pre>
+<span class="c"># Set up the classification system.</span>
+<span class="c"># Normally, this would be done in an external file (module), but that</span>
+<span class="c"># would complicate things, since we would have to set the TKPCONFIGDIR</span>
+<span class="c"># environment variable, and that module would have to be called</span>
+<span class="c"># classification.py, the same name as this unit test.</span>
+<span class="kn">from</span> <span class="nn">tkp.classification.manual.classifier</span> <span class="kn">import</span> <span class="n">Branch</span>
+<span class="kn">from</span> <span class="nn">tkp.classification.manual.classifier</span> <span class="kn">import</span> <span class="n">ClassifiedObject</span>
+
+
+<div class="viewcode-block" id="ShortTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.ShortTransient">[docs]</a><span class="k">class</span> <span class="nc">ShortTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Short duration transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="ShortRapidTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.ShortRapidTransient">[docs]</a><span class="k">class</span> <span class="nc">ShortRapidTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Short duration, high activity transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+    <span class="k">def</span> <span class="nf">test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="ShortSlowTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.ShortSlowTransient">[docs]</a><span class="k">class</span> <span class="nc">ShortSlowTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Short duration, low activity transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+    <span class="k">def</span> <span class="nf">test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="LongTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.LongTransient">[docs]</a><span class="k">class</span> <span class="nc">LongTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Long duration transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="LongRapidTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.LongRapidTransient">[docs]</a><span class="k">class</span> <span class="nc">LongRapidTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Long duration, high activity transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="LongSlowTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.LongSlowTransient">[docs]</a><span class="k">class</span> <span class="nc">LongSlowTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Long duration, low activity transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity</span> <span class="o">&lt;=</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="RapidTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.RapidTransient">[docs]</a><span class="k">class</span> <span class="nc">RapidTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;High activity transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="SlowTransient"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.SlowTransient">[docs]</a><span class="k">class</span> <span class="nc">SlowTransient</span><span class="p">(</span><span class="n">ClassifiedObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Low activity transient&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="ShortDurationBranch"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.ShortDurationBranch">[docs]</a><span class="k">class</span> <span class="nc">ShortDurationBranch</span><span class="p">(</span><span class="n">Branch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Branch on short transients&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">RapidTransient</span><span class="p">,</span> <span class="n">SlowTransient</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="LongDurationBranch"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.LongDurationBranch">[docs]</a><span class="k">class</span> <span class="nc">LongDurationBranch</span><span class="p">(</span><span class="n">Branch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Branch on short transients&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">RapidTransient</span><span class="p">,</span> <span class="n">SlowTransient</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="DurationBranch"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.DurationBranch">[docs]</a><span class="k">class</span> <span class="nc">DurationBranch</span><span class="p">(</span><span class="n">Branch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Branch on short/long transient duration&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">ShortTransient</span><span class="p">,</span> <span class="n">ShortRapidTransient</span><span class="p">,</span> <span class="n">ShortSlowTransient</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">LongTransient</span><span class="p">,</span> <span class="n">LongRapidTransient</span><span class="p">,</span> <span class="n">LongSlowTransient</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Main"><a class="viewcode-back" href="../../../../devref/tkp/classification/manual/classification.html#tkp.classification.manual.classification.Main">[docs]</a><span class="k">class</span> <span class="nc">Main</span><span class="p">(</span><span class="n">Branch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Starting point&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">DurationBranch</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../../index.html">
+              <img class="logo" src="../../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Site-specific setup guides &mdash; LOFAR Transients Pipeline 1.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.1 documentation" href="../index.html" />
+    <link rel="up" title="Getting Started" href="index.html" />
+    <link rel="next" title="User’s Reference Guide" href="../userref/index.html" />
+    <link rel="prev" title="Tutorial Overview" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../userref/index.html" title="User’s Reference Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial Overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="site-specific-setup-guides">
+<span id="sites"></span><h1>Site-specific setup guides<a class="headerlink" href="#site-specific-setup-guides" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="amsterdam">
+<h2>Amsterdam<a class="headerlink" href="#amsterdam" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="set-up-your-environment">
+<h3>Set up your environment<a class="headerlink" href="#set-up-your-environment" title="Permalink to this headline">¶</a></h3>
+<p>If you have an account on the <tt class="docutils literal"><span class="pre">heastro1</span></tt> machine, all the software needed to
+run the Trap has already been installed. You can add it to your environment by
+running:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ . /opt/tkpenv/init.sh
+</pre></div>
+</div>
+<p>(assuming you use <tt class="docutils literal"><span class="pre">bash</span></tt> as your shell: if not, all bets are off).</p>
+</div>
+<div class="section" id="get-access-to-a-database">
+<h3>Get access to a database<a class="headerlink" href="#get-access-to-a-database" title="Permalink to this headline">¶</a></h3>
+<p>Regular users in Amsterdam do not have access to create their own database for
+use with the Trap. Please speak to an administrator, and ask them to create
+one for you. The database will be created on the machine
+<tt class="docutils literal"><span class="pre">heastrodb.science.uva.nl</span></tt>, and will generally have the database name and
+password set equal to your username. Discuss with the administrator whether
+the database is using MonetDB or PostgreSQL.</p>
+</div>
+<div class="section" id="initialize-a-project-directory">
+<h3>Initialize a project directory<a class="headerlink" href="#initialize-a-project-directory" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="../userref/config/overview.html#config-overview"><em>project directory</em></a> holds common settings for a
+collection of pipeline runs.  Choose a location, and run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initproject &lt;projectname&gt;
+</pre></div>
+</div>
+<p>Within your project directory, you will find a file <tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt>.
+Customize it so that the <tt class="docutils literal"><span class="pre">[database]</span></tt> section matches the database created
+above. It should look something like:</p>
+<div class="highlight-python"><div class="highlight"><pre>[database]
+engine = monetdb
+database = &lt;username&gt;
+user = &lt;username&gt;
+password = &lt;username&gt;
+host = heastrodb
+port = 52000
+passphrase =
+</pre></div>
+</div>
+<p>Check that all the fields match the values given to you by the administrator.
+Generally, the <tt class="docutils literal"><span class="pre">passphrase</span></tt> entry will be blank.</p>
+<p>If you wish, you can also customize the other fields in <tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt>:
+<a class="reference internal" href="../userref/config/pipeline_cfg.html#pipeline-cfg"><em>details are here</em></a>. Generally, the defaults are fine.</p>
+</div>
+<div class="section" id="create-and-configure-a-job">
+<h3>Create and configure a job<a class="headerlink" href="#create-and-configure-a-job" title="Permalink to this headline">¶</a></h3>
+<p>Your pipeline project directory can contain multiple jobs. Jobs are a list of
+files to process, and a set of &#8220;parset&#8221; (parameter set) files that can be used
+to define various properties used during processing. To initialise a job, from
+within your project directory run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py initjob &lt;jobname&gt;
+</pre></div>
+</div>
+<p>This will create a subdirectory in your pipeline directory. This directory
+contains a a file names <tt class="docutils literal"><span class="pre">images_to_process.py</span></tt>. This is a python script that
+is used to generate a list of paths to images. You will need to adjust this to
+point to your data files.</p>
+<p>It will also create two configuration files within your subdirectory, the first is
+<tt class="docutils literal"><span class="pre">inject.cfg</span></tt> which is used to inject the required metadata into
+images which are in the fits format. If you are running the pipeline
+on LOFAR images, we recomend using the casa images directly output
+from AWImager (with the relevant metadata added). If using fits images
+see the main documentation <a class="reference internal" href="../tools/tkp-inject.html#tkp-inject"><em>here</em></a> and
+talk to an administrator for advice.</p>
+<p>The important configuration file is <tt class="docutils literal"><span class="pre">job_params.cfg</span></tt>, which
+specifies the settings your pipeline run will use and will require
+some initial minor editing described below before you can run the
+pipeline. The majority of the default parameters are fine for initial
+use, however it is recommended that you check they meet your
+requirements. All the parameters are defined in the main documentation
+<a class="reference internal" href="../userref/config/job_params_cfg.html#job-params-cfg"><em>here</em></a>.</p>
+<p>In the <tt class="docutils literal"><span class="pre">[persistence]</span></tt> section you need to edit the <tt class="docutils literal"><span class="pre">description</span></tt> of
+the file to a recognisable name, this is what your dataset will be
+called on the website. Additionally, you will need to comment out
+<tt class="docutils literal"><span class="pre">mongo_host=''localhost''</span></tt> and uncomment
+<tt class="docutils literal"><span class="pre">mongo_host=''pc-swinbank.science.uva.nl''</span></tt>. This will create a fits
+copy of your images which can be accessed by the website. The other
+parameter which you may wish to use in this parset is
+<tt class="docutils literal"><span class="pre">dataset_id=-1</span></tt>, this parameter determines the dataset id which
+these data will be processed under. -1 is the standard recommended
+setting which means that it will simply create a new dataset id by
+incrementing the previous dataset id by 1. However, if you want to
+include a new set of images in a previously processed dataset, you can
+instead specify the previous dataset id here. Note: if you specify a dataset
+id here which does not currently exist, your pipeline run will fail.</p>
+<p>In the <tt class="docutils literal"><span class="pre">[source_extraction]</span></tt> section, it is recommended that the option
+<tt class="docutils literal"><span class="pre">force_beam</span></tt> is set equal to True (meaning it will cause all the
+Gaussians fitted to sources to have the dimensions of the restoring
+beam). This parset also requires you to specify the source extraction
+region that is appropriate for your images in pixels, you will need to
+edit the <tt class="docutils literal"><span class="pre">margin</span></tt> (a set number of pixels to ignore on the edge of
+the image) and the <tt class="docutils literal"><span class="pre">radius</span></tt> (the radius of the circle in which you
+want to extract sources).</p>
+<p>The <tt class="docutils literal"><span class="pre">[transient_search]</span></tt> section contains the different thresholds used
+to identify transient sources. The defaults are reasonable, however
+you may wish to force all the sources in your sample to be transient
+(by setting them all equal to zero, apart from the minpoints)
+to check that the defaults are appropriate for your
+dataset. Additionally, it can be useful to force the pipeline to only
+identify transients which are above the thresholds in a set number of
+images by increasing the minpoints (the minimum number of
+datapoints required to trigger).</p>
+</div>
+<div class="section" id="optionally-run-celery-workers">
+<h3>Optionally, run Celery workers<a class="headerlink" href="#optionally-run-celery-workers" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">What happens if there are other Celery workers already running on heastro1?</p>
+</div>
+<p>You may parallelize some pipeline operations by distributing them over a
+number of Celery &#8220;worker&#8221; nodes. You can start one or more Celery workers by
+running:</p>
+<div class="highlight-python"><div class="highlight"><pre>% ./manage.py celery worker
+</pre></div>
+</div>
+<p>Distributing jobs over multiple workers in this way might increase
+performance, but can make debugging harder and problems more complex to
+diagnose. You might therefore prefer not to run any workers, at least until
+you have verified that everything works properly. In that case, edit
+<tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> in your pipeline directory and set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#CELERY_ALWAYS_EAGER = CELERY_EAGER_PROPAGATES_EXCEPTIONS = True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-the-pipeline">
+<h3>Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h3>
+<p>To start crunching your data, run (from your pipeline directory):</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py run &lt;jobname&gt;
+</pre></div>
+</div>
+<p>Note that you need to supply the database (see <tt class="docutils literal"><span class="pre">-h</span></tt>) configuration if you
+didn&#8217;t add it it the <tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt> file (or if you are not happy with the
+defaults).</p>
+<p>For long running jobs (e.g. &gt;1000 images), it is highly recommended
+that you run the pipeline from a <tt class="docutils literal"><span class="pre">screen</span></tt>.</p>
+<p>While it runs, the pipeline will create the following files in your
+job directories:</p>
+<p><tt class="docutils literal"><span class="pre">&lt;jobname&gt;/*.dump</span></tt> - this file is a backup of the content of your
+database at the start of your pipeline run. You will need to regularly
+remove these files as they may start to take up significant space.</p>
+<p><tt class="docutils literal"><span class="pre">&lt;jobname&gt;/logs/&lt;date&gt;/jobpars.parset</span></tt> - this is a summary of all
+the parameters that you set in the parsets for this particular job.</p>
+<p><tt class="docutils literal"><span class="pre">&lt;jobname&gt;/logs/&lt;date&gt;/output.log</span></tt> - a basic log file summarising
+the steps completed in your pipeline run. If something goes wrong,
+this file is useful for debugging purposes.</p>
+</div>
+<div class="section" id="view-the-pipeline-results">
+<h3>View the pipeline results<a class="headerlink" href="#view-the-pipeline-results" title="Permalink to this headline">¶</a></h3>
+<p>You can access the results of your pipeline run on the Banana website
+here: <tt class="docutils literal"><span class="pre">http://banana1.transientskp.org</span></tt>. Ask an administrator for
+the username and password.</p>
+<p>If your database can be accessed by the website, its row will be
+coloured green. By clicking on the database you can access all your
+different pipeline runs. The website provides you with information
+about all the transient sources identified, all the sources available
+in the database, the individual extracted sources and information
+about each image. Most of the figures are interactive - allowing you to
+zoom in, select which frequencies to plot, save/print versions of the
+plots, identify sources in the image, etc... Additionally, most of the
+tables can be sorted by different columns and downloaded in csv
+format.</p>
+</div>
+<div class="section" id="understanding-the-pipeline-results">
+<h3>Understanding the pipeline results<a class="headerlink" href="#understanding-the-pipeline-results" title="Permalink to this headline">¶</a></h3>
+<p>The transient list obtained contains two different types of transient
+sources: sources whose transient parameters exceed the thresholds stated
+in the <tt class="docutils literal"><span class="pre">[transient_search]</span></tt> section of the <tt class="docutils literal"><span class="pre">job_params.cfg</span></tt> file
+and new sources which were not present in a previous image of the field.</p>
+<p>In Release 1 of the pipeline, the new sources typically dominate the
+transient list and are mostly not real transients. This is because the
+new source was typically just below the detection threshold in the
+first image and is, therefore, not a real transient. You will need to
+manually check through the new sources to look for real transients,
+i.e. those which you would have expected to detect in the first
+image. In Release 2 of the pipeline, this will be completed
+automatically for you.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Site-specific setup guides</a><ul>
+<li><a class="reference internal" href="#amsterdam">Amsterdam</a><ul>
+<li><a class="reference internal" href="#set-up-your-environment">Set up your environment</a></li>
+<li><a class="reference internal" href="#get-access-to-a-database">Get access to a database</a></li>
+<li><a class="reference internal" href="#initialize-a-project-directory">Initialize a project directory</a></li>
+<li><a class="reference internal" href="#create-and-configure-a-job">Create and configure a job</a></li>
+<li><a class="reference internal" href="#optionally-run-celery-workers">Optionally, run Celery workers</a></li>
+<li><a class="reference internal" href="#run-the-pipeline">Run the pipeline</a></li>
+<li><a class="reference internal" href="#view-the-pipeline-results">View the pipeline results</a></li>
+<li><a class="reference internal" href="#understanding-the-pipeline-results">Understanding the pipeline results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="previous chapter">Tutorial Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../userref/index.html"
+                        title="next chapter">User&#8217;s Reference Guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/getstart/sites.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../userref/index.html" title="User’s Reference Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial Overview"
+             >previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Pipeline 1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Transient detection &mdash; LOFAR Transients Pipeline 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Pipeline Design" href="../index.html" />
+    <link rel="next" title="Developer’s Reference Guide" href="../../../devref/index.html" />
+    <link rel="prev" title="Source association" href="association.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../devref/index.html" title="Developer’s Reference Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="association.html" title="Source association"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Pipeline Design</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="transient-detection">
+<span id="stage-transient"></span><h1>Transient detection<a class="headerlink" href="#transient-detection" title="Permalink to this headline">¶</a></h1>
+<p>After all images for a given timestep have been processed and the resulting
+source measurements have been assigned to <a class="reference internal" href="../../../devref/database/schema.html#schema-runningcatalog"><em>runningcatalog</em></a> entries (effectively lightcurves), the resulting data
+is searched for transients. Note that a single runningcatalog source may
+contain entries from multiple independent frequency band, but currently these
+are treated independently for the purposes of transient identification.</p>
+<p>For a comprehensive discussion of the transient and variability detection
+algorithms currently being employed, see <a class="reference internal" href="../../../bibliography.html#scheers-2011"><em>Scheers (2011)</em></a>
+chapter 3. Here, we provide a brief outline.</p>
+<p>We define two metrics for identifying variability in a lightcurve. The first,
+<span class="math">\(V_\nu\)</span>, is defined as</p>
+<div class="math">
+\[V_{\nu} \equiv \frac{s_{\nu}}{\overline{I_{\nu}}}
+        = \frac{1}{\overline{I_{\nu}}} \sqrt{\frac{N}{N-1}(\overline{I^{2}_\nu} - \overline{I_{\nu}}^2)}\]</div>
+<p>where <span class="math">\(\overline{I_{\nu}}\)</span> is the mean flux of all measurements in the
+lightcurve at frequency <span class="math">\(\nu\)</span>, <span class="math">\(s_{\nu}\)</span> is the standard deviation
+of those flux measurements and <span class="math">\(N\)</span> is the number of measurements.
+<span class="math">\(V_\nu\)</span> is the ratio of the variability of the source to its absolute
+flux.</p>
+<p>The second metric is <span class="math">\(\eta_{\nu}\)</span>, which is defined based on reduced
+<span class="math">\(\chi^2\)</span> statistics as</p>
+<div class="math">
+\[\eta_{\nu} \equiv \chi^{2}_{N-1}
+           = \frac{1}{N-1} \sum_{i=1}^{N} \frac{(I_{\nu,i} - \overline{I_{\nu}}^*)^2}{\sigma_{I_{\nu,i}}^2}\]</div>
+<p>Where <span class="math">\(\overline{I_{\nu}}^*\)</span> is the average of the flux measurements
+weighed by their uncertainties. <span class="math">\(\eta_{\nu}\)</span> is the <span class="math">\(\chi^{2}\)</span>
+probability distribution. The probability that the source is &#8220;flat&#8221; (i.e. has
+no significant variability) is then the integral of the distribution from the
+measured value of <span class="math">\(\eta_{\nu}\)</span> to <span class="math">\(\infty\)</span>; the probability that
+it <em>isn&#8217;t</em> flat is thus 1 minus this quantity.</p>
+<p>Source are then identified as transients if they meet <em>all</em> of these criteria:</p>
+<ul class="simple">
+<li><span class="math">\(V_{\nu}\)</span> is above a user-specified threshold;</li>
+<li><span class="math">\(\eta_{\nu}\)</span> is above a user-specified threshold;</li>
+<li>The probability of the source not being flat is above a user-specified
+threshold;</li>
+<li>The number of source measurements in the lightcurve is above a
+user-specified threshold.</li>
+</ul>
+<p>Once a source has been identified, it is stored in the <a class="reference internal" href="../../../devref/database/schema.html#schema-transient"><em>transient</em></a>
+table in the database.</p>
+<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
+<div class="section" id="section-transient-search">
+<h2>Section <tt class="docutils literal"><span class="pre">transient_search</span></tt><a class="headerlink" href="#section-transient-search" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">V_lim</span></tt></dt>
+<dd>Float. <span class="math">\(V_{\nu}\)</span> must be greater than <tt class="docutils literal"><span class="pre">V_lim</span></tt> for a source
+to be identified as transient.</dd>
+<dt><tt class="docutils literal"><span class="pre">eta_lim</span></tt></dt>
+<dd>Float. <span class="math">\(\eta_{\nu}\)</span> must be greater than <tt class="docutils literal"><span class="pre">eta_lim</span></tt> for a source
+to be identified as transient.</dd>
+<dt><tt class="docutils literal"><span class="pre">threshold</span></tt></dt>
+<dd>Float. The probability of a source not being flat must be above this threshold for
+it to be identified as transient.</dd>
+<dt><tt class="docutils literal"><span class="pre">minpoints</span></tt></dt>
+<dd>Integer. The lightcurve must contain at least <tt class="docutils literal"><span class="pre">minpoints</span></tt> measurements
+for it to be identified as transient.</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Transient detection</a><ul>
+<li><a class="reference internal" href="#section-transient-search">Section <tt class="docutils literal"><span class="pre">transient_search</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="association.html"
+                        title="previous chapter">Source association</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../../devref/index.html"
+                        title="next chapter">Developer&#8217;s Reference Guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/userref/structure/stages/transient.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../devref/index.html" title="Developer’s Reference Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="association.html" title="Source association"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Pipeline Design</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, LOFAR Transients Key Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,981 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.sourcefinder.image &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.sourcefinder.image</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Some generic utility routines for number handling and</span>
+<span class="sd"> calculating (specific) variances</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">from</span> <span class="nn">tkp.utility</span> <span class="kn">import</span> <span class="n">containers</span>
+<span class="kn">from</span> <span class="nn">tkp.utility.memoize</span> <span class="kn">import</span> <span class="n">Memoize</span>
+<span class="kn">from</span> <span class="nn">tkp.sourcefinder</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">tkp.sourcefinder</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">tkp.sourcefinder</span> <span class="kn">import</span> <span class="n">extract</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ndimage</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="c">#</span>
+<span class="c"># Hard-coded configuration parameters; not user settable.</span>
+<span class="c">#</span>
+<span class="n">INTERPOLATE_ORDER</span> <span class="o">=</span> <span class="mi">1</span>   <span class="c"># Spline order for grid interpolation</span>
+<span class="n">MEDIAN_FILTER</span> <span class="o">=</span> <span class="mi">0</span>       <span class="c"># If non-zero, apply a median filter of size</span>
+                        <span class="c"># MEDIAN_FILTER to the background and RMS grids prior</span>
+                        <span class="c"># to interpolating.</span>
+<span class="n">MF_THRESHOLD</span> <span class="o">=</span> <span class="mi">0</span>        <span class="c"># If MEDIAN_FILTER is non-zero, only use the filtered</span>
+                        <span class="c"># grid when the (absolute) difference between the raw</span>
+                        <span class="c"># and filtered grids is larger than MF_THRESHOLD.</span>
+<span class="n">DEBLEND_MINCONT</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="c"># Min. fraction of island flux in deblended subisland</span>
+<span class="n">STRUCTURING_ELEMENT</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span> <span class="c"># Island connectiivty</span>
+
+<div class="viewcode-block" id="ImageData"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData">[docs]</a><span class="k">class</span> <span class="nc">ImageData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Encapsulates an image in terms of a numpy array + meta/headerdata.</span>
+
+<span class="sd">    This is your primary contact point for interaction with images: it icludes</span>
+<span class="sd">    facilities for source extraction and measurement, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">beam</span><span class="p">,</span> <span class="n">wcs</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">back_size_x</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                 <span class="n">back_size_y</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">residuals</span><span class="o">=</span><span class="bp">True</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets up an ImageData object.</span>
+
+<span class="sd">        *Args:*</span>
+<span class="sd">          - data (2D numpy.ndarray): actual image data</span>
+<span class="sd">          - wcs (utility.coordinates.wcs): world coordinate system</span>
+<span class="sd">            specification</span>
+<span class="sd">          - beam (3-tuple): beam shape specification as</span>
+<span class="sd">            (semimajor, semiminor, theta)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># Do data, wcs and beam need deepcopy?</span>
+        <span class="c"># Probably not (memory overhead, in particular for data),</span>
+        <span class="c"># but then the user shouldn&#39;t change them outside ImageData in the</span>
+        <span class="c"># mean time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span> <span class="o">=</span> <span class="n">data</span>   <span class="c"># a 2D numpy array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wcs</span> <span class="o">=</span> <span class="n">wcs</span>   <span class="c"># a utility.coordinates.wcs instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beam</span> <span class="o">=</span> <span class="n">beam</span>   <span class="c"># tuple of (semimaj, semimin, theta)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_low</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_high</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">back_size_x</span> <span class="o">=</span> <span class="n">back_size_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">back_size_y</span><span class="o">=</span> <span class="n">back_size_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">margin</span> <span class="o">=</span> <span class="n">margin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="o">=</span> <span class="n">residuals</span>
+
+
+    <span class="c">###########################################################################</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c"># Properties and attributes.                                              #</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c"># Properties are attributes managed by methods; rather than calling the   #</span>
+    <span class="c"># method directly, the attribute automatically invokes it. We can use     #</span>
+    <span class="c"># this to do cunning transparent caching (&quot;memoizing&quot;) etc; see the       #</span>
+    <span class="c"># Memoize class.                                                          #</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c"># clearcache() clears all the memoized data, which can get quite large.   #</span>
+    <span class="c"># It may be wise to call this, for example, in an exception handler       #</span>
+    <span class="c"># dealing with MemoryErrors.                                              #</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c">###########################################################################</span>
+    <span class="nd">@Memoize</span>
+    <span class="k">def</span> <span class="nf">_grids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gridded RMS and background data for interpolating&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__grids</span><span class="p">()</span>
+    <span class="n">grids</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">_grids</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="n">_grids</span><span class="o">.</span><span class="n">delete</span><span class="p">)</span>
+
+    <span class="nd">@Memoize</span>
+    <span class="k">def</span> <span class="nf">_backmap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Background map&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;_user_backmap&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">[</span><span class="s">&#39;bg&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_backmap</span>
+
+    <span class="k">def</span> <span class="nf">_set_backmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bgmap</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_backmap</span> <span class="o">=</span> <span class="n">bgmap</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backmap</span><span class="p">)</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="p">)</span>
+
+    <span class="n">backmap</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">_backmap</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="n">_backmap</span><span class="o">.</span><span class="n">delete</span><span class="p">,</span> <span class="n">fset</span><span class="o">=</span><span class="n">_set_backmap</span><span class="p">)</span>
+
+    <span class="nd">@Memoize</span>
+    <span class="k">def</span> <span class="nf">_get_rm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;RMS map&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;_user_noisemap&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">[</span><span class="s">&#39;rms&#39;</span><span class="p">],</span> <span class="n">roundup</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_noisemap</span>
+
+    <span class="k">def</span> <span class="nf">_set_rm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">noisemap</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_noisemap</span> <span class="o">=</span> <span class="n">noisemap</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">)</span>
+
+    <span class="n">rmsmap</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">_get_rm</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="n">_get_rm</span><span class="o">.</span><span class="n">delete</span><span class="p">,</span> <span class="n">fset</span><span class="o">=</span><span class="n">_set_rm</span><span class="p">)</span>
+
+    <span class="nd">@Memoize</span>
+    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Masked image data&quot;&quot;&quot;</span>
+        <span class="c"># We will ignore all the data which is masked for the rest of the</span>
+        <span class="c"># sourcefinding process. We build up the mask by stacking (&quot;or-ing</span>
+        <span class="c"># together&quot;) a number of different effects:</span>
+        <span class="c">#</span>
+        <span class="c"># * A margin from the edge of the image;</span>
+        <span class="c"># * Any data outside a given radius from the centre of the image;</span>
+        <span class="c"># * Data which is &quot;obviously&quot; bad (equal to 0 or NaN).</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">xdim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydim</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">:</span>
+            <span class="n">margin_mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">xdim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydim</span><span class="p">))</span>
+            <span class="n">margin_mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">:</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">:</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">margin_mask</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">:</span>
+            <span class="n">radius_mask</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">circular_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">radius_mask</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">_get_data</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="n">_get_data</span><span class="o">.</span><span class="n">delete</span><span class="p">)</span>
+
+    <span class="nd">@Memoize</span>
+    <span class="k">def</span> <span class="nf">_get_data_bgsubbed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Background subtracted masked image data&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">backmap</span>
+    <span class="n">data_bgsubbed</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">_get_data_bgsubbed</span><span class="p">,</span>
+        <span class="n">fdel</span><span class="o">=</span><span class="n">_get_data_bgsubbed</span><span class="o">.</span><span class="n">delete</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ImageData.xdim"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.xdim">[docs]</a>    <span class="k">def</span> <span class="nf">xdim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;X pixel dimension of (unmasked) data&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ImageData.ydim"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.ydim">[docs]</a>    <span class="k">def</span> <span class="nf">ydim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Y pixel dimension of (unmasked) data&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ImageData.pixmax"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.pixmax">[docs]</a>    <span class="k">def</span> <span class="nf">pixmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Maximum pixel value (pre-background subtraction)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ImageData.pixmin"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.pixmin">[docs]</a>    <span class="k">def</span> <span class="nf">pixmin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Minimum pixel value (pre-background subtraction)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ImageData.clearcache"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.clearcache">[docs]</a>    <span class="k">def</span> <span class="nf">clearcache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Zap any calculated data stored in this object.</span>
+
+<span class="sd">        Clear the background and rms maps, labels, clip, and any locally held</span>
+<span class="sd">        data. All of these can be reconstructed from the data accessor.</span>
+
+<span class="sd">        Note that this *must* be run to pick up any new settings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backmap</span><span class="p">)</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">)</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="p">)</span>
+        <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;residuals_from_gauss_fitting&#39;</span><span class="p">):</span>
+            <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals_from_gauss_fitting</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;residuals_from_deblending&#39;</span><span class="p">):</span>
+            <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals_from_deblending</span><span class="p">)</span>
+
+
+    <span class="c">###########################################################################</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c"># General purpose image handling.                                         #</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c"># Routines for saving and trimming data, and calculating background/RMS   #</span>
+    <span class="c"># maps (in conjuntion with the properties above).                         #</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c">###########################################################################</span>
+
+    <span class="c"># Private &quot;support&quot; methods</span></div>
+    <span class="k">def</span> <span class="nf">__grids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate background and RMS grids of this image.</span>
+
+<span class="sd">        These grids can be interpolated up to make maps of the original image</span>
+<span class="sd">        dimensions: see _interpolate().</span>
+
+<span class="sd">        This is called automatically when ImageData.backmap,</span>
+<span class="sd">        ImageData.rmsmap or ImageData.fdrmap is first accessed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># there&#39;s no point in working with the whole of the data array</span>
+        <span class="c"># if it&#39;s masked.</span>
+        <span class="n">useful_chunk</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">find_objects</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">useful_chunk</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">useful_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">useful_chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">my_xdim</span><span class="p">,</span> <span class="n">my_ydim</span> <span class="o">=</span> <span class="n">useful_data</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="n">rmsgrid</span><span class="p">,</span> <span class="n">bggrid</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">startx</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">my_xdim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">back_size_x</span><span class="p">):</span>
+            <span class="n">rmsrow</span><span class="p">,</span> <span class="n">bgrow</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">starty</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">my_ydim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">back_size_y</span><span class="p">):</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">useful_data</span><span class="p">[</span>
+                    <span class="n">startx</span><span class="p">:</span><span class="n">startx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">back_size_x</span><span class="p">,</span>
+                    <span class="n">starty</span><span class="p">:</span><span class="n">starty</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">back_size_y</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="n">rmsrow</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+                    <span class="n">bgrow</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">chunk</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">median</span><span class="p">,</span> <span class="n">num_clip_its</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">sigma_clip</span><span class="p">(</span>
+                    <span class="n">chunk</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">chunk</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="n">rmsrow</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+                    <span class="n">bgrow</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mean</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                    <span class="n">rmsrow</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+                    <span class="c"># In the case of a crowded field, the distribution will be</span>
+                    <span class="c"># skewed and we take the median as the background level.</span>
+                    <span class="c"># Otherwise, we take 2.5 * median - 1.5 * mean. This is the</span>
+                    <span class="c"># same as SExtractor: see discussion at</span>
+                    <span class="c"># &lt;http://terapix.iap.fr/forum/showthread.php?tid=267&gt;.</span>
+                    <span class="c"># (mean - median) / sigma is a quick n&#39; dirty skewness</span>
+                    <span class="c"># estimator devised by Karl Pearson.</span>
+                    <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">mean</span> <span class="o">-</span> <span class="n">median</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="s">&#39;bg skewed, </span><span class="si">%f</span><span class="s"> clipping iterations&#39;</span><span class="p">,</span> <span class="n">num_clip_its</span><span class="p">)</span>
+                        <span class="n">bgrow</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">median</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="s">&#39;bg not skewed, </span><span class="si">%f</span><span class="s"> clipping iterations&#39;</span><span class="p">,</span> <span class="n">num_clip_its</span><span class="p">)</span>
+                        <span class="n">bgrow</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">median</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">mean</span><span class="p">)</span>
+
+            <span class="n">rmsgrid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rmsrow</span><span class="p">)</span>
+            <span class="n">bggrid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bgrow</span><span class="p">)</span>
+
+        <span class="n">rmsgrid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="n">rmsgrid</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rmsgrid</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">bggrid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="n">bggrid</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bggrid</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;rms&#39;</span><span class="p">:</span> <span class="n">rmsgrid</span><span class="p">,</span> <span class="s">&#39;bg&#39;</span><span class="p">:</span> <span class="n">bggrid</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">roundup</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Interpolate a grid to produce a map of the dimensions of the image.</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            grid (numpy.ma.array)</span>
+
+<span class="sd">        Kwargs:</span>
+
+<span class="sd">            roundup (bool)</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            (numpy.ndarray)</span>
+
+<span class="sd">        Used to transform the RMS, background or FDR grids produced by</span>
+<span class="sd">        L{_grids()} to a map we can compare with the image data.</span>
+
+<span class="sd">        If roundup is true, values of the resultant map which are lower than</span>
+<span class="sd">        the input grid are trimmed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># there&#39;s no point in working with the whole of the data array if it&#39;s</span>
+        <span class="c"># masked.</span>
+        <span class="n">useful_chunk</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">find_objects</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">useful_chunk</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">my_xdim</span><span class="p">,</span> <span class="n">my_ydim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">useful_chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="n">MEDIAN_FILTER</span><span class="p">:</span>
+            <span class="n">f_grid</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">median_filter</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">MEDIAN_FILTER</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">MF_THRESHOLD</span><span class="p">:</span>
+                <span class="n">grid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">f_grid</span> <span class="o">-</span> <span class="n">grid</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">MF_THRESHOLD</span><span class="p">,</span> <span class="n">f_grid</span><span class="p">,</span> <span class="n">grid</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">grid</span> <span class="o">=</span> <span class="n">f_grid</span>
+
+        <span class="c"># Bicubic spline interpolation</span>
+        <span class="n">xratio</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">my_xdim</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">back_size_x</span>
+        <span class="n">yratio</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">my_ydim</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">back_size_y</span>
+        <span class="c"># First arg: starting point. Second arg: ending point. Third arg:</span>
+        <span class="c"># 1j * number of points. (Why is this complex? Sometimes, NumPy has an</span>
+        <span class="c"># utterly baffling API...)</span>
+        <span class="n">slicex</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="o">+</span><span class="n">xratio</span><span class="p">,</span> <span class="mi">1j</span><span class="o">*</span><span class="n">my_xdim</span><span class="p">)</span>
+        <span class="n">slicey</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="o">+</span><span class="n">yratio</span><span class="p">,</span> <span class="mi">1j</span><span class="o">*</span><span class="n">my_ydim</span><span class="p">)</span>
+        <span class="n">my_map</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                                      <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">my_map</span><span class="p">[</span><span class="n">useful_chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">map_coordinates</span><span class="p">(</span>
+            <span class="n">grid</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="n">slicex</span><span class="p">,</span> <span class="n">slicey</span><span class="p">],</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">INTERPOLATE_ORDER</span><span class="p">)</span>
+
+        <span class="c"># If the input grid was entirely masked, then the output map must</span>
+        <span class="c"># also be masked: there&#39;s no useful data here. We don&#39;t search for</span>
+        <span class="c"># sources on a masked background/RMS, so this data will be cleanly</span>
+        <span class="c"># skipped by the rest of the sourcefinder</span>
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmask</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">my_map</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">roundup</span><span class="p">:</span>
+            <span class="c"># In some cases, the spline interpolation may produce values</span>
+            <span class="c"># lower than the minimum value in the map. If required, these</span>
+            <span class="c"># can be trimmed off. No point doing this if the map is already</span>
+            <span class="c"># fully masked, though.</span>
+            <span class="n">my_map</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">my_map</span> <span class="o">&gt;=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">my_map</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">my_map</span>
+
+    <span class="c">###########################################################################</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c"># Source extraction.                                                      #</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c"># Provides for both traditional (islands-above-RMS) and FDR source        #</span>
+    <span class="c"># extraction systems.                                                     #</span>
+    <span class="c">#                                                                         #</span>
+    <span class="c">###########################################################################</span>
+
+<div class="viewcode-block" id="ImageData.extract"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.extract">[docs]</a>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">det</span><span class="p">,</span> <span class="n">anl</span><span class="p">,</span> <span class="n">noisemap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bgmap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">labelled_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">deblend_nthresh</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">force_beam</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kick off conventional (ie, RMS island finding) source extraction.</span>
+
+<span class="sd">        Kwargs:</span>
+
+<span class="sd">            det (float): detection threshold, as a multiple of the RMS</span>
+<span class="sd">                noise. At least one pixel in a source must exceed this</span>
+<span class="sd">                for it to be regarded as significant.</span>
+
+<span class="sd">            anl (float): analysis threshold, as a multiple of the RMS</span>
+<span class="sd">                noise. All the pixels within the island that exceed</span>
+<span class="sd">                this will be used when fitting the source.</span>
+
+<span class="sd">            noisemap (numpy.ndarray):</span>
+
+<span class="sd">            bgmap (numpy.ndarray):</span>
+
+<span class="sd">            deblend_nthresh (int): number of subthresholds to use for</span>
+<span class="sd">                deblending. Set to 0 to disable.</span>
+
+<span class="sd">            force_beam (bool): force all extractions to have major/minor axes</span>
+<span class="sd">                equal to the restoring beam</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">             (..utility.containers.ExtractionResults):</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">anl</span> <span class="o">&gt;</span> <span class="n">det</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s">&quot;Analysis threshold is higher than detection threshold&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">bgmap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;ndarray&#39;</span> <span class="ow">or</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">bgmap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;MaskedArray&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">bgmap</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backmap</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Background map has wrong shape&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">backmap</span> <span class="o">=</span> <span class="n">bgmap</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">noisemap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;ndarray&#39;</span> <span class="ow">or</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">noisemap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;MaskedArray&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">noisemap</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Noisemap has wrong shape&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">noisemap</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;RMS noise cannot be negative&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span> <span class="o">=</span> <span class="n">noisemap</span>
+
+        <span class="k">if</span> <span class="n">labelled_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">labelled_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Labelled map is wrong shape&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pyse</span><span class="p">(</span>
+            <span class="n">det</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">,</span> <span class="n">anl</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">,</span> <span class="n">deblend_nthresh</span><span class="p">,</span> <span class="n">force_beam</span><span class="p">,</span>
+            <span class="n">labelled_data</span><span class="o">=</span><span class="n">labelled_data</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImageData.reverse_se"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.reverse_se">[docs]</a>    <span class="k">def</span> <span class="nf">reverse_se</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">det</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run source extraction on the negative of this image.</span>
+
+<span class="sd">        Obviously, there should be no sources in the negative image, so this</span>
+<span class="sd">        tells you about the false positive rate.</span>
+
+<span class="sd">        We need to clear cached data -- backgroung map, cached clips, etc --</span>
+<span class="sd">        before &amp; after doing this, as they&#39;ll interfere with the normal</span>
+<span class="sd">        extraction process. If this is regularly used, we&#39;ll want to</span>
+<span class="sd">        implement a separate cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">det</span><span class="o">=</span><span class="n">det</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">results</span>
+</div>
+<div class="viewcode-block" id="ImageData.fd_extract"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.fd_extract">[docs]</a>    <span class="k">def</span> <span class="nf">fd_extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">anl</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">noisemap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">bgmap</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">deblend_nthresh</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">force_beam</span><span class="o">=</span><span class="bp">False</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;False Detection Rate based source extraction.</span>
+<span class="sd">        The FDR procedure guarantees that &lt;FDR&gt; &lt; alpha.</span>
+
+<span class="sd">        See `Hopkins et al., AJ, 123, 1086 (2002)</span>
+<span class="sd">        &lt;http://adsabs.harvard.edu/abs/2002AJ....123.1086H&gt;`_.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># The correlation length in config.py is used not only for the</span>
+        <span class="c"># calculation of error bars with the Condon formulae, but also for</span>
+        <span class="c"># calculating the number of independent pixels.</span>
+        <span class="n">corlengthlong</span><span class="p">,</span> <span class="n">corlengthshort</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">calculate_correlation_lengths</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">C_n</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="nb">round</span><span class="p">(</span><span class="mf">0.25</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">corlengthlong</span> <span class="o">*</span>
+                  <span class="n">corlengthshort</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))[</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="c"># Calculate the FDR threshold</span>
+        <span class="c"># Things will go terribly wrong in the line below if the interpolated</span>
+        <span class="c"># noise values get very close or below zero. Use INTERPOLATE_ORDER=1</span>
+        <span class="c"># or the roundup option.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">bgmap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;ndarray&#39;</span> <span class="ow">or</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">bgmap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;MaskedArray&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">bgmap</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backmap</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Background map has wrong shape&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">backmap</span> <span class="o">=</span> <span class="n">bgmap</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">noisemap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;ndarray&#39;</span> <span class="ow">or</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">noisemap</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;MaskedArray&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">noisemap</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Noisemap has wrong shape&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">noisemap</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;RMS noise cannot be negative&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span> <span class="o">=</span> <span class="n">noisemap</span>
+
+        <span class="n">normalized_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span>
+
+        <span class="n">n1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">normalized_data</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">n1</span><span class="p">))</span>
+        <span class="n">lengthprob</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prob</span><span class="p">))</span>
+        <span class="n">compare</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="n">C_n</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lengthprob</span><span class="o">+</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">/</span> <span class="n">lengthprob</span>
+        <span class="c"># Find the last undercrossing, see, e.g., fig. 9 in Miller et al., AJ</span>
+        <span class="c"># 122, 3492 (2001).  Searchsorted is not used because the array is not</span>
+        <span class="c"># sorted.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">prob</span><span class="o">-</span><span class="n">compare</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="c"># Everything below threshold</span>
+            <span class="k">return</span> <span class="n">containers</span><span class="o">.</span><span class="n">ExtractionResults</span><span class="p">()</span>
+
+        <span class="n">fdr_threshold</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n1</span> <span class="o">*</span> <span class="n">prob</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+        <span class="c"># Default we require that all source pixels are above the threshold,</span>
+        <span class="c"># not only the peak pixel.  This gives a better guarantee that indeed</span>
+        <span class="c"># the fraction of false positives is less than fdr_alpha in config.py.</span>
+        <span class="c"># See, e.g., Hopkins et al., AJ 123, 1086 (2002).</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">anl</span><span class="p">:</span>
+            <span class="n">anl</span> <span class="o">=</span> <span class="n">fdr_threshold</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pyse</span><span class="p">(</span><span class="n">fdr_threshold</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">,</span> <span class="n">anl</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">,</span>
+                          <span class="n">deblend_nthresh</span><span class="p">,</span> <span class="n">force_beam</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImageData.flux_at_pixel"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.flux_at_pixel">[docs]</a>    <span class="k">def</span> <span class="nf">flux_at_pixel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">numpix</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the background-subtracted flux at a certain position</span>
+<span class="sd">        in the map&quot;&quot;&quot;</span>
+
+        <span class="c"># numpix is the number of pixels to look around the target.</span>
+        <span class="c"># e.g. numpix = 1 means a total of 9 pixels, 1 in each direction.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="p">[</span><span class="n">y</span><span class="o">-</span><span class="n">numpix</span><span class="p">:</span><span class="n">y</span><span class="o">+</span><span class="n">numpix</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">x</span><span class="o">-</span><span class="n">numpix</span><span class="p">:</span><span class="n">x</span><span class="o">+</span><span class="n">numpix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ImageData.box_slice_about_pixel"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.box_slice_about_pixel">[docs]</a>    <span class="k">def</span> <span class="nf">box_slice_about_pixel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_radius</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a slice centred about (x,y), of width = 2*int(box_radius) + 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ibr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">box_radius</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">ibr</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">ibr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">ibr</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">ibr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ImageData.fit_to_point"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.fit_to_point">[docs]</a>    <span class="k">def</span> <span class="nf">fit_to_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">boxsize</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">fixed</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit an elliptical Gaussian to a specified point on the image.</span>
+
+<span class="sd">        The fit is carried on a square section of the image, of length</span>
+<span class="sd">        *boxsize* &amp; centred at pixel coordinates *x*, *y*. Any data</span>
+<span class="sd">        below *threshold* * rmsmap is not used for fitting. If *fixed*</span>
+<span class="sd">        is set to ``position``, then the pixel coordinates are fixed</span>
+<span class="sd">        in the fit.</span>
+
+<span class="sd">        Returns an instance of :class:`tkp.sourcefinder.extract.Detection`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">((</span>
+                <span class="c"># Recent NumPy</span>
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">core</span><span class="p">,</span> <span class="s">&quot;MaskedConstant&quot;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">MaskedConstant</span><span class="p">)</span>
+            <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="c"># Old NumPy</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+        <span class="p">)):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Background is masked: cannot fit&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">ImageData</span><span class="o">.</span><span class="n">box_slice_about_pixel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">boxsize</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># We&#39;ll mask out anything below threshold*self.rmsmap from the fit.</span>
+            <span class="n">labels</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span> <span class="c">#Dictionary mapping threshold -&gt; islands map</span>
+                <span class="n">threshold</span><span class="p">,</span>
+                <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">clip</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span> <span class="c">#Dictionary mapping threshold -&gt; mask</span>
+                        <span class="n">threshold</span><span class="p">,</span>
+                        <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span> <span class="o">&gt;</span> <span class="n">threshold</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+
+            <span class="n">mylabel</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">mylabel</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># &#39;Background&#39;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Fit region is below specified threshold, fit aborted.&quot;</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">chunk</span><span class="p">]</span> <span class="o">==</span> <span class="n">mylabel</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">fitme</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="p">[</span><span class="n">chunk</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fitme</span><span class="o">.</span><span class="n">compressed</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Fit region too close to edge or too small&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fitme</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="p">[</span><span class="n">chunk</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">fitme</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Fit region too close to edge or too small&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">fitme</span><span class="o">.</span><span class="n">compressed</span><span class="p">()):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;All data is masked: cannot fit&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="c"># set argument for fixed parameters based on input string</span>
+        <span class="k">if</span> <span class="n">fixed</span> <span class="o">==</span> <span class="s">&#39;position&#39;</span><span class="p">:</span>
+            <span class="n">fixed</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;xbar&#39;</span><span class="p">:</span> <span class="n">boxsize</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;ybar&#39;</span><span class="p">:</span> <span class="n">boxsize</span><span class="o">/</span><span class="mf">2.0</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="n">fixed</span> <span class="o">==</span> <span class="s">&#39;position+shape&#39;</span><span class="p">:</span>
+            <span class="n">fixed</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;xbar&#39;</span><span class="p">:</span> <span class="n">boxsize</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;ybar&#39;</span><span class="p">:</span> <span class="n">boxsize</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span>
+                     <span class="s">&#39;semimajor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                     <span class="s">&#39;semiminor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                     <span class="s">&#39;theta&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
+        <span class="k">elif</span> <span class="n">fixed</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">fixed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Unkown fixed parameter&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">threshold_at_pixel</span> <span class="o">=</span> <span class="n">threshold</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">threshold_at_pixel</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">measurement</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="n">extract</span><span class="o">.</span><span class="n">source_profile_and_errors</span><span class="p">(</span>
+                <span class="n">fitme</span><span class="p">,</span>
+                <span class="n">threshold_at_pixel</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">,</span>
+                <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="c"># Fit failed to converge</span>
+            <span class="c"># Moments are not applicable when holding parameters fixed</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Gaussian fit failed at </span><span class="si">%f</span><span class="s">, </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;xbar&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">boxsize</span><span class="p">)</span>
+            <span class="k">assert</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;ybar&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">boxsize</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Fit falls outside of box.&#39;</span><span class="p">)</span>
+
+        <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;xbar&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span><span class="o">-</span><span class="n">boxsize</span><span class="o">/</span><span class="mf">2.0</span>
+        <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;ybar&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">y</span><span class="o">-</span><span class="n">boxsize</span><span class="o">/</span><span class="mf">2.0</span>
+        <span class="n">measurement</span><span class="o">.</span><span class="n">sig</span> <span class="o">=</span> <span class="p">(</span><span class="n">fitme</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">[</span><span class="n">chunk</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">extract</span><span class="o">.</span><span class="n">Detection</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImageData.fit_fixed_positions"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.fit_fixed_positions">[docs]</a>    <span class="k">def</span> <span class="nf">fit_fixed_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">boxsize</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                            <span class="n">fixed</span><span class="o">=</span><span class="s">&#39;position+shape&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convenience function to fit a list of sources at the given positions</span>
+
+<span class="sd">        This function wraps around fit_to_point().</span>
+
+<span class="sd">        Sources is a list of (ra, dec) tuples (not pixel coordinates).</span>
+
+<span class="sd">        All other arguments are the same as in fit_to_point(). In</span>
+<span class="sd">        particular, boxsize is in pixel coordinates as in</span>
+<span class="sd">        fit_to_point, not in sky coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">s2p</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;wcsp2s error: 8:&quot;</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;wcsp2s error: 9:&quot;</span><span class="p">)):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Input coordinates (</span><span class="si">%.2f</span><span class="s">, </span><span class="si">%.2f</span><span class="s">) invalid: &quot;</span><span class="p">,</span>
+                                    <span class="n">source</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">source</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">fit_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_to_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span>
+                                                <span class="n">boxsize</span><span class="o">=</span><span class="n">boxsize</span><span class="p">,</span>
+                                                <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
+                                                <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">fit_results</span><span class="p">:</span>
+                        <span class="c"># We were unable to get a good fit</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="p">(</span> <span class="n">fit_results</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                          <span class="n">fit_results</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)):</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;position errors extend outside image&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit_results</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Input pixel coordinates (</span><span class="si">%.2f</span><span class="s">, </span><span class="si">%.2f</span><span class="s">) &quot;</span>
+                                    <span class="s">&quot;could not be fit because: &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                                    <span class="n">source</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">source</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">detections</span>
+</div>
+<div class="viewcode-block" id="ImageData.label_islands"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.label_islands">[docs]</a>    <span class="k">def</span> <span class="nf">label_islands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detectionthresholdmap</span><span class="p">,</span> <span class="n">analysisthresholdmap</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a lablled array of pixels for fitting.</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            detectionthresholdmap (numpy.ndarray):</span>
+
+<span class="sd">            analysisthresholdmap (numpy.ndarray):</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            list of valid islands (list of int)</span>
+
+<span class="sd">            labelled islands (numpy.ndarray)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># If there is no usable data, we return an empty set of islands.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="o">.</span><span class="n">compressed</span><span class="p">()):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;RMS map masked; sourcefinding skipped&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+
+        <span class="c"># At this point, we select all the data which is eligible for</span>
+        <span class="c"># sourcefitting. We are actually using three separate filters, which</span>
+        <span class="c"># exclude:</span>
+        <span class="c">#</span>
+        <span class="c"># 1. Anything which has been masked before we reach this point;</span>
+        <span class="c"># 2. Any pixels which fall below the analysis threshold at that pixel</span>
+        <span class="c">#    position;</span>
+        <span class="c"># 3. Any pixels corresponding to a position where the RMS noise is</span>
+        <span class="c">#    less than RMS_FILTER (default 0.001) times the median RMS across</span>
+        <span class="c">#    the whole image.</span>
+        <span class="c">#</span>
+        <span class="c"># The third filter attempts to exclude those regions of the image</span>
+        <span class="c"># which contain no usable data; for example, the parts of the image</span>
+        <span class="c"># falling outside the circular region produced by awimager.</span>
+        <span class="n">RMS_FILTER</span> <span class="o">=</span> <span class="mf">0.001</span>
+        <span class="n">clipped_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span> <span class="o">&gt;</span> <span class="n">analysisthresholdmap</span><span class="p">)</span> <span class="o">&amp;</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">RMS_FILTER</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">))),</span>
+            <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">labelled_data</span><span class="p">,</span> <span class="n">num_labels</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">clipped_data</span><span class="p">,</span> <span class="n">STRUCTURING_ELEMENT</span><span class="p">)</span>
+
+        <span class="n">labels_below_det_thr</span><span class="p">,</span> <span class="n">labels_above_det_thr</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">num_labels</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c"># Select the labels of the islands above the analysis threshold</span>
+            <span class="c"># that have maximum values values above the detection threshold.</span>
+            <span class="c"># Like above we make sure not to select anything where either</span>
+            <span class="c"># the data or the noise map are masked.</span>
+            <span class="c"># We fill these pixels in above_det_thr with -1 to make sure</span>
+            <span class="c"># its labels will not be in labels_above_det_thr.</span>
+            <span class="c"># NB data_bgsubbed, and hence above_det_thr, is a masked array;</span>
+            <span class="c"># filled() sets all mased values equal to -1.</span>
+            <span class="n">above_det_thr</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span> <span class="o">-</span> <span class="n">detectionthresholdmap</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c"># Note that we avoid label 0 (the background).</span>
+            <span class="n">maximum_values</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+                <span class="n">above_det_thr</span><span class="p">,</span> <span class="n">labelled_data</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_labels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c"># If there&#39;s only one island, ndimage.maximum will return a float,</span>
+            <span class="c"># rather than a list. The rest of this function assumes that it&#39;s</span>
+            <span class="c"># always a list, so we need to convert it.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maximum_values</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">maximum_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">maximum_values</span><span class="p">]</span>
+
+            <span class="c"># We&#39;ll filter out the insignificant islands</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">maximum_values</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">labels_below_det_thr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">labels_above_det_thr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="c"># Set to zero all labelled islands that are below det_thr:</span>
+            <span class="n">labelled_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="n">labelled_data</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">labels_above_det_thr</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">labelled_data</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                <span class="n">labelled_data</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">labels_above_det_thr</span><span class="p">,</span> <span class="n">labelled_data</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_pyse</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">detectionthresholdmap</span><span class="p">,</span> <span class="n">analysisthresholdmap</span><span class="p">,</span>
+        <span class="n">deblend_nthresh</span><span class="p">,</span> <span class="n">force_beam</span><span class="p">,</span> <span class="n">labelled_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[]</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run Python-based source extraction on this image.</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            detectionthresholdmap (numpy.ndarray):</span>
+
+<span class="sd">            analysisthresholdmap (numpy.ndarray):</span>
+
+<span class="sd">            deblend_nthresh (int): number of subthresholds for deblending. 0</span>
+<span class="sd">                disables.</span>
+
+<span class="sd">            force_beam (bool): force all extractions to have major/minor axes</span>
+<span class="sd">                equal to the restoring beam</span>
+
+<span class="sd">            labelled_data (numpy.ndarray): labelled island map (output of</span>
+<span class="sd">            numpy.ndimage.label()). Will be calculated automatically if not</span>
+<span class="sd">            provided.</span>
+
+<span class="sd">            labels (list): list of labels in the island map to use for</span>
+<span class="sd">            fitting.</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            (..utility.containers.ExtractionResults):</span>
+
+<span class="sd">        This is described in detail in the &quot;Source Extraction System&quot; document</span>
+<span class="sd">        by John Swinbank, available from TKP svn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Map our chunks onto a list of islands.</span>
+        <span class="n">island_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">labelled_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">labels</span><span class="p">,</span> <span class="n">labelled_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_islands</span><span class="p">(</span>
+                <span class="n">detectionthresholdmap</span><span class="p">,</span> <span class="n">analysisthresholdmap</span>
+            <span class="p">)</span>
+
+        <span class="c"># Get a bounding box for each island:</span>
+        <span class="c"># NB Slices ordered by label value (1...N,)</span>
+        <span class="c"># &#39;None&#39; returned for missing label indices.</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">find_objects</span><span class="p">(</span><span class="n">labelled_data</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="n">slices</span><span class="p">[</span><span class="n">label</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">analysis_threshold</span> <span class="o">=</span> <span class="p">(</span><span class="n">analysisthresholdmap</span><span class="p">[</span><span class="n">chunk</span><span class="p">]</span> <span class="o">/</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">[</span><span class="n">chunk</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="c"># In selected_data only the pixels with the &quot;correct&quot;</span>
+            <span class="c"># (see above) labels are retained. Other pixel values are</span>
+            <span class="c"># set to -(bignum).</span>
+            <span class="c"># In this way, disconnected pixels within (rectangular)</span>
+            <span class="c"># slices around islands (particularly the large ones) do</span>
+            <span class="c"># not affect the source measurements.</span>
+            <span class="n">selected_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">labelled_data</span><span class="p">[</span><span class="n">chunk</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_bgsubbed</span><span class="p">[</span><span class="n">chunk</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="n">extract</span><span class="o">.</span><span class="n">BIGNUM</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=-</span><span class="n">extract</span><span class="o">.</span><span class="n">BIGNUM</span><span class="p">)</span>
+
+            <span class="n">island_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">extract</span><span class="o">.</span><span class="n">Island</span><span class="p">(</span>
+                    <span class="n">selected_data</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rmsmap</span><span class="p">[</span><span class="n">chunk</span><span class="p">],</span>
+                    <span class="n">chunk</span><span class="p">,</span>
+                    <span class="n">analysis_threshold</span><span class="p">,</span>
+                    <span class="n">detectionthresholdmap</span><span class="p">[</span><span class="n">chunk</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">,</span>
+                    <span class="n">deblend_nthresh</span><span class="p">,</span>
+                    <span class="n">DEBLEND_MINCONT</span><span class="p">,</span>
+                    <span class="n">STRUCTURING_ELEMENT</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c"># If required, we can save the &#39;left overs&#39; from the deblending and</span>
+        <span class="c"># fitting processes for later analysis. This needs setting up here:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">residuals_from_gauss_fitting</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">residuals_from_deblending</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">island</span> <span class="ow">in</span> <span class="n">island_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">residuals_from_deblending</span><span class="p">[</span><span class="n">island</span><span class="o">.</span><span class="n">chunk</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="n">island</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mf">0.</span><span class="p">))</span>
+
+        <span class="c"># Deblend each of the islands to its consituent parts, if necessary</span>
+        <span class="k">if</span> <span class="n">deblend_nthresh</span><span class="p">:</span>
+            <span class="n">deblended_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">deblend</span><span class="p">(),</span> <span class="n">island_list</span><span class="p">)</span>
+            <span class="c">#deblended_list = [x.deblend() for x in island_list]</span>
+            <span class="n">island_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">deblended_list</span><span class="p">))</span>
+
+        <span class="c"># Iterate over the list of islands and measure the source in each,</span>
+        <span class="c"># appending it to the results list.</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">containers</span><span class="o">.</span><span class="n">ExtractionResults</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">island</span> <span class="ow">in</span> <span class="n">island_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">force_beam</span><span class="p">:</span>
+                <span class="n">fixed</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;semimajor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                         <span class="s">&#39;semiminor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                         <span class="s">&#39;theta&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fixed</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">fit_results</span> <span class="o">=</span> <span class="n">island</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fit_results</span><span class="p">:</span>
+                <span class="n">measurement</span><span class="p">,</span> <span class="n">residual</span> <span class="o">=</span> <span class="n">fit_results</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># Failed to fit; drop this island and go to the next.</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">det</span> <span class="o">=</span> <span class="n">extract</span><span class="o">.</span><span class="n">Detection</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="n">island</span><span class="o">.</span><span class="n">chunk</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                        <span class="n">det</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Bad fit from blind extraction at pixel coords:&#39;</span>
+                                  <span class="s">&#39;</span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> - measurement discarded&#39;</span>
+                                  <span class="s">&#39;(increase fitting margin?)&#39;</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">y</span> <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">residuals_from_deblending</span><span class="p">[</span><span class="n">island</span><span class="o">.</span><span class="n">chunk</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span>
+                        <span class="n">island</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mf">0.</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">residuals_from_gauss_fitting</span><span class="p">[</span><span class="n">island</span><span class="o">.</span><span class="n">chunk</span><span class="p">]</span> <span class="o">+=</span> <span class="n">residual</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Island not processed; unphysical?&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+
+        <span class="k">def</span> <span class="nf">is_usable</span><span class="p">(</span><span class="n">det</span><span class="p">):</span>
+            <span class="c"># Check that both ends of each axis are usable; that is, that they</span>
+            <span class="c"># fall within an unmasked part of the image.</span>
+            <span class="c"># The axis will not likely fall exactly on a pixel number, so</span>
+            <span class="c"># check all the surroundings.</span>
+            <span class="k">def</span> <span class="nf">check_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]]:</span>
+                            <span class="c"># Point falls in mask</span>
+                            <span class="k">return</span> <span class="bp">False</span>
+                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                        <span class="c"># Point falls completely outside image</span>
+                        <span class="k">return</span> <span class="bp">False</span>
+                <span class="c"># Point is ok</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">start_smaj_x</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">start_smaj_y</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">start_smin_x</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">start_smin_y</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">end_smaj_x</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">end_smaj_y</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">end_smin_x</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">end_smin_y</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">check_point</span><span class="p">(</span><span class="o">*</span><span class="n">point</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Unphysical source at pixel </span><span class="si">%f</span><span class="s">, </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="c"># Filter will return a list; ensure we return an ExtractionResults.</span>
+        <span class="k">return</span> <span class="n">containers</span><span class="o">.</span><span class="n">ExtractionResults</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">is_usable</span><span class="p">,</span> <span class="n">results</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>
