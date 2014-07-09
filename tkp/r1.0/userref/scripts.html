@@ -80,11 +80,11 @@ optional arguments:
 
 This is a tool for managing a TKP project. It can be used to initialize a TKP
 project and the jobs inside a project. To start using this tool you first
-create a TraP project by running:
+create a TRAP project by running:
 
   $ tkp-manage.py initproject &lt;projectname&gt;
 
-In the folder where you want to put the TraP project. To learn more about a
+In the folder where you want to put the TRAP project. To learn more about a
 specific `tkp-manage.py` subcommand, run:
 
   $ tkp-manage.py &lt;subcommand&gt; -h
@@ -132,8 +132,8 @@ optional arguments:
 <div class="section" id="run">
 <h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
 <p>Run will start a job. It needs a job name as argument.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py run [-h] [-m MONITOR_COORDS] [-l MONITOR_LIST]
-                         [-f {celery,multiproc,serial}]
+<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py run [-h] [-d] [-m MONITOR_COORDS] [-l MONITOR_LIST]
+                         [-f {celery}]
                          name
 
 Run a specific job.
@@ -153,11 +153,12 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -d, --debug           enable debug logging
   -m MONITOR_COORDS, --monitor-coords MONITOR_COORDS
-                        a list of RA,DEC coordinates to monitor in JSON format, example: [[5, 6], [7, 8]]
+                        Specify a list of RA,DEC co-ordinate pairs to monitor (decimal degrees, no spaces)
   -l MONITOR_LIST, --monitor-list MONITOR_LIST
                         Specify a file containing a list of RA,DEC
-  -f {celery,multiproc,serial}, --method {celery,multiproc,serial}
+  -f {celery}, --method {celery}
                         what distribution method to use
 </pre></div>
 </div>
