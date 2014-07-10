@@ -136,6 +136,7 @@
     <span class="c">#+-------------------------------------------------------+</span>
     <span class="c"># TODO: Is it? -&gt; Check</span>
     <span class="n">_empty_temprunningcatalog</span><span class="p">()</span>
+    <span class="n">_update_ff_runcat_extractedsource</span><span class="p">()</span>
     <span class="n">_delete_inactive_runcat</span><span class="p">()</span>
 
 <span class="c">##############################################################################</span>
@@ -1928,7 +1929,7 @@
 <span class="sd">        flux &gt; MIN_OVER_I [ (rms_min_I*(det_I + new_source_sigma_margin) ]</span>
 <span class="sd">      (where I indexes the images)</span>
 <span class="sd">      i.e. if it was a steady-source, it should have been detected if</span>
-<span class="sd">      it was in the *low-RMS* area of the lowest-RMS previous image overlapping </span>
+<span class="sd">      it was in the *low-RMS* area of the lowest-RMS previous image overlapping</span>
 <span class="sd">      this position, even allowing for noise fluctuations.</span>
 
 <span class="sd">    Furthermore, a new source is &#39;likely transient&#39; (type 1) if it is additionally</span>
@@ -2033,6 +2034,24 @@
     <span class="k">if</span> <span class="n">ins</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to transient table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ins</span><span class="p">,))</span>
 
+
+<span class="k">def</span> <span class="nf">_update_ff_runcat_extractedsource</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;We are about to delete the runcats that are inactivated, and</span>
+<span class="sd">    therefore have to set the ff_runcat reference in extractedsource to NULL.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">UPDATE extractedsource</span>
+<span class="s">   SET ff_runcat = NULL</span>
+<span class="s"> WHERE EXISTS (SELECT id</span>
+<span class="s">                 FROM runningcatalog</span>
+<span class="s">                WHERE runningcatalog.id = extractedsource.ff_runcat</span>
+<span class="s">                  AND runningcatalog.inactive = TRUE</span>
+<span class="s">              )</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Unset ff_runcat for </span><span class="si">%s</span><span class="s"> extractedsources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_delete_inactive_runcat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the one-to-many associations from temprunningcatalog,</span>
