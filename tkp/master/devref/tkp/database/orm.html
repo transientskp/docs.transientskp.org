@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tkp.database.orm – orm database functions &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp.db.orm – Object Relational Model interface &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Database package" href="index.html" />
-    <link rel="next" title="tkp.database.transients – transients database functions" href="transients.html" />
-    <link rel="prev" title="tkp.database.monitoringlist – monitoringlist database functions" href="monitoringlist.html" /> 
+    <link rel="next" title="tkp.db.transients – transients search functions" href="transients.html" />
+    <link rel="prev" title="tkp.db.nulldetections – handling of null detections" href="nulldetections.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,14 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="transients.html" title="tkp.database.transients – transients database functions"
+          <a href="transients.html" title="tkp.db.transients – transients search functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="monitoringlist.html" title="tkp.database.monitoringlist – monitoringlist database functions"
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Database package</a> &raquo;</li> 
       </ul>
     </div>  
@@ -59,7 +59,7 @@
           <div class="body">
             
   <div class="section" id="module-tkp.db.orm">
-<span id="tkp-database-orm-orm-database-functions"></span><span id="database-orm"></span><h1><tt class="xref py py-mod docutils literal"><span class="pre">tkp.database.orm</span></tt> &#8211; orm database functions<a class="headerlink" href="#module-tkp.db.orm" title="Permalink to this headline">¶</a></h1>
+<span id="tkp-db-orm-object-relational-model-interface"></span><span id="database-orm"></span><h1><a class="reference internal" href="#module-tkp.db.orm" title="tkp.db.orm: orm database stuff"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.orm</span></tt></a> &#8211; Object Relational Model interface<a class="headerlink" href="#module-tkp.db.orm" title="Permalink to this headline">¶</a></h1>
 <p>This module contains lightweight container objects that corresponds
 to a dataset, image or extracted source in the database; it is actually a
 mini Object Relation Mapper (ORM). The correspondence between the object
@@ -156,6 +156,218 @@ database, using the <tt class="docutils literal"><span class="pre">id</span></tt
 </pre></div>
 </div>
 <p>If an <tt class="docutils literal"><span class="pre">id</span></tt> is supplied, <tt class="docutils literal"><span class="pre">data</span></tt> is ignored.</p>
+<dl class="class">
+<dt id="tkp.db.orm.DBObject">
+<em class="property">class </em><tt class="descclassname">tkp.db.orm.</tt><tt class="descname">DBObject</tt><big>(</big><em>data=None</em>, <em>database=None</em>, <em>id=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DBObject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DBObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic mini-ORM object</p>
+<p>Derived objects will need to implement __init__, which for
+practical reasons is split up in __init__ and _init_data: the
+latter is called at the end __init__, so a derived __init__ would
+have super(Derived, self).__init__() at the start and
+super(Derived, self)._init_data() at the end.</p>
+<p>__init__ takes care of setting the id, the supplied <cite>data</cite> dictionary
+and the connection to the database.</p>
+<p>_init_data sets the actual data either from the database (in case
+of a supplied id) or from the <cite>data</cite> dictionary.</p>
+<p>Basic initialization.</p>
+<p>Inherited classes need to implement any actual database action,
+by calling self._init_data() at the end of their __init__
+method.</p>
+<dl class="method">
+<dt id="tkp.db.orm.DBObject.__getattr__">
+<tt class="descname">__getattr__</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DBObject.__getattr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DBObject.__getattr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain the &#8216;name&#8217; attribute, where &#8216;name&#8217; is a database column name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tkp.db.orm.DBObject.id">
+<tt class="descname">id</tt><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DBObject.id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DBObject.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add or obtain an id to/from the table</p>
+<p>The id is generated if self._id does not exist, effectively
+creating a new row in the database.</p>
+<p>Several containers have their specific SQL function to create
+a new object, so this property will need to overridden.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.db.orm.DBObject.update">
+<tt class="descname">update</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DBObject.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DBObject.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update attributes from database, and set database values to
+kwargs when provided</p>
+<p>This method performs two functions, the first always and the
+second optionally after the first:</p>
+<blockquote>
+<div><ul class="simple">
+<li>it updates the attributes from the database. That is, it
+makes sure the Python instance is synchronized with the
+database.</li>
+<li>(optional): it sets the column values in the database to
+the values provided through kwargs, for the associated
+database row. Attributes for the instance are of course
+also set to these values. Any kwargs that do not
+correspond to a column name are simply ignored.</li>
+</ul>
+</div></blockquote>
+<p>This function therefore first updates the instance from the
+database, and then optionally the database from the instance
+(with the provided keyword arguments).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tkp.db.orm.DataSet">
+<em class="property">class </em><tt class="descclassname">tkp.db.orm.</tt><tt class="descname">DataSet</tt><big>(</big><em>data=None</em>, <em>database=None</em>, <em>id=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DataSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DataSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class corresponding to the dataset table in the database</p>
+<p>If id is supplied, the data and image arguments are ignored.</p>
+<dl class="method">
+<dt id="tkp.db.orm.DataSet.frequency_bands">
+<tt class="descname">frequency_bands</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DataSet.frequency_bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DataSet.frequency_bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of distinct bands present in the dataset.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tkp.db.orm.DataSet.id">
+<tt class="descname">id</tt><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DataSet.id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DataSet.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add or obtain an id to/from the table</p>
+<p>This uses the SQL function insertDataset().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.db.orm.DataSet.runcat_entries">
+<tt class="descname">runcat_entries</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DataSet.runcat_entries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DataSet.runcat_entries" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of dictionarys:
+representing rows in runningcatalog,
+for all sources belonging to this dataset<p>Column &#8216;id&#8217; is returned with the key &#8216;runcat&#8217;</p>
+<p>Currently only returns 3 columns:
+[{&#8216;runcat,&#8217;xtrsrc&#8217;,&#8217;datapoints&#8217;}]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.db.orm.DataSet.update_images">
+<tt class="descname">update_images</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#DataSet.update_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.DataSet.update_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renew the set of images by getting the images for this
+dataset from the database. Implemented separately from update(),
+since normally this would be too much overhead</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tkp.db.orm.ExtractedSource">
+<em class="property">class </em><tt class="descclassname">tkp.db.orm.</tt><tt class="descname">ExtractedSource</tt><big>(</big><em>data=None</em>, <em>image=None</em>, <em>database=None</em>, <em>id=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#ExtractedSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.ExtractedSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class corresponding to the extractedsource table in the database</p>
+<p>If id is supplied, the data and image arguments are ignored.</p>
+<dl class="method">
+<dt id="tkp.db.orm.ExtractedSource.lightcurve">
+<tt class="descname">lightcurve</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#ExtractedSource.lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.ExtractedSource.lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain the complete light curve (within the current dataset)
+for this source.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(list) list of 5-tuples, each tuple being:
+- observation start time as a datetime.datetime object
+- integration time (float)
+- integrated flux (float)
+- integrated flux error (float)
+- database ID of this particular source</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tkp.db.orm.Image">
+<em class="property">class </em><tt class="descclassname">tkp.db.orm.</tt><tt class="descname">Image</tt><big>(</big><em>data=None</em>, <em>dataset=None</em>, <em>database=None</em>, <em>id=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class corresponding to the images table in the database</p>
+<p>If id is supplied, the data and image arguments are ignored.</p>
+<dl class="method">
+<dt id="tkp.db.orm.Image.associate_extracted_sources">
+<tt class="descname">associate_extracted_sources</tt><big>(</big><em>deRuiter_r</em>, <em>new_source_sigma_margin</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#Image.associate_extracted_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.Image.associate_extracted_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Associate sources from the last images with previously
+extracted sources within the same dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deRuiter_r</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The De Ruiter radius for source
+association. The default value is set through the
+tkp.config module</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tkp.db.orm.Image.id">
+<tt class="descname">id</tt><a class="reference internal" href="../../../_modules/tkp/db/orm.html#Image.id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.Image.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add or obtain an id to/from the table</p>
+<p>This uses the SQL function insertImage()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.db.orm.Image.insert_extracted_sources">
+<tt class="descname">insert_extracted_sources</tt><big>(</big><em>results</em>, <em>extract='blind'</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#Image.insert_extracted_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.Image.insert_extracted_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a list of sources</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>results</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; list of
+utility.containers.ExtractionResult objects (as
+returned from
+sourcefinder.image.ImageData().extract()), or a list
+of data tuples with the source information as follows:
+(ra, dec,
+ra_fit_err, dec_fit_err,
+peak, peak_err,
+flux, flux_err,
+significance level,
+beam major width (as), beam minor width(as),
+beam parallactic angle
+ew_sys_err, ns_sys_err,
+error_radius).</li>
+<li><strong>extract</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; &#8216;blind&#8217;, &#8216;ff_nd&#8217; or &#8216;ff_ms&#8217;
+(see db.general.insert_extracted_sources)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.db.orm.Image.update_rejected">
+<tt class="descname">update_rejected</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#Image.update_rejected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.Image.update_rejected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update self.rejected with the rejected status. Will be false
+if not rejected, will be a list of reject descriptions if rejected</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tkp.db.orm.Image.update_sources">
+<tt class="descname">update_sources</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/orm.html#Image.update_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.orm.Image.update_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renew the set of sources by getting the sources for this
+image from the database</p>
+<p>This method is separately implemented, because it&#8217;s not always necessary
+and potentially (for an image with dozens or more sources) time &amp; memory
+consuming.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -170,7 +382,7 @@ database, using the <tt class="docutils literal"><span class="pre">id</span></tt
             </a></p>
   <h3><a href="../../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tkp.database.orm</span></tt> &#8211; orm database functions</a><ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tkp.db.orm</span></tt> &#8211; Object Relational Model interface</a><ul>
 <li><a class="reference internal" href="#usage">Usage</a></li>
 <li><a class="reference internal" href="#creating-new-objects">Creating new objects</a></li>
 <li><a class="reference internal" href="#updating-objects">Updating objects</a></li>
@@ -180,11 +392,11 @@ database, using the <tt class="docutils literal"><span class="pre">id</span></tt
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="monitoringlist.html"
-                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.database.monitoringlist</span></tt> &#8211; monitoringlist database functions</a></p>
+  <p class="topless"><a href="nulldetections.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.nulldetections</span></tt> &#8211; handling of null detections</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="transients.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.database.transients</span></tt> &#8211; transients database functions</a></p>
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.transients</span></tt> &#8211; transients search functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/devref/tkp/database/orm.txt"
@@ -217,14 +429,14 @@ database, using the <tt class="docutils literal"><span class="pre">id</span></tt
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="transients.html" title="tkp.database.transients – transients database functions"
+          <a href="transients.html" title="tkp.db.transients – transients search functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="monitoringlist.html" title="tkp.database.monitoringlist – monitoringlist database functions"
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
           <li><a href="index.html" >Database package</a> &raquo;</li> 
       </ul>
     </div>

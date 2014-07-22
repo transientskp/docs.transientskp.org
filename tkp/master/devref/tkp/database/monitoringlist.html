@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tkp.database.monitoringlist – monitoringlist database functions &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp.db.monitoringlist – monitoringlist database functions &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Database package" href="index.html" />
-    <link rel="next" title="tkp.database.orm – orm database functions" href="orm.html" />
-    <link rel="prev" title="tkp.database.generic – generic database functions" href="generic.html" /> 
+    <link rel="next" title="tkp.db.nulldetections – handling of null detections" href="nulldetections.html" />
+    <link rel="prev" title="tkp.db.generic – generic data-query generation functions" href="generic.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,14 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="orm.html" title="tkp.database.orm – orm database functions"
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="generic.html" title="tkp.database.generic – generic database functions"
+          <a href="generic.html" title="tkp.db.generic – generic data-query generation functions"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Database package</a> &raquo;</li> 
       </ul>
     </div>  
@@ -59,10 +59,28 @@
           <div class="body">
             
   <div class="section" id="module-tkp.db.monitoringlist">
-<span id="tkp-database-monitoringlist-monitoringlist-database-functions"></span><span id="database-monitoringlist"></span><h1><tt class="xref py py-mod docutils literal"><span class="pre">tkp.database.monitoringlist</span></tt> &#8211; monitoringlist database functions<a class="headerlink" href="#module-tkp.db.monitoringlist" title="Permalink to this headline">¶</a></h1>
+<span id="tkp-db-monitoringlist-monitoringlist-database-functions"></span><span id="database-monitoringlist"></span><h1><a class="reference internal" href="#module-tkp.db.monitoringlist" title="tkp.db.monitoringlist: monitoringlist database stuff"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.monitoringlist</span></tt></a> &#8211; monitoringlist database functions<a class="headerlink" href="#module-tkp.db.monitoringlist" title="Permalink to this headline">¶</a></h1>
 <p>A collection of back end subroutines (mostly SQL queries).</p>
 <p>This module contains the routines to deal with the monitoring
 sources, provided by the user via the command line.</p>
+<dl class="function">
+<dt id="tkp.db.monitoringlist.associate_ms">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">associate_ms</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#associate_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist.associate_ms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Associate the monitoring sources, i.e., their forced fits,
+of the current image with the ones in the running catalog.
+These associations are treated separately from the normal
+associations and there will only be 1-to-1 associations.</p>
+<p>The runcat-monitoring source pairs will be inserted in a
+temporary table.
+Of these, the runcat and runcat_flux tables are updated with
+the new datapoints if the (monitoring) source already existed,
+otherwise they are inserted as a new source.
+The source pair is appended to the light-curve table
+(assocxtrsource), with a type = 8 (for the first occurence)
+or type = 9 (for existing runcat sources).
+After all this, the temporary table is emptied again.</p>
+</dd></dl>
+
 </div>
 
 
@@ -76,10 +94,10 @@ sources, provided by the user via the command line.</p>
             </a></p>
   <h4>Previous topic</h4>
   <p class="topless"><a href="generic.html"
-                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.database.generic</span></tt> &#8211; generic database functions</a></p>
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.generic</span></tt> &#8211; generic data-query generation functions</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="orm.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.database.orm</span></tt> &#8211; orm database functions</a></p>
+  <p class="topless"><a href="nulldetections.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.nulldetections</span></tt> &#8211; handling of null detections</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/devref/tkp/database/monitoringlist.txt"
@@ -112,14 +130,14 @@ sources, provided by the user via the command line.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="orm.html" title="tkp.database.orm – orm database functions"
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
              >next</a> |</li>
         <li class="right" >
-          <a href="generic.html" title="tkp.database.generic – generic database functions"
+          <a href="generic.html" title="tkp.db.generic – generic data-query generation functions"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
           <li><a href="index.html" >Database package</a> &raquo;</li> 
       </ul>
     </div>

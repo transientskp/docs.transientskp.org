@@ -143,7 +143,7 @@
 <span class="c"># Subroutines...</span>
 <span class="c"># Here be SQL dragons.</span>
 <span class="c">##############################################################################</span></div>
-<span class="k">def</span> <span class="nf">_delete_bad_blind_extractions</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+<div class="viewcode-block" id="_delete_bad_blind_extractions"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_bad_blind_extractions">[docs]</a><span class="k">def</span> <span class="nf">_delete_bad_blind_extractions</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Remove blind extractions centred outside designated extract region.</span>
 
 <span class="sd">    These occur sometimes due to highly elliptical fits on noisy data,</span>
@@ -198,8 +198,8 @@
                      <span class="n">n_deleted</span><span class="p">,</span> <span class="n">image_id</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">n_deleted</span>
 
-
-<span class="k">def</span> <span class="nf">_empty_temprunningcatalog</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_empty_temprunningcatalog"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._empty_temprunningcatalog">[docs]</a><span class="k">def</span> <span class="nf">_empty_temprunningcatalog</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Initialize the temporary storage table</span>
 
 <span class="sd">    Initialize the temporary table temprunningcatalog which contains</span>
@@ -209,8 +209,8 @@
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 
-
-<span class="k">def</span> <span class="nf">_check_meridian_wrap</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="_check_meridian_wrap"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._check_meridian_wrap">[docs]</a><span class="k">def</span> <span class="nf">_check_meridian_wrap</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Checks whether an image is close to the meridian ra = 0 or ra = 360</span>
 
 <span class="sd">    When so, the association query needs to be rewritten to take into account</span>
@@ -317,8 +317,8 @@
         <span class="s">&#39;ra_max2&#39;</span><span class="p">:</span> <span class="n">ra_max2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="p">}</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_temprunningcatalog</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">deRuiter_r</span><span class="p">,</span> <span class="n">mw</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="_insert_temprunningcatalog"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_temprunningcatalog">[docs]</a><span class="k">def</span> <span class="nf">_insert_temprunningcatalog</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">deRuiter_r</span><span class="p">,</span> <span class="n">mw</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Select matched sources</span>
 
 <span class="sd">    Here we select the extractedsource that have a positional match</span>
@@ -781,8 +781,8 @@
     <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">,</span> <span class="s">&#39;deRuiter&#39;</span><span class="p">:</span> <span class="n">deRuiter_r</span><span class="p">}</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_flag_many_to_many_tempruncat</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_flag_many_to_many_tempruncat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._flag_many_to_many_tempruncat">[docs]</a><span class="k">def</span> <span class="nf">_flag_many_to_many_tempruncat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Select the many-to-many association pairs in temprunningcatalog.</span>
 
 <span class="sd">    By flagging the many-to-many associations, we reduce the</span>
@@ -853,8 +853,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_1_to_many_runcat</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_insert_1_to_many_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_runcat">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_runcat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Insert the extracted sources that belong to one-to-many</span>
 <span class="sd">    associations in the runningcatalog.</span>
 
@@ -919,8 +919,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_1_to_many_runcat_flux</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_insert_1_to_many_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_runcat_flux</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Insert the fluxes of the extracted sources that belong</span>
 <span class="sd">    to a one-to-many association in the runningcatalog.</span>
 
@@ -972,8 +972,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_1_to_many_basepoint_assoc</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_insert_1_to_many_basepoint_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_basepoint_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_basepoint_assoc</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Insert base points for one-to-many associations</span>
 
 <span class="sd">    Before continuing, we have to insert the &#39;base points&#39; of the associations,</span>
@@ -1039,8 +1039,8 @@
 <span class="s">    &quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_1_to_many_assoc</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_insert_1_to_many_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_assoc</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Insert links into the association table between the new runcat</span>
 <span class="sd">    entries and the old extractedsources.</span>
 <span class="sd">    (New to New (&#39;basepoint&#39;) links have been added earlier).</span>
@@ -1092,7 +1092,7 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
+</div>
 <span class="k">def</span> <span class="nf">_insert_1_to_many_skyrgn</span><span class="p">():</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO assocskyrgn</span>
@@ -1120,7 +1120,7 @@
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_insert_1_to_many_transient</span><span class="p">():</span>
+<div class="viewcode-block" id="_insert_1_to_many_transient"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_transient">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_transient</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Update the runcat id for the one-to-many associations,</span>
 <span class="sd">    and delete the transient entries of the old runcat id</span>
 <span class="sd">    (the new ones have been added earlier).</span>
@@ -1169,8 +1169,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_assocskyrgn</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_delete_1_to_many_inactive_assocskyrgn"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_assocskyrgn">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_assocskyrgn</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the assocskyrgn links of the old runcat</span>
 
 <span class="sd">    Since we replaced this runcat.id with multiple new ones, we now</span>
@@ -1186,8 +1186,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_transient</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_delete_1_to_many_inactive_transient"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_transient">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_transient</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the transient sources of the old runcat</span>
 
 <span class="sd">    Since we replaced this runcat.id with multiple new ones, we now</span>
@@ -1205,8 +1205,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_assoc</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_delete_1_to_many_inactive_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_assoc">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_assoc</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the association pairs of the old runcat from assocxtrsource</span>
 
 <span class="sd">    NOTE: It might sound confusing, but those are not qualified</span>
@@ -1232,8 +1232,8 @@
 <span class="s">    &quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_runcat_flux</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_delete_1_to_many_inactive_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_runcat_flux</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Flag the old runcat ids in the runningcatalog to inactive</span>
 
 <span class="sd">    Since we replaced this runcat.id with multiple new one, we first</span>
@@ -1252,8 +1252,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_flag_1_to_many_inactive_runcat</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_flag_1_to_many_inactive_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._flag_1_to_many_inactive_runcat">[docs]</a><span class="k">def</span> <span class="nf">_flag_1_to_many_inactive_runcat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Flag the old runcat ids in the runningcatalog to inactive</span>
 
 <span class="sd">    We do not delete them yet, because we need them later on.</span>
@@ -1272,8 +1272,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_flag_1_to_many_inactive_tempruncat</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_flag_1_to_many_inactive_tempruncat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._flag_1_to_many_inactive_tempruncat">[docs]</a><span class="k">def</span> <span class="nf">_flag_1_to_many_inactive_tempruncat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the one-to-many associations from temprunningcatalog,</span>
 <span class="sd">    and delete the inactive rows from runningcatalog.</span>
 
@@ -1300,8 +1300,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_1_to_1_assoc</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_insert_1_to_1_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_1_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_1_assoc</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Insert remaining associations from temprunningcatalog into assocxtrsource.</span>
 
@@ -1365,8 +1365,8 @@
     <span class="c">#    sys.exit(1)</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_update_1_to_1_runcat</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_update_1_to_1_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._update_1_to_1_runcat">[docs]</a><span class="k">def</span> <span class="nf">_update_1_to_1_runcat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Update the running catalog with the values in temprunningcatalog&quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">        UPDATE runningcatalog</span>
@@ -1452,8 +1452,8 @@
 <span class="s">                      )</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">_update_1_to_1_runcat_flux</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_update_1_to_1_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._update_1_to_1_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_update_1_to_1_runcat_flux</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Updates the fluxes in runningcatalog_flux of an existing band</span>
 <span class="sd">    for an existing runcat source.</span>
 
@@ -1556,8 +1556,8 @@
     <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Updated flux for </span><span class="si">%s</span><span class="s"> sources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_1_to_1_runcat_flux</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_insert_1_to_1_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_1_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_1_runcat_flux</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Insert the fluxes in runningcatalog_flux of a new band</span>
 <span class="sd">    for an existing runcat source.</span>
 
@@ -1618,8 +1618,8 @@
     <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted new fluxes for </span><span class="si">%s</span><span class="s"> sources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_new_runcat</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="_insert_new_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_runcat">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Insert new sources into the running catalog</span>
 
 <span class="sd">    Extractedsources for which no counterpart was found in the</span>
@@ -1710,8 +1710,8 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to runningcatalog&quot;</span> <span class="o">%</span> <span class="n">ins</span><span class="p">)</span>
 
 
-
-<span class="k">def</span> <span class="nf">_insert_new_runcat_flux</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="_insert_new_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat_flux</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Insert new sources into the runningicatalog_flux</span>
 
 <span class="sd">    Extractedsources for which not a counterpart was found in the</span>
@@ -1768,8 +1768,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_new_runcat_skyrgn_assocs</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="_insert_new_runcat_skyrgn_assocs"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_runcat_skyrgn_assocs">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat_skyrgn_assocs</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process newly created entries from the runningcatalog,</span>
 <span class="sd">    determine which skyregions they lie within.</span>
@@ -1860,8 +1860,8 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">assocskyrgn_others_qry</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;img_id&#39;</span><span class="p">:</span><span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_insert_new_assoc</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="_insert_new_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_assoc</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Insert new associations for unknown sources</span>
 
 <span class="sd">    Extractedsources for which not a counterpart was found in the</span>
@@ -1906,8 +1906,8 @@
 <span class="s">   WHERE r0.xtrsrc = t0.xtrsrc</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span><span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">_insert_new_transient</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="_insert_new_transient"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_transient">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_transient</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determines which new-runcat sources are also probably transient.</span>
 
@@ -2034,8 +2034,8 @@
     <span class="k">if</span> <span class="n">ins</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to transient table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ins</span><span class="p">,))</span>
 
-
-<span class="k">def</span> <span class="nf">_update_ff_runcat_extractedsource</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_update_ff_runcat_extractedsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._update_ff_runcat_extractedsource">[docs]</a><span class="k">def</span> <span class="nf">_update_ff_runcat_extractedsource</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;We are about to delete the runcats that are inactivated, and</span>
 <span class="sd">    therefore have to set the ff_runcat reference in extractedsource to NULL.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2052,8 +2052,8 @@
     <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
     <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Unset ff_runcat for </span><span class="si">%s</span><span class="s"> extractedsources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">_delete_inactive_runcat</span><span class="p">():</span>
+</div>
+<div class="viewcode-block" id="_delete_inactive_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_inactive_runcat">[docs]</a><span class="k">def</span> <span class="nf">_delete_inactive_runcat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the one-to-many associations from temprunningcatalog,</span>
 <span class="sd">    and delete the inactive rows from runningcatalog.</span>
 
@@ -2067,7 +2067,7 @@
 <span class="s"> WHERE inactive = TRUE</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre></div>
+</pre></div></div>
 
           </div>
         </div>

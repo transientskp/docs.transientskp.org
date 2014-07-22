@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tkp.database.generic – generic database functions &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp.db.generic – generic data-query generation functions &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Database package" href="index.html" />
-    <link rel="next" title="tkp.database.monitoringlist – monitoringlist database functions" href="monitoringlist.html" />
-    <link rel="prev" title="tkp.database.general – general database functions" href="general.html" /> 
+    <link rel="next" title="tkp.db.monitoringlist – monitoringlist database functions" href="monitoringlist.html" />
+    <link rel="prev" title="tkp.db.general – general database functions" href="general.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,14 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="monitoringlist.html" title="tkp.database.monitoringlist – monitoringlist database functions"
+          <a href="monitoringlist.html" title="tkp.db.monitoringlist – monitoringlist database functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="general.html" title="tkp.database.general – general database functions"
+          <a href="general.html" title="tkp.db.general – general database functions"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Database package</a> &raquo;</li> 
       </ul>
     </div>  
@@ -59,9 +59,92 @@
           <div class="body">
             
   <div class="section" id="module-tkp.db.generic">
-<span id="tkp-database-generic-generic-database-functions"></span><span id="database-generic"></span><h1><tt class="xref py py-mod docutils literal"><span class="pre">tkp.database.generic</span></tt> &#8211; generic database functions<a class="headerlink" href="#module-tkp.db.generic" title="Permalink to this headline">¶</a></h1>
+<span id="tkp-db-generic-generic-data-query-generation-functions"></span><span id="database-generic"></span><h1><a class="reference internal" href="#module-tkp.db.generic" title="tkp.db.generic: generic database stuff"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.generic</span></tt></a> &#8211; generic data-query generation functions<a class="headerlink" href="#module-tkp.db.generic" title="Permalink to this headline">¶</a></h1>
 <p>A collection of generic functions used to generate SQL queries
 and return data in an easy to use format such as dictionaries.</p>
+<dl class="function">
+<dt id="tkp.db.generic.columns_from_table">
+<tt class="descclassname">tkp.db.generic.</tt><tt class="descname">columns_from_table</tt><big>(</big><em>table</em>, <em>keywords=None</em>, <em>alias=None</em>, <em>where=None</em>, <em>order=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/generic.html#columns_from_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.generic.columns_from_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain specific column (keywords) values from &#8216;table&#8217;, with
+kwargs limitations.</p>
+<p>A very simple helper function, that builds an SQL query to obtain
+the specified columns from &#8216;table&#8217;, and then executes that
+query. Optionally, the WHERE clause can be specified using the
+where dictionary. It returns a list of a
+dict (with the originally supplied keywords as dictionary keys),
+which can be empty.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">columns_from_table</span><span class="p">(</span><span class="s">&#39;image&#39;</span><span class="p">,</span>             <span class="n">keywords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;taustart_ts&#39;</span><span class="p">,</span> <span class="s">&#39;tau_time&#39;</span><span class="p">,</span> <span class="s">&#39;freq_eff&#39;</span><span class="p">,</span> <span class="s">&#39;freq_bw&#39;</span><span class="p">],</span> <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;imageid&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="go">    [{&#39;freq_eff&#39;: 133984375.0, &#39;taustart_ts&#39;: datetime.datetime(2010, 10, 9, 9, 4, 2), &#39;tau_time&#39;: 14400.0, &#39;freq_bw&#39;: 1953125.0}]</span>
+</pre></div>
+</div>
+<p>This builds the SQL query:
+&#8220;SELECT taustart_ts, tau_time, freq_eff, freq_bw FROM image WHERE imageid=1&#8221;</p>
+<p>This function is implemented mainly to abstract and hide the SQL
+functionality from the Python interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>conn</strong> &#8211; database connection object</li>
+<li><strong>table</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; database table name</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Kwargs:</p>
+<blockquote>
+<div><p>keywords (list): column names to select from the table. None indicates all (&#8216;*&#8217;)</p>
+<dl class="docutils">
+<dt>where (dict): where clause for the query, specified as a set</dt>
+<dd>of &#8216;key = value&#8217; comparisons. Comparisons are and-ed
+together. Obviously, only &#8216;is equal&#8217; comparisons are
+possible.</dd>
+<dt>alias (dict): Chosen aliases for the column names,</dt>
+<dd>used when constructing the returned list of dictionaries</dd>
+</dl>
+<p>order (string): ORDER BY key.</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(list): list of dicts. Each dict contains the given keywords,
+or all if keywords=None. Each element of the list
+corresponds to a table row.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.generic.convert_db_rows_to_dicts">
+<tt class="descclassname">tkp.db.generic.</tt><tt class="descname">convert_db_rows_to_dicts</tt><big>(</big><em>results</em>, <em>cursor_description</em>, <em>alias_map=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/generic.html#convert_db_rows_to_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.generic.convert_db_rows_to_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of rows as returned by cursor.fetchall(),
+converts to a list of dictionaries.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.generic.get_db_rows_as_dicts">
+<tt class="descclassname">tkp.db.generic.</tt><tt class="descname">get_db_rows_as_dicts</tt><big>(</big><em>cursor</em>, <em>alias_map=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/generic.html#get_db_rows_as_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.generic.get_db_rows_as_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grab results of cursor.fetchall(), convert to a list of dictionaries.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.generic.set_columns_for_table">
+<tt class="descclassname">tkp.db.generic.</tt><tt class="descname">set_columns_for_table</tt><big>(</big><em>table</em>, <em>data=None</em>, <em>where=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/generic.html#set_columns_for_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.generic.set_columns_for_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set specific columns (keywords) for &#8216;table&#8217;, with &#8216;where&#8217;
+limitations.</p>
+<p>A simple helper function, that builds an SQL query to update the
+specified columns given by data for &#8216;table&#8217;, and then executes
+that query. Optionally, the WHERE clause can be specified using
+the &#8216;where&#8217; dictionary.</p>
+<p>The data argument is a dictionary with the names and corresponding
+values of the columns that need to be updated.</p>
+</dd></dl>
+
 </div>
 
 
@@ -75,10 +158,10 @@ and return data in an easy to use format such as dictionaries.</p>
             </a></p>
   <h4>Previous topic</h4>
   <p class="topless"><a href="general.html"
-                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.database.general</span></tt> &#8211; general database functions</a></p>
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.general</span></tt> &#8211; general database functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="monitoringlist.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.database.monitoringlist</span></tt> &#8211; monitoringlist database functions</a></p>
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.monitoringlist</span></tt> &#8211; monitoringlist database functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/devref/tkp/database/generic.txt"
@@ -111,14 +194,14 @@ and return data in an easy to use format such as dictionaries.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="monitoringlist.html" title="tkp.database.monitoringlist – monitoringlist database functions"
+          <a href="monitoringlist.html" title="tkp.db.monitoringlist – monitoringlist database functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="general.html" title="tkp.database.general – general database functions"
+          <a href="general.html" title="tkp.db.general – general database functions"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >Library &amp; API</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
           <li><a href="index.html" >Database package</a> &raquo;</li> 
       </ul>
     </div>
