@@ -59,113 +59,57 @@
             
   <div class="section" id="database">
 <span id="database-section"></span><h1>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">The information on this page is old and, in places, outdated.</p>
-</div>
 <p>This section concerns the (MonetDB or PostgreSQL) database that is used to
-store extracted sources and determine variable sources. It does not deal with
-the PostgreSQL database used by BBS.</p>
-<p>The default scratch database, both on heastro1 and CEP, is simply
-called tkp; the login and password are both tkp as well. On heastro1,
-the database server is heastro1 or localhost, on CEP ldb001.</p>
-<div class="section" id="interactive-login">
-<h2>Interactive login<a class="headerlink" href="#interactive-login" title="Permalink to this headline">¶</a></h2>
-<p>You can login to the scratch database using the :command`mclient` command
-(on lhn001, best is probably to use a locally build version, eg
-<strong class="command">/home/rol/.local/bin/mclient</strong>. On heastro1,
-it&#8217;s <strong class="command">/opt/monetdb/bin/mclient</strong>).</p>
-<p>This allows you to manually inspect the data that is stored in the
-database, which is sometimes useful for debugging purposes.</p>
-<p>You will need a <tt class="file docutils literal"><span class="pre">$HOME/.monetdb</span></tt> file that contains the login
-details (user and password). The following should work:</p>
-<div class="highlight-python"><div class="highlight"><pre>$&gt; cat &gt; ~/.monetdb &lt;&lt;EOF
-user=tkp
-password=tkp
-EOF
-$&gt; mclient -dtkp [-hldb001]
-Welcome to mclient, the MonetDB/SQL interactive terminal
-Database: MonetDB v5.18.4, &#39;tkp&#39;
-Type \q to quit, \? for a list of available commands
-auto commit mode: on
-sql&gt;
+store extracted sources and determine variable sources.</p>
+<div class="section" id="creating-a-database">
+<h2>Creating a database<a class="headerlink" href="#creating-a-database" title="Permalink to this headline">¶</a></h2>
+<p>When <a class="reference internal" href="../../getstart/installation.html#installation"><em>installing the TraP</em></a> you will have installed and
+configured a pipeline database management system and configured it to allow
+access to authorized users.</p>
+<p>A single database management system can support a number of active databases.
+Each database can contain the results from a number of separate pipeline runs.
+Creating multiple databases can be convenient in a range of situations. For
+example, different databases could correspond to different science projects,
+or to different end users.</p>
+<p>The procedure for creating a database varies slightly between PostgreSQL and
+MonetDB.</p>
+<div class="section" id="monetdb">
+<h3>MonetDB<a class="headerlink" href="#monetdb" title="Permalink to this headline">¶</a></h3>
+<p>Set the details of the database you would like to create in the <tt class="docutils literal"><span class="pre">database</span></tt>
+section of your <a class="reference internal" href="../../userref/config/pipeline_cfg.html#pipeline-cfg"><em>Project Configuration File</em></a>. These include the host and port number of
+the system running the database management system, the name of the database,
+and the username and password of a user that will have access to that
+database. The last three are all at your discretion: choose appropriate
+database and user names, and make sure the password is secure.</p>
+<p>In addition, when configuring MonetDB, you will have set a passphrase. This
+passphrase provides the appropriate administrative access to create new
+databases and users on the database management system. Specify it in the
+pipeline configuration.</p>
+<p>Finally, run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initdb
 </pre></div>
 </div>
-<p>The <em class="xref std std-option">-h</em> host option is only necessary if you are connecting to
-a database running on a different machine than the one you are currently logged
-in to.</p>
-<p>If you do not want to create a <tt class="file docutils literal"><span class="pre">.monetdb</span></tt> file or want to (temporarily)
-access another database, simply use the <em class="xref std std-option">-u</em> option to use
-a different login; the password will be asked interactively.</p>
-<p>If you have your own MonetDB database, you may occasionaly need to update the
-tables to the current definition. These table and function definitions
-are stored in the TKP daily build directory, in the database
-subdirectory. You probably first want to create a dump of any contents
-you&#8217;d like to save (using the <strong class="command">sql&gt;\D</strong> command on the
-<tt class="docutils literal"><span class="pre">sql&gt;</span></tt> prompt; see <strong class="command">sql&gt;\?</strong>). After that, remove all tables
-(<strong class="command">sql&gt;drop table &lt;name&gt; cascade;</strong>. Do this for all tables)
-and possibly even functions (you can get an overview of the latter
-using <strong class="command">sql&gt;select name from sys.functions where mod =
-&#8216;user&#8217;;</strong>).</p>
-<p>Then, cd into the daily build <tt class="file docutils literal"><span class="pre">database/batches</span></tt>
-directory(<tt class="file docutils literal"><span class="pre">/opt/tkp/tkp/database/batches</span></tt> on heastro1 and
-<tt class="file docutils literal"><span class="pre">/home/rol/tkp/tkp/database/batches</span></tt> on lfe001), and run:</p>
-<div class="highlight-python"><div class="highlight"><pre>$&gt; ./setup.db.batch --no-create-database ldb001 &lt;dbname&gt;
+<p>Your database will be created, and is then available for use.</p>
+</div>
+<div class="section" id="postgresql">
+<h3>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h3>
+<p>When installing PostgreSQL, you will have created a user with administrative
+powers. In order to create a new database, you must log in as that user.
+Therefore, edit the <tt class="docutils literal"><span class="pre">database</span></tt> section of your <a class="reference internal" href="../../userref/config/pipeline_cfg.html#pipeline-cfg"><em>Project Configuration File</em></a>. Set the
+host name and port number of the system running the database management
+system, provide the username and password of the administrative user, and set
+the database name to the name of the database you wish to create. Then run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initdb
 </pre></div>
 </div>
-<p>(Again, this requires a correct <tt class="file docutils literal"><span class="pre">~/.monetdb</span></tt> file.)
-The <em class="xref std std-option">--no-create-database</em> will prevent the script from completely
-deleting and recreating the database, and instead it will just create
-the necessary tables and functions.</p>
-<p>You can check if everything went correct (assuming you didn&#8217;t see any
-errors in the output from the setup.db.batch script in the first
-place) by logging in to your database (<strong class="command">$&gt; mclient -lsql -d&lt;dbname&gt;
--h&lt;dbhost&gt;</strong>. Then execute the following commands:</p>
-<div class="highlight-python"><div class="highlight"><pre>sql&gt; select * from versions;
-</pre></div>
+<p>This will create a database with the name you have requested. It will also
+create a new user which has username and password equal to the database name,
+and which has access to the database. You should use this user to access the
+database when running pipeline jobs. Therefore, you will need to edit your
+pipeline configuration and replace the name and password of the superuser with
+the name of the newly created database.</p>
+<p>Your database is now available for use.</p>
 </div>
-<p>The first command should show a creation date of today.</p>
-<p>Finally, for the latest-greatest and possibly unstable version of the database
-setup, use <cite>tkpdev</cite> instead of <cite>tkp</cite>. This database gets wiped every night and
-not backed-up though, so do not store anything valuable in it.</p>
-</div>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>If there is no working database on your system, you will have to install
-MonetDB yourself. Grab the most recent (stable) release from www.monetdb.org,
-then install in the usual way:</p>
-<div class="highlight-python"><div class="highlight"><pre>$&gt; ./configure
-$&gt; make
-($&gt; make check)
-$&gt; (sudo) make install
-</pre></div>
-</div>
-<p>Make sure the installation <cite>bin</cite> directory is in your path, then start up the
-database server:</p>
-<div class="highlight-python"><div class="highlight"><pre>$&gt; monetdbd start
-</pre></div>
-</div>
-<p>(notice the extra &#8216;d&#8217; at the end: monetdb daemon.)</p>
-<p>This will start one or more <cite>mserver5</cite> processes that take care of connections
-to the database; the number of <cite>mserver5</cite> processes is dependent on the number
-of databases in use.</p>
-<p>You can have the databases stored in a different place than your default installation. This is convenient when you upgrade to newer MonetDB version; you can then still use the databases from the previous version. You have to point <cite>monetdbd</cite> to your so-called database farm. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>$&gt; monetdbd start /opt/dbfarm
-</pre></div>
-</div>
-<p>You can check the status of any databases on your system:</p>
-<div class="highlight-python"><div class="highlight"><pre>$&gt; monetdb status
-</pre></div>
-</div>
-<p>(Note: if you are using a non-default database farm location, as mentioned above, you don&#8217;t need to give the path to the <cite>monetdb</cite> executable: it will normally find the correct <cite>mserver</cite> process.</p>
-<p>You can easily create and then start a database:</p>
-<div class="highlight-python"><div class="highlight"><pre>$&gt; monetdb create &lt;name&gt;
-$&gt; monetdb release &lt;name&gt;
-$&gt; monetdb start &lt;name&gt;
-</pre></div>
-</div>
-<p>Normally, the setup script in the <cite>batches/</cite> subdirectory of the database
-directory will create the database automatically for you.</p>
 </div>
 </div>
 
@@ -181,8 +125,11 @@ directory will create the database automatically for you.</p>
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Database</a><ul>
-<li><a class="reference internal" href="#interactive-login">Interactive login</a></li>
-<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#creating-a-database">Creating a database</a><ul>
+<li><a class="reference internal" href="#monetdb">MonetDB</a></li>
+<li><a class="reference internal" href="#postgresql">PostgreSQL</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
