@@ -68,11 +68,10 @@ deal with source association.</p>
 <dd><p>Checks whether an image is close to the meridian ra = 0 or ra = 360</p>
 <p>When so, the association query needs to be rewritten to take into account
 sources across the 0/360 meridian.</p>
-<p>The query returns:
-q_across: true, if the extraction region of the image crosses</p>
-<blockquote>
-<div>the ra=0/360 border</div></blockquote>
+<p>The query returns:</p>
 <dl class="docutils">
+<dt>q_across: true, if the extraction region of the image crosses</dt>
+<dd>the ra=0/360 border</dd>
 <dt>ra_min:   the min value of the ra-between for the normal case,</dt>
 <dd>when the image is outside the ra=0/360 meridian,
 otherwise NULL</dd>
@@ -85,12 +84,11 @@ for the case of a cross-meridian image.
 F.ex. using a search radius of 5 degrees, and when a source is at
 359.99 the ra-betweens 1 and 2 are :
 ... AND (ra BETWEEN ra_min1 AND ra_max1 OR ra BETWEEN ra_min2 AND ra_max2) ...
-... AND (ra BETWEEN 354.99 AND 360 OR ra BETWEEN 0 AND 4.99) ...
-ra_min1:  the min value of the high-end ra-between, if the</p>
-<blockquote>
-<div>extraction region of the image crosses the ra=0/360 border,
-otherwise NULL</div></blockquote>
+... AND (ra BETWEEN 354.99 AND 360 OR ra BETWEEN 0 AND 4.99) ...</p>
 <dl class="docutils">
+<dt>ra_min1:  the min value of the high-end ra-between, if the</dt>
+<dd>extraction region of the image crosses the ra=0/360 border,
+otherwise NULL</dd>
 <dt>ra_max1:  the min value of the high-end ra-between, if the</dt>
 <dd>extraction region of the image crosses the ra=0/360 border,
 otherwise NULL</dd>
@@ -103,8 +101,16 @@ to get the search area.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="tkp.db.associations._delete_1_to_many_inactive_assoc">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_delete_1_to_many_inactive_assoc</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_delete_1_to_many_inactive_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._delete_1_to_many_inactive_assoc" title="Permalink to this definition">¶</a></dt>
+<dt id="tkp.db.associations._delete_1_to_many_inactive_assocskyrgn">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_delete_1_to_many_inactive_assocskyrgn</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_delete_1_to_many_inactive_assocskyrgn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._delete_1_to_many_inactive_assocskyrgn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the assocskyrgn links of the old runcat</p>
+<p>Since we replaced this runcat.id with multiple new ones, we now
+delete the old links.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.associations._delete_1_to_many_inactive_assocxtrsource">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_delete_1_to_many_inactive_assocxtrsource</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_delete_1_to_many_inactive_assocxtrsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._delete_1_to_many_inactive_assocxtrsource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the association pairs of the old runcat from assocxtrsource</p>
 <p>NOTE: It might sound confusing, but those are not qualified
 as inactive in tempruncat (read below).
@@ -116,14 +122,6 @@ the ones that were not set to inactive for the many-to-many associations).</p>
 <dt>NOTE: We do not have to flag these rows as inactive,</dt>
 <dd>no furthr processing depends on these in the assoc run</dd>
 </dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="tkp.db.associations._delete_1_to_many_inactive_assocskyrgn">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_delete_1_to_many_inactive_assocskyrgn</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_delete_1_to_many_inactive_assocskyrgn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._delete_1_to_many_inactive_assocskyrgn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete the assocskyrgn links of the old runcat</p>
-<p>Since we replaced this runcat.id with multiple new ones, we now
-delete the old links.</p>
 </dd></dl>
 
 <dl class="function">
@@ -180,6 +178,66 @@ the runningcatalog.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="tkp.db.associations._determine_newsource_previous_limits">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_determine_newsource_previous_limits</tt><big>(</big><em>image_id</em>, <em>new_source_sigma_margin</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_determine_newsource_previous_limits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._determine_newsource_previous_limits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines which new-runcat sources are also probably transient.</p>
+<p>Looks up previous images relevant to this source-position, using the
+following criteria - images must:</p>
+<blockquote>
+<div><ul class="simple">
+<li>overlap the new-source position, according to the skyregion
+information;</li>
+<li>be in the same dataset;</li>
+<li>be in the same frequency band;</li>
+<li>have an earlier timestamp than the current image;</li>
+<li>have not been rejected.</li>
+</ul>
+</div></blockquote>
+<p>For those images we calculate the per-previous-image detection-thresholds,
+which are defined as follows.</p>
+<p>A new source is &#8216;possibly transient&#8217; (type 0) if it
+passes the following tests:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Was not detected in a skyregion being surveyed for the first time.</p>
+</li>
+<li><p class="first">Has a flux-value such that:</p>
+<blockquote>
+<div><p>flux &gt; MIN_OVER_I [ (rms_min_I*(det_I + new_source_sigma_margin) ]</p>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div>(where I indexes the images)
+i.e. if it was a steady-source, it should have been already detected if
+it was in the <em>low-RMS</em> area of the previous image with best detection
+threshold, even allowing for noise fluctuations.</div></blockquote>
+</div></blockquote>
+<p>Furthermore, a new source is &#8216;likely transient&#8217; (type 1) if it is additionally
+bright enough that, if it were a steady source, it should have been detected
+even if it was in the <em>high-RMS</em> area of the aforementioned &#8216;low rms_min&#8217;
+image, i.e.</p>
+<blockquote>
+<div>flux &gt; (rms_max_I*(det_I + new_source_sigma_margin))</div></blockquote>
+<p>Note that, once we have located the image with best &#8216;low rms threshold&#8217;,
+we then use that image to <em>also</em> generate the &#8216;high rms threshold&#8217;.
+Strictly speaking, this is non-optimal - we should run a fresh search
+against all images to find the best &#8216;high rms threshold&#8217;. However, I&#8217;m
+working on the assumption that most of
+the time the image with best low-threshold will also have best
+high-threshold, and even when that is not the case we won&#8217;t lose too much
+accuracy. The benefits of this assumption are simplicity, and possibly
+faster performance, but this might need to be re-examined in future,
+especially if we start ingesting images of wildly differing sizes and
+noise non-uniformity characteristics (e.g. single pointings vs mosaics) etc.</p>
+<p>We use peak flux (f_peak) as the flux value here, since that is likely
+to be the deciding factor in whether a source gets blindly extracted or not.
+(NB This is a hunch, rigorous investigation welcome.)</p>
+<p>We set the siglevel to 1 and the variability indices 0 for
+new transients.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="tkp.db.associations._empty_temprunningcatalog">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_empty_temprunningcatalog</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_empty_temprunningcatalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._empty_temprunningcatalog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the temporary storage table</p>
@@ -191,20 +249,18 @@ the current observed sources.</p>
 <dt id="tkp.db.associations._flag_1_to_many_inactive_runcat">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_flag_1_to_many_inactive_runcat</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_flag_1_to_many_inactive_runcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._flag_1_to_many_inactive_runcat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flag the old runcat ids in the runningcatalog to inactive</p>
-<p>We do not delete them yet, because we need them later on.
-Since we replaced this runcat.id with multiple new one, we first
-flag it as inactive, after which we delete it from the runningcatalog</p>
+<p>We do not delete them yet, because we still need to clear up all the
+superseded entries in assocskyrgn, etc.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="tkp.db.associations._flag_1_to_many_inactive_tempruncat">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_flag_1_to_many_inactive_tempruncat</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_flag_1_to_many_inactive_tempruncat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._flag_1_to_many_inactive_tempruncat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete the one-to-many associations from temprunningcatalog,
-and delete the inactive rows from runningcatalog.</p>
-<p>We do not delete them yet, because we need them later on.
-After the one-to-many associations have been processed,
-they can be deleted from the temporary table and
-the runningcatalog.</p>
+<dd><p>Flag the one-to-many associations from temprunningcatalog.</p>
+<p>(Since we are done processing them, now.)</p>
+<p>We do not delete them yet- if we did,
+we would not be able to cross-match extractedsources to determine
+which sources did not have a match in temprunningcatalog (&#8216;new&#8217; sources).</p>
 </dd></dl>
 
 <dl class="function">
@@ -241,8 +297,26 @@ for this band.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="tkp.db.associations._insert_1_to_many_assoc">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_assoc</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_assoc" title="Permalink to this definition">¶</a></dt>
+<dt id="tkp.db.associations._insert_1_to_many_assocskyrgn">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_assocskyrgn</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_assocskyrgn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_assocskyrgn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy skyregion associations from old runcat entries for new one-to-many
+runningcatalog entries.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.associations._insert_1_to_many_basepoint_assocxtrsource">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_basepoint_assocxtrsource</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_basepoint_assocxtrsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_basepoint_assocxtrsource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert &#8216;base points&#8217; for one-to-many associations</p>
+<p>Before continuing, we have to insert the &#8216;base points&#8217; of the associations,
+i.e. the links between the new runningcatalog entries
+and their associated (new) extractedsources.</p>
+<p>We also calculate the variability indices at the timestamp of the
+the current image.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.associations._insert_1_to_many_replacement_assocxtrsource">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_replacement_assocxtrsource</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_replacement_assocxtrsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_replacement_assocxtrsource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert links into the association table between the new runcat
 entries and the old extractedsources.
 (New to New (&#8216;basepoint&#8217;) links have been added earlier).</p>
@@ -256,17 +330,6 @@ runningcatalog_flux.</p>
 1. We do not update the distance_arcsec and r values of the pairs.</p>
 <p>TODO:
 1. Why not?</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tkp.db.associations._insert_1_to_many_basepoint_assoc">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_basepoint_assoc</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_basepoint_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_basepoint_assoc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Insert base points for one-to-many associations</p>
-<p>Before continuing, we have to insert the &#8216;base points&#8217; of the associations,
-i.e. the links between the new runningcatalog entries
-and their associated (new) extractedsources.</p>
-<p>We also calculate the variability indices at the timestamp of the
-the current image.</p>
 </dd></dl>
 
 <dl class="function">
@@ -307,16 +370,16 @@ Therefore, we have to update the references to these new ids as well.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="tkp.db.associations._insert_new_assoc">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_new_assoc</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_new_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_new_assoc" title="Permalink to this definition">¶</a></dt>
+<dt id="tkp.db.associations._insert_new_assocxtrsource">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_new_assocxtrsource</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_new_assocxtrsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_new_assocxtrsource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert new associations for unknown sources</p>
-<p>Extractedsources for which not a counterpart was found in the
-runningcatalog, will be added as a new source to the assocxtrsource,
+<p>Extractedsources for which no counterpart was found in the
+runningcatalog will be added as a new source to the assocxtrsource,
 runningcatalog and runningcatalog_flux tables.
 This function inserts the new source in the assocxtrsource table,
 where the runcat and xtrsrc ids are identical to each other
 in order to have this data point included in the light curve.</p>
-<p>The left outer join in combination with the trc0.xtrsrc is null,
+<p>The left outer join in combination with the tmprc.xtrsrc is null,
 selects the extracted sources that were not present in
 temprunningcatalog, i.e. did not have a counterpart in the runningcatalog.
 These were just inserted as new sources in the runningcatalog
@@ -359,50 +422,6 @@ we need to determine which previous fields of view (skyrgns)
 we expect to see it in.
 This knowledge helps us to make accurate guesses as whether a new
 source is really transient or simply being surveyed for the first time.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tkp.db.associations._insert_new_transient">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_new_transient</tt><big>(</big><em>image_id</em>, <em>new_source_sigma_margin</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_new_transient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_new_transient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determines which new-runcat sources are also probably transient.</p>
-<p>Looks up previous images relevant to this source-position, using the
-following criteria - images must:</p>
-<blockquote>
-<div><ul class="simple">
-<li>overlap the new-source position, according to the skyregion information</li>
-<li>be in the same dataset</li>
-<li>be in the same frequency band</li>
-<li>have an earlier timestamp than the current image,</li>
-<li>have not been rejected.</li>
-</ul>
-</div></blockquote>
-<p>For those images we calculate the per-previous-image detection-thresholds,
-which are defined as follows.</p>
-<p>A new source is &#8216;possibly transient&#8217; (type 0) if it
-passes the following tests:</p>
-<blockquote>
-<div><p>-Was not detected in a skyregion being surveyed for the first time.
--Has a flux-value such that:</p>
-<blockquote>
-<div><blockquote>
-<div>flux &gt; MIN_OVER_I [ (rms_min_I*(det_I + new_source_sigma_margin) ]</div></blockquote>
-<p>(where I indexes the images)
-i.e. if it was a steady-source, it should have been detected if
-it was in the <em>low-RMS</em> area of the lowest-RMS previous image overlapping
-this position, even allowing for noise fluctuations.</p>
-</div></blockquote>
-</div></blockquote>
-<p>Furthermore, a new source is &#8216;likely transient&#8217; (type 1) if it is additionally
-bright enough that, if it were a steady source, it should have been detected
-even if it was in the <em>high-RMS</em> area of the lowest-RMS image overlapping this
-position, i.e.</p>
-<blockquote>
-<div>flux &gt; MIN_OVER_I [ (rms_max_I*(det_I + new_source_sigma_margin) ]</div></blockquote>
-<p>We use peak flux (f_peak) as the flux value here, since that is likely
-to be the deciding factor in whether a source gets blindly extracted or not.
-(NB This is a hunch, rigorous investigation welcome.)</p>
-<p>We set the siglevel to 1 and the variability indices 0 for
-new transients.</p>
 </dd></dl>
 
 <dl class="function">
@@ -475,6 +494,8 @@ therefore have to set the ff_runcat reference in extractedsource to NULL.</p>
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">associate_extracted_sources</tt><big>(</big><em>image_id</em>, <em>deRuiter_r</em>, <em>new_source_sigma_margin</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#associate_extracted_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations.associate_extracted_sources" title="Permalink to this definition">¶</a></dt>
 <dd><p>Associate extracted sources with sources detected in the running
 catalog.</p>
+<p>See the &#8220;developer&#8217;s reference&#8221; section of the docs for a step-by-step
+breakdown of the logic encapsulated here.</p>
 <p>The dimensionless distance between two sources is given by the
 &#8220;De Ruiter radius&#8221;, see Chapters 2 &amp; 3 of Scheers&#8217; thesis.</p>
 </dd></dl>

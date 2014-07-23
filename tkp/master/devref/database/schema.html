@@ -83,16 +83,23 @@ pair.</dd>
 runningcatalog sources, and m the number of extractedsources. (The
 assignment of numbers is to association types is arbitrary.)</p>
 <dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">3</span></tt></dt>
-<dd>1-1 association</dd>
 <dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">2</span></tt></dt>
-<dd>base point of a 1-n (one-to-many) association (relates to <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">6</span></tt>)</dd>
-<dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">6</span></tt></dt>
-<dd>associations of 1-n (one-to-many) type. These are updates of
-pre-existing associations, due to the 1-n case (relates to <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span>
-<span class="pre">2</span></tt> association)</dd>
+<dd>Base point of a 1-n (one-to-many) association (relates to <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">6</span></tt>)</dd>
+<dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">3</span></tt></dt>
+<dd>1-1 association.</dd>
 <dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">4</span></tt></dt>
 <dd>0-1 (zero-to-one) association, i.e. a new source.</dd>
+<dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">6</span></tt></dt>
+<dd>Associations of 1-n (one-to-many) type. These are updates of
+pre-existing associations, due to the 1-n case (relates to <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span>
+<span class="pre">2</span></tt> association).</dd>
+<dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">7</span></tt></dt>
+<dd>Forced-fit to position of the null detection of a known source.</dd>
+<dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">8</span></tt></dt>
+<dd>Initial forced fit to a monitoring list position.</dd>
+<dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">9</span></tt></dt>
+<dd>Subsequent forced fit to a monitoring list position (relates to
+<tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">8</span></tt>.</dd>
 </dl>
 <p class="last">Note that many-to-1 relations reduce to 1-to-1 and 1-to-many associations.
 Therefore, there is no type specifying such a case.</p>
@@ -123,19 +130,19 @@ This table records which <a class="reference internal" href="#schema-runningcata
 we expect to see in any given skyregion. This serves two purposes:
 it allows us to determine when we <em>do not</em> see previously detected sources,
 presumably because they have dropped in flux
-(see <tt class="xref py py-func docutils literal"><span class="pre">tkp.db.nd.get_nulldetections()</span></tt>).
+(see <a class="reference internal" href="../tkp/database/nulldetections.html#tkp.db.nulldetections.get_nulldetections" title="tkp.db.nulldetections.get_nulldetections"><tt class="xref py py-func docutils literal"><span class="pre">get_nulldetections()</span></tt></a>).
 It also allows us to determine whether a new runningcatalog entry (i.e.
 a newly detected source without associated historical detections) is being
 detected for the first time because it is actually a new transient, or
 if it is simply the first time that region of sky has been surveyed
-(see <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_transient" title="tkp.db.associations._insert_new_transient"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_new_transient()</span></tt></a>).</p>
+(see <tt class="xref py py-func docutils literal"><span class="pre">_insert_new_transient()</span></tt>).</p>
 <p>This table is updated under 2 circumstances:</p>
 <ul class="simple">
 <li>A new skyregion is processed, and associations must be made with pre-existing
 runcat entries (see SQL function <tt class="docutils literal"><span class="pre">updateSkyRgnMembers</span></tt>).</li>
 <li>A new runningcatalog source is added, and must be associated with pre-existing
 skyregions
-(see <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_skyrgn_assocs" title="tkp.db.associations._insert_new_runcat_skyrgn_assocs"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_new_runcat_skyrgn_assocs()</span></tt></a>).</li>
+(see <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_skyrgn_assocs" title="tkp.db.associations._insert_new_runcat_skyrgn_assocs"><tt class="xref py py-func docutils literal"><span class="pre">_insert_new_runcat_skyrgn_assocs()</span></tt></a>).</li>
 </ul>
 <dl class="docutils">
 <dt><strong>runcat</strong></dt>
@@ -679,6 +686,11 @@ in a previously surveyed sky region. Type 0 transients may be a fluctuating
 steady source that is located in a high-RMS region, while type 1 transients
 are bright enough that we can be fairly certain they are really new.
 Type 2 transients are identified by their variability indices.</dd>
+<dt><strong>previous_limits_image</strong></dt>
+<dd>The ID of the previous image with the best upper limits on previous
+detections of this source. Can be used to calculate the significance
+level of the new-source detection.
+(See <tt class="xref py py-func docutils literal"><span class="pre">_insert_new_transient()</span></tt> for details.)</dd>
 <dt><strong>status</strong></dt>
 <dd>Currently not set</dd>
 <dt><strong>t_start</strong></dt>

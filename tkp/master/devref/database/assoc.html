@@ -674,8 +674,8 @@ nature and severity of the problem.</li>
 </div>
 <div class="section" id="detailed-logic-flow">
 <span id="database-assoc-details"></span><h2>Detailed logic flow<a class="headerlink" href="#detailed-logic-flow" title="Permalink to this headline">¶</a></h2>
-<p>Herein we give an algorithmic description of how the source association routines
-work.</p>
+<p>Herein we give an algorithmic description of how the source association
+routines work.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">The following detail is really aimed at developers or particularly
@@ -690,21 +690,13 @@ which does what it says on the tin.</p>
 </div>
 <div class="section" id="generate-a-list-of-candidate-runningcatalog-extractedsource-associations">
 <h3>Generate a list of candidate runningcatalog-extractedsource associations<a class="headerlink" href="#generate-a-list-of-candidate-runningcatalog-extractedsource-associations" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>_insert_temprunningcatalog(image_id, deRuiter_r, radius=0.03)
-Select matched sources
-
-Here we select the extractedsource that have a positional match
-with the sources in the running catalogue table (runningcatalog).
-Those sources which *do* have a potential match, will be inserted into the
-temporary running catalogue table (temprunningcatalog).
-</pre></div>
-</div>
-<p>(See also: <a class="reference internal" href="schema.html#database-temprunningcatalog"><em>temprunningcatalog</em></a>. )</p>
+<p>Performed by: <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_temprunningcatalog" title="tkp.db.associations._insert_temprunningcatalog"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_temprunningcatalog()</span></tt></a></p>
+<p>(See also: <a class="reference internal" href="schema.html#database-temprunningcatalog"><em>temprunningcatalog</em></a> table. )</p>
 <p>This function generates a temporary table listing possible associations with
 previously catalogued sources.</p>
-<dl class="docutils">
-<dt>For a given image_id,</dt>
-<dd><ul class="first last simple">
+<p>For a given <tt class="docutils literal"><span class="pre">image_id</span></tt>:</p>
+<blockquote>
+<div><ul class="simple">
 <li>Select all the relevant extractedsource entries, and</li>
 <li>For each extractedsource, create a bunch of table entries detailing
 candidate associations with runningcatalog entries which are:<ul>
@@ -721,190 +713,145 @@ the values which would represent an update to the corresponding
 runningcatalog and runningcatalog_flux entries, if the association is later
 determined to be definitive.</li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </div>
 <div class="section" id="trim-the-many-to-many-links-to-prevent-exponentional-database-growth">
 <h3>Trim the &#8216;many-to-many&#8217; links to prevent exponentional database growth<a class="headerlink" href="#trim-the-many-to-many-links-to-prevent-exponentional-database-growth" title="Permalink to this headline">¶</a></h3>
-<p>Especially if we employ a large DeRuiter radius limit, we may generate
-a large number of candidate associations which result in a complex
-web of possible lightcurves. We reduce this to a more manageable situation
-by trimming some of the &#8216;weaker&#8217; candidate associations:</p>
-<div class="highlight-python"><div class="highlight"><pre>_flag_many_to_many_tempruncat()
-Select the many-to-many association pairs in temprunningcatalog.
-
-By flagging the many-to-many associations, we reduce the
-processing to one-to-many and many-to-one (identical to one-to-one)
-relationships
-</pre></div>
-</div>
-<dl class="docutils">
-<dt>First, inspect the temprunningcatalog table:</dt>
-<dd><ul class="first last simple">
+<p>Performed by: <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._flag_many_to_many_tempruncat" title="tkp.db.associations._flag_many_to_many_tempruncat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._flag_many_to_many_tempruncat()</span></tt></a></p>
+<p>Especially if we employ a large DeRuiter radius limit, we may generate a large
+number of candidate associations which result in a complex web of possible
+lightcurves. We reduce this to a more manageable situation by trimming some of
+the &#8216;weaker&#8217; candidate associations.</p>
+<p>First, inspect the temprunningcatalog table:</p>
+<blockquote>
+<div><ul class="simple">
 <li>Select entries for which the extractedsource is listed more than once.</li>
 <li>Of these entries, select those for which the runcat id is listed more than
 once in temprunningcatalog.</li>
-<li>Use this selection to determine the runningcatalog id of minimum
-DeRuiter radius, for each extracted source which is part of a many-to-many
-set.</li>
+<li>Use this selection to determine the runningcatalog id of minimum DeRuiter
+radius, for each extracted source which is part of a many-to-many set.</li>
 <li>Then, using this per-extractedsource minimum DR radius, reapply the above
-filters to select multiply-associated entries, and select all entries
-for which the runcat id  has a larger than  minimum DR radius to the
+filters to select multiply-associated entries, and select all entries for
+which the runcat id  has a larger than  minimum DR radius to the
 extractedsource.</li>
 <li>Return the runcat-extractedsource identifying pair values for all
 non-optimal entries in many-to-many sets.</li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 <p>Finally, use these identifiers to set all these entries as <tt class="docutils literal"><span class="pre">inactive</span> <span class="pre">=</span> <span class="pre">TRUE</span></tt>.</p>
 <p>Or, in pseudo-mathematical terms, tempruncat describes the edges of a graph,
-linking nodes (sources) from two spaces
-(previous runcat entries, newly extracted entries).
-(There are no intra-space links).
-<tt class="docutils literal"><span class="pre">_flag_many_to_many_tempruncat()</span></tt> trims this graph using
-the DeRuiter radius as a weeding tool, to ensure that any connected sub-graph
-has multiple nodes in <em>at most</em> one of the two spaces.</p>
+linking nodes (sources) from two spaces (previous runcat entries, newly
+extracted entries).  (There are no intra-space links).
+<a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._flag_many_to_many_tempruncat" title="tkp.db.associations._flag_many_to_many_tempruncat"><tt class="xref py py-func docutils literal"><span class="pre">_flag_many_to_many_tempruncat()</span></tt></a> trims this graph using the DeRuiter
+radius as a ranking metric, to ensure that any connected sub-graph has
+multiple nodes in <em>at most</em> one of the two spaces.</p>
 </div>
 <div class="section" id="deal-with-the-one-to-many-runcat-to-extractedsource-link-sub-graphs">
 <h3>Deal with the  &#8216;one-to-many&#8217; runcat-to-extractedsource link sub-graphs<a class="headerlink" href="#deal-with-the-one-to-many-runcat-to-extractedsource-link-sub-graphs" title="Permalink to this headline">¶</a></h3>
 <p>When we observe two new sources in the region of a previous known source,
 it is unclear if this is due to increased resolution, or a new source.
 To resolve this, we hedge our bets and replace the old single runcat entry
-with two new entries - these are identical up to the current &#8216;fork&#8217;.</p>
-<div class="highlight-python"><div class="highlight"><pre>    _insert_1_to_many_runcat
-
-Insert new entries for the extracted sources that belong to one-to-many
-associations in the runningcatalog.
-
-(These entries will be assigned new runcat ids).
-
-
-Since for the one-to-many associations (i.e. one runcat source
-associated with multiple extracted sources) we cannot a priori
-decide which counterpart pair is the correct one, or whether all
-are correct (in the case of a higher-resolution image),
-all extracted sources are added as a new source to
-the runningcatalog, and they will replace the (old; lower resolution)
-runcat source of the association.
-
-As a consequence of this, the resolution of the runningcatalog
-is increasing over time.
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre>    _insert_1_to_many_runcat_flux(conn):
-Insert the fluxes of the extracted sources that belong
-to a one-to-many association in the runningcatalog.
-
-Analogous to the runningcatalog, extracted source properties
-are added to the runningcatalog_flux table.
-</pre></div>
-</div>
-<p>These insert the candidate runningcatalog entries which are in one-to-many sets
-as multiple new entries in the runningcatalog (and runningcatalog_flux).
-We will come back later and delete those old entries we have superceded.
-Note that each new runcat entry links one (new) runcat id, and one
-extractedsource id, so the database constraints are satisfied.</p>
-<div class="section" id="insert-1-to-many-basepoint-assoc-and-insert-1-to-many-assoc">
-<h4><tt class="docutils literal"><span class="pre">_insert_1_to_many_basepoint_assoc</span></tt> and <tt class="docutils literal"><span class="pre">_insert_1_to_many_assoc</span></tt><a class="headerlink" href="#insert-1-to-many-basepoint-assoc-and-insert-1-to-many-assoc" title="Permalink to this headline">¶</a></h4>
-<p>We now start updating the assocxtrsource table to account for our 1-to-many
-associations.</p>
-<p><tt class="docutils literal"><span class="pre">_insert_1_to_many_basepoint_assoc</span></tt> adds entries linking the newly inserted
-entries in the runningcatalog, with the newly associated extractedsources.
-These are <tt class="docutils literal"><span class="pre">type=2</span></tt>, i.e. marked as part of 1-to-many sets.</p>
-<p><tt class="docutils literal"><span class="pre">_insert_1_to_many_assoc</span></tt> then inserts new entries into the
-assocxtrsource table, which link the <em>new</em> runcat ids with all the
-old extractedsource ids, which (from previous association runs)
-are associated with the (now superceded) runningcatalog
-entries. These association links are marked as <tt class="docutils literal"><span class="pre">type=6</span></tt>.</p>
-</div>
-</div>
-<div class="section" id="clean-up-database-entries-superceded-by-one-to-many-forks">
-<h3>Clean up database entries superceded by one-to-many forks<a class="headerlink" href="#clean-up-database-entries-superceded-by-one-to-many-forks" title="Permalink to this headline">¶</a></h3>
-<p>Now we clean up all references to runcat entries superceded during our
-processing of 1-to-many sets.</p>
-<p><tt class="docutils literal"><span class="pre">delete_1_to_many_inactive_assoc</span></tt> now deletes the assocxtrsource entries
-referring to superceded runnincatalog ids. We do this by filtering
-temprunningcatalog for the old runcat ids in 1-to-many sets,
-which we have since processed.</p>
-<p><tt class="docutils literal"><span class="pre">delete_1_to_many_inactive_runcat_flux</span></tt> does the same thing, acting on
-the runningcatalog_flux table.</p>
-<p><tt class="docutils literal"><span class="pre">_flag_1_to_many_inactive_runcat</span></tt> now uses the same information to set the
-superceded runcat entries as <tt class="docutils literal"><span class="pre">inactive</span> <span class="pre">=</span> <span class="pre">TRUE</span></tt>.</p>
-<p>Next, <tt class="docutils literal"><span class="pre">_flag_1_to_many_inactive_tempruncat</span></tt> sets the remaining
-&#8216;active&#8217; temprunningcatalog entries in 1-to-many sets to <tt class="docutils literal"><span class="pre">inactive</span> <span class="pre">=</span> <span class="pre">TRUE</span></tt>,
-as we&#8217;ve now finished processing them.</p>
-<p><tt class="docutils literal"><span class="pre">_delete_1_to_many_inactive_transient</span></tt>: using the fact that
-we have set the superceded runningcatalog entries as inactive = TRUE,
-we now delete the old transients.
-We don&#8217;t attempt any update / re-insertion here, instead relying on the
-next <tt class="docutils literal"><span class="pre">transient_search</span></tt> execution to re-identify any valid transients.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">As a result, we may end up mis-identifying the <tt class="docutils literal"><span class="pre">trigger_xtrsrc</span></tt> of
-transients which are deleted and then re-identified.</p>
-</div>
+with two new entries - these are identical up to the current &#8216;fork&#8217;.
+This is done in <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_many_runcat" title="tkp.db.associations._insert_1_to_many_runcat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_many_runcat()</span></tt></a>,
+and <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._flag_1_to_many_inactive_runcat" title="tkp.db.associations._flag_1_to_many_inactive_runcat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._flag_1_to_many_inactive_runcat()</span></tt></a> then
+flags the old entries as ready for deletion.</p>
+<p>Having inserted these new runningcatalog entries, we must copy over all
+the relevant information to new entries in the associated tables, then delete
+the outdated rows; see</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_many_runcat_flux" title="tkp.db.associations._insert_1_to_many_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_many_runcat_flux()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_runcat_flux" title="tkp.db.associations._delete_1_to_many_inactive_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._delete_1_to_many_inactive_runcat_flux()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_many_basepoint_assocxtrsource" title="tkp.db.associations._insert_1_to_many_basepoint_assocxtrsource"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_many_basepoint_assocxtrsource()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_many_replacement_assocxtrsource" title="tkp.db.associations._insert_1_to_many_replacement_assocxtrsource"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_many_replacement_assocxtrsource()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_assocxtrsource" title="tkp.db.associations._delete_1_to_many_inactive_assocxtrsource"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._delete_1_to_many_inactive_assocxtrsource()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_many_assocskyrgn" title="tkp.db.associations._insert_1_to_many_assocskyrgn"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_many_assocskyrgn()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_assocskyrgn" title="tkp.db.associations._delete_1_to_many_inactive_assocskyrgn"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._delete_1_to_many_inactive_assocskyrgn()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_many_transient" title="tkp.db.associations._insert_1_to_many_transient"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_many_transient()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_transient" title="tkp.db.associations._delete_1_to_many_inactive_transient"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._delete_1_to_many_inactive_transient()</span></tt></a></li>
+</ul>
+</div></blockquote>
+<p>Finally, <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._flag_1_to_many_inactive_tempruncat" title="tkp.db.associations._flag_1_to_many_inactive_tempruncat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._flag_1_to_many_inactive_tempruncat()</span></tt></a>
+flags the one-to-many associations in <tt class="docutils literal"><span class="pre">temprunningcatalog</span></tt> as inactive,
+so we can easily distinguish remaining one-to-one associations.</p>
 </div>
 <div class="section" id="process-all-remaining-associations">
 <h3>Process all remaining associations<a class="headerlink" href="#process-all-remaining-associations" title="Permalink to this headline">¶</a></h3>
+<p>Performed by:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_1_assoc" title="tkp.db.associations._insert_1_to_1_assoc"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_1_assoc()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._update_1_to_1_runcat" title="tkp.db.associations._update_1_to_1_runcat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._update_1_to_1_runcat()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._update_1_to_1_runcat_flux" title="tkp.db.associations._update_1_to_1_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._update_1_to_1_runcat_flux()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_1_runcat_flux" title="tkp.db.associations._insert_1_to_1_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_1_to_1_runcat_flux()</span></tt></a></li>
+</ul>
+</div></blockquote>
 <p>We now process all the remaining active associations listed in temprunningcatalog.</p>
-<div class="highlight-python"><div class="highlight"><pre>_insert_1_to_1_assoc:
-Insert remaining associations from temprunningcatalog into assocxtrsource.
-</pre></div>
-</div>
-<p><tt class="docutils literal"><span class="pre">_insert_1_to_1_assoc</span></tt> Inserts all the remaining active links listed in tempruncat, into
-assocxtrsource. These links all refer to a still-valid runningcatalog entry
-from a previous source association run.
-(This actually includes those candidate links in &#8216;many-to-one&#8217;
-sets, e.g. sources merged due to a lower-resolution image - hence we set
-<tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">3</span></tt>).</p>
-<p><tt class="docutils literal"><span class="pre">_update_1_to_1_runcat</span></tt> then performs the corresponding update on the
+<p><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_1_to_1_assoc" title="tkp.db.associations._insert_1_to_1_assoc"><tt class="xref py py-func docutils literal"><span class="pre">_insert_1_to_1_assoc()</span></tt></a> Inserts all the remaining
+active links listed in tempruncat, into assocxtrsource.  These links all refer
+to a still-valid runningcatalog entry from a previous source association run.
+(This actually includes those candidate links in &#8216;many-to-one&#8217; sets, e.g.
+sources merged due to a lower-resolution image - hence we set <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">3</span></tt>).</p>
+<p><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._update_1_to_1_runcat" title="tkp.db.associations._update_1_to_1_runcat"><tt class="xref py py-func docutils literal"><span class="pre">_update_1_to_1_runcat()</span></tt></a> then performs the corresponding update on the
 runningcatalog table, copying across the values calculated during the generation
 of temprunningcatalog.</p>
-<p><tt class="docutils literal"><span class="pre">_select_for_update_1_to_1_runcat_flux</span></tt> grabs all the columns relevant to
-the runnincatalog_flux entries, from the still active entries in temprunningcatalog.
-Each of these entries is then fed, one-by-one, (room for optimization here) to
-<tt class="docutils literal"><span class="pre">_insert_or_update_1_to_1_runcat_flux</span></tt>. This checks for a pre-existing
-entry in runningcatalog_flux with the same runcat_band_stokes identifying triple,
-and then either updates it or inserts a new one, accordingly.</p>
+<p><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._update_1_to_1_runcat_flux" title="tkp.db.associations._update_1_to_1_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">_update_1_to_1_runcat_flux()</span></tt></a> grabs all the columns relevant to
+the runnincatalog_flux entries, from the still active entries in
+temprunningcatalog, and updates the <tt class="docutils literal"><span class="pre">runningcatalog_flux</span></tt> table accordingly.</p>
 </div>
 <div class="section" id="process-remaining-extractedsources-those-without-associations">
 <h3>Process remaining extractedsources (those without associations)<a class="headerlink" href="#process-remaining-extractedsources-those-without-associations" title="Permalink to this headline">¶</a></h3>
-<p>We still need to insert the &#8216;new&#8217; sources, i.e. those extractions without
-an identified association.</p>
-<p><tt class="docutils literal"><span class="pre">_insert_new_runcat(image_id)</span></tt> is run first, since the database constraints
-are already satisfied (pre-existent xtrsrc and dataset-id).
-First, we pre-select those extractedsources which were discovered in the
-current image.
-Then we filter to just those which do not have any associations,
-by selecting those extractedsources listed in the image but not in the
-temprunningcatalog
-(A left outer join on xtrsrc where temprunningcatalog.xtrsrc is NULL).</p>
-<p>We initialise the averages (position, flux, etc) by pulling in the relevant values from
-extractedsource, and the dataset id from the image table.</p>
-<p><tt class="docutils literal"><span class="pre">_insert_new_runcat_flux(image_id)</span></tt> performs a similar trick to select the
-&#8216;new-source&#8217; extractsources, then cross-matches against the xtrsrc id to select
-the new runcat entries.
-With these in hand it&#8217;s easy to insert new runcat_flux entries, pulling in the
-relevant id from runningcatalog, band and stokes from image table, and flux
-values from extractedsource.</p>
-<p><tt class="docutils literal"><span class="pre">_insert_new_assoc(image_id)</span></tt>
-Performs the same routine of grab &#8216;new-source&#8217; entries, match new runcat entries,
-as  <tt class="docutils literal"><span class="pre">_insert_new_runcat_flux</span></tt> - it&#8217;s then trival to insert the relevant entries
-in assocxtrsource. These are then marked as a <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">4</span></tt> association.</p>
+<p>Performed by:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat" title="tkp.db.associations._insert_new_runcat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_new_runcat()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_flux" title="tkp.db.associations._insert_new_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_new_runcat_flux()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_skyrgn_assocs" title="tkp.db.associations._insert_new_runcat_skyrgn_assocs"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_new_runcat_skyrgn_assocs()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_assocxtrsource" title="tkp.db.associations._insert_new_assocxtrsource"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_new_assocxtrsource()</span></tt></a></li>
+</ul>
+</div></blockquote>
+<p>We still need to insert the &#8216;new&#8217; sources, i.e. those extractions without an
+identified association.</p>
+<p><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat" title="tkp.db.associations._insert_new_runcat"><tt class="xref py py-func docutils literal"><span class="pre">_insert_new_runcat()</span></tt></a> is run first, since the database constraints are
+already satisfied (pre-existent xtrsrc and dataset-id).  First, we pre-select
+those extractedsources which were discovered in the current image.  Then we
+filter to just those which do not have any associations, by selecting those
+extractedsources listed in the image but not in the temprunningcatalog  (A
+left outer join on xtrsrc where temprunningcatalog.xtrsrc is NULL).</p>
+<p>We initialise the averages (position, flux, etc) by pulling in the relevant
+values from extractedsource, and the dataset id from the image table.</p>
+<p><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_flux" title="tkp.db.associations._insert_new_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">_insert_new_runcat_flux()</span></tt></a> performs a similar trick to select the
+&#8216;new-source&#8217; extractsources, then cross-matches against the xtrsrc id to
+select the new runcat entries.  With these in hand it&#8217;s easy to insert new
+runcat_flux entries, pulling in the relevant id from runningcatalog, band and
+stokes from image table, and flux values from extractedsource.</p>
+<p><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_skyrgn_assocs" title="tkp.db.associations._insert_new_runcat_skyrgn_assocs"><tt class="xref py py-func docutils literal"><span class="pre">_insert_new_runcat_skyrgn_assocs()</span></tt></a> performs a positional check
+against all known skyregions to see which regions this source lies within, and
+inserts links in the <tt class="docutils literal"><span class="pre">assocskyrgn</span></tt> table accordingly.</p>
+<p><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_assocxtrsource" title="tkp.db.associations._insert_new_assocxtrsource"><tt class="xref py py-func docutils literal"><span class="pre">_insert_new_assocxtrsource()</span></tt></a> Performs the same routine of grab
+&#8216;new-source&#8217; entries, match new runcat entries, as
+<a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_flux" title="tkp.db.associations._insert_new_runcat_flux"><tt class="xref py py-func docutils literal"><span class="pre">_insert_new_runcat_flux()</span></tt></a> - it&#8217;s then trival to insert the relevant
+entries in assocxtrsource. These are then marked as a <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">4</span></tt>
+association.</p>
+</div>
+<div class="section" id="determine-if-a-new-source-is-a-likely-transient">
+<h3>Determine if a new source is a likely transient<a class="headerlink" href="#determine-if-a-new-source-is-a-likely-transient" title="Permalink to this headline">¶</a></h3>
+<p>Performed by <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits" title="tkp.db.associations._determine_newsource_previous_limits"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._determine_newsource_previous_limits()</span></tt></a></p>
 </div>
 <div class="section" id="cleanup">
 <h3>Cleanup<a class="headerlink" href="#cleanup" title="Permalink to this headline">¶</a></h3>
+<p>Performed by:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._empty_temprunningcatalog" title="tkp.db.associations._empty_temprunningcatalog"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._empty_temprunningcatalog()</span></tt></a></li>
+<li><a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._delete_inactive_runcat" title="tkp.db.associations._delete_inactive_runcat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._delete_inactive_runcat()</span></tt></a></li>
+</ul>
+</div></blockquote>
 <p>Now that all the new extractions have been dealt with, we take care of some
 loose ends.
-We <tt class="docutils literal"><span class="pre">_empty_temprunningcatalog</span></tt>, and finally <tt class="docutils literal"><span class="pre">_delete_inactive_runcat</span></tt>
-deletes those runningcatalog entries which we have now superceded, via a simple
-<tt class="docutils literal"><span class="pre">inactive</span> <span class="pre">=</span> <span class="pre">TRUE</span></tt> filter.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">It&#8217;s unclear to me why we leave this until last - I don&#8217;t see where we need
-the inactive runcat entries after <tt class="docutils literal"><span class="pre">_delete_1_to_many_inactive_transient</span></tt>.
-(Though there&#8217;s no real harm in leaving it till last).</p>
-</div>
+We delete all rows from the <tt class="docutils literal"><span class="pre">temprunningcatalog</span></tt> table,
+and finally delete those runningcatalog entries which we have now superceded,
+via a simple <tt class="docutils literal"><span class="pre">inactive</span> <span class="pre">=</span> <span class="pre">TRUE</span></tt> filter.</p>
 </div>
 </div>
 </div>
@@ -947,13 +894,10 @@ the inactive runcat entries after <tt class="docutils literal"><span class="pre"
 <li><a class="reference internal" href="#clean-any-previously-created-temporary-listings">Clean any previously created temporary listings.</a></li>
 <li><a class="reference internal" href="#generate-a-list-of-candidate-runningcatalog-extractedsource-associations">Generate a list of candidate runningcatalog-extractedsource associations</a></li>
 <li><a class="reference internal" href="#trim-the-many-to-many-links-to-prevent-exponentional-database-growth">Trim the &#8216;many-to-many&#8217; links to prevent exponentional database growth</a></li>
-<li><a class="reference internal" href="#deal-with-the-one-to-many-runcat-to-extractedsource-link-sub-graphs">Deal with the  &#8216;one-to-many&#8217; runcat-to-extractedsource link sub-graphs</a><ul>
-<li><a class="reference internal" href="#insert-1-to-many-basepoint-assoc-and-insert-1-to-many-assoc"><tt class="docutils literal"><span class="pre">_insert_1_to_many_basepoint_assoc</span></tt> and <tt class="docutils literal"><span class="pre">_insert_1_to_many_assoc</span></tt></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#clean-up-database-entries-superceded-by-one-to-many-forks">Clean up database entries superceded by one-to-many forks</a></li>
+<li><a class="reference internal" href="#deal-with-the-one-to-many-runcat-to-extractedsource-link-sub-graphs">Deal with the  &#8216;one-to-many&#8217; runcat-to-extractedsource link sub-graphs</a></li>
 <li><a class="reference internal" href="#process-all-remaining-associations">Process all remaining associations</a></li>
 <li><a class="reference internal" href="#process-remaining-extractedsources-those-without-associations">Process remaining extractedsources (those without associations)</a></li>
+<li><a class="reference internal" href="#determine-if-a-new-source-is-a-likely-transient">Determine if a new source is a likely transient</a></li>
 <li><a class="reference internal" href="#cleanup">Cleanup</a></li>
 </ul>
 </li>

@@ -61,8 +61,12 @@
 
 
 <div class="viewcode-block" id="associate_extracted_sources"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations.associate_extracted_sources">[docs]</a><span class="k">def</span> <span class="nf">associate_extracted_sources</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">deRuiter_r</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Associate extracted sources with sources detected in the running</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Associate extracted sources with sources detected in the running</span>
 <span class="sd">    catalog.</span>
+
+<span class="sd">    See the &quot;developer&#39;s reference&quot; section of the docs for a step-by-step</span>
+<span class="sd">    breakdown of the logic encapsulated here.</span>
 
 <span class="sd">    The dimensionless distance between two sources is given by the</span>
 <span class="sd">    &quot;De Ruiter radius&quot;, see Chapters 2 &amp; 3 of Scheers&#39; thesis.</span>
@@ -101,17 +105,24 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Error caught around _insert_1_to_many_runcat - &quot;</span>
                  <span class="s">&quot;possible &#39;RhombusError&#39;. See Issue #4778. Will now re-raise.&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">e</span>
-    <span class="n">_insert_1_to_many_runcat_flux</span><span class="p">()</span>
-    <span class="n">_insert_1_to_many_basepoint_assoc</span><span class="p">()</span>
-    <span class="n">_insert_1_to_many_assoc</span><span class="p">()</span>
-    <span class="n">_insert_1_to_many_skyrgn</span><span class="p">()</span>
-    <span class="n">_insert_1_to_many_transient</span><span class="p">()</span>
-    <span class="n">_delete_1_to_many_inactive_assoc</span><span class="p">()</span>
-    <span class="n">_delete_1_to_many_inactive_runcat_flux</span><span class="p">()</span>
+
     <span class="n">_flag_1_to_many_inactive_runcat</span><span class="p">()</span>
-    <span class="n">_flag_1_to_many_inactive_tempruncat</span><span class="p">()</span>
+
+    <span class="n">_insert_1_to_many_runcat_flux</span><span class="p">()</span>
+    <span class="n">_delete_1_to_many_inactive_runcat_flux</span><span class="p">()</span>
+
+    <span class="n">_insert_1_to_many_basepoint_assocxtrsource</span><span class="p">()</span>
+    <span class="n">_insert_1_to_many_replacement_assocxtrsource</span><span class="p">()</span>
+    <span class="n">_delete_1_to_many_inactive_assocxtrsource</span><span class="p">()</span>
+
+    <span class="n">_insert_1_to_many_assocskyrgn</span><span class="p">()</span>
     <span class="n">_delete_1_to_many_inactive_assocskyrgn</span><span class="p">()</span>
+
+    <span class="n">_insert_1_to_many_transient</span><span class="p">()</span>
     <span class="n">_delete_1_to_many_inactive_transient</span><span class="p">()</span>
+
+    <span class="n">_flag_1_to_many_inactive_tempruncat</span><span class="p">()</span>
+
     <span class="c">#+-----------------------------------------------------+</span>
     <span class="c">#| Here we process the one-to-one associations         |</span>
     <span class="c">#+-----------------------------------------------------+</span>
@@ -127,14 +138,9 @@
     <span class="n">_insert_new_runcat</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
     <span class="n">_insert_new_runcat_flux</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
     <span class="n">_insert_new_runcat_skyrgn_assocs</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
-    <span class="n">_insert_new_assoc</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
-    <span class="n">_insert_new_transient</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">)</span>
+    <span class="n">_insert_new_assocxtrsource</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+    <span class="n">_determine_newsource_previous_limits</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">)</span>
 
-    <span class="c">#+-------------------------------------------------------+</span>
-    <span class="c">#| New sources are added to transient table as well, but |</span>
-    <span class="c">#| that is done in the transient_search recipe.          |</span>
-    <span class="c">#+-------------------------------------------------------+</span>
-    <span class="c"># TODO: Is it? -&gt; Check</span>
     <span class="n">_empty_temprunningcatalog</span><span class="p">()</span>
     <span class="n">_update_ff_runcat_extractedsource</span><span class="p">()</span>
     <span class="n">_delete_inactive_runcat</span><span class="p">()</span>
@@ -211,32 +217,40 @@
 
 </div>
 <div class="viewcode-block" id="_check_meridian_wrap"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._check_meridian_wrap">[docs]</a><span class="k">def</span> <span class="nf">_check_meridian_wrap</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Checks whether an image is close to the meridian ra = 0 or ra = 360</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks whether an image is close to the meridian ra = 0 or ra = 360</span>
 
 <span class="sd">    When so, the association query needs to be rewritten to take into account</span>
 <span class="sd">    sources across the 0/360 meridian.</span>
 
 <span class="sd">    The query returns:</span>
+
 <span class="sd">    q_across: true, if the extraction region of the image crosses</span>
 <span class="sd">              the ra=0/360 border</span>
+
 <span class="sd">    ra_min:   the min value of the ra-between for the normal case,</span>
 <span class="sd">              when the image is outside the ra=0/360 meridian,</span>
 <span class="sd">              otherwise NULL</span>
+
 <span class="sd">    ra_max:   the max value of the ra-between for the normal case,</span>
 <span class="sd">              when the image is outside the ra=0/360 meridian,</span>
 <span class="sd">              otherwise NULL</span>
+
 <span class="sd">    ra_min1/max1 and ra_min2/max2 are the values which may be used</span>
 <span class="sd">    for the case of a cross-meridian image.</span>
 <span class="sd">    F.ex. using a search radius of 5 degrees, and when a source is at</span>
 <span class="sd">    359.99 the ra-betweens 1 and 2 are :</span>
 <span class="sd">    ... AND (ra BETWEEN ra_min1 AND ra_max1 OR ra BETWEEN ra_min2 AND ra_max2) ...</span>
 <span class="sd">    ... AND (ra BETWEEN 354.99 AND 360 OR ra BETWEEN 0 AND 4.99) ...</span>
+
 <span class="sd">    ra_min1:  the min value of the high-end ra-between, if the</span>
 <span class="sd">              extraction region of the image crosses the ra=0/360 border,</span>
 <span class="sd">              otherwise NULL</span>
+
 <span class="sd">    ra_max1:  the min value of the high-end ra-between, if the</span>
 <span class="sd">              extraction region of the image crosses the ra=0/360 border,</span>
 <span class="sd">              otherwise NULL</span>
+
 <span class="sd">    ra_min2, ra_max2: As ra_min1/max1, but for the low-end ra values.</span>
 
 <span class="sd">    These values are not being used in the cross-meridian association query,</span>
@@ -788,6 +802,7 @@
 <span class="sd">    By flagging the many-to-many associations, we reduce the</span>
 <span class="sd">    processing to one-to-many and many-to-one (identical to one-to-one)</span>
 <span class="sd">    relationships</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c"># This one selects the farthest out of the many-to-many assocs</span>
@@ -912,10 +927,10 @@
 <span class="s">           WHERE inactive = FALSE</span>
 <span class="s">          GROUP BY runcat</span>
 <span class="s">          HAVING COUNT(*) &gt; 1</span>
-<span class="s">         ) t0</span>
-<span class="s">        ,temprunningcatalog t1</span>
-<span class="s">   WHERE t1.runcat = t0.runcat</span>
-<span class="s">     AND t1.inactive = FALSE</span>
+<span class="s">         ) one_to_many</span>
+<span class="s">        ,temprunningcatalog tmprc</span>
+<span class="s">   WHERE tmprc.runcat = one_to_many.runcat</span>
+<span class="s">     AND tmprc.inactive = FALSE</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
@@ -927,6 +942,11 @@
 <span class="sd">    Analogous to the runningcatalog, extracted source properties</span>
 <span class="sd">    are added to the runningcatalog_flux table.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># NB we pull the new runcat id from the runningcatalog by matching with</span>
+    <span class="c"># temprunningcatalog via xtrsrc. (temprunningcatalog.runcat points at old</span>
+    <span class="c"># runcat entries).</span>
+
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO runningcatalog_flux</span>
 <span class="s">  (runcat</span>
@@ -945,9 +965,9 @@
 <span class="s">  ,avg_weighted_f_int_sq</span>
 <span class="s">  )</span>
 <span class="s">  SELECT r.id</span>
-<span class="s">        ,t1.band</span>
-<span class="s">        ,t1.stokes</span>
-<span class="s">        ,t1.f_datapoints</span>
+<span class="s">        ,tmprc.band</span>
+<span class="s">        ,tmprc.stokes</span>
+<span class="s">        ,tmprc.f_datapoints</span>
 <span class="s">        ,avg_f_peak</span>
 <span class="s">        ,avg_f_peak_sq</span>
 <span class="s">        ,avg_f_peak_weight</span>
@@ -963,18 +983,18 @@
 <span class="s">           WHERE inactive = FALSE</span>
 <span class="s">          GROUP BY runcat</span>
 <span class="s">          HAVING COUNT(*) &gt; 1</span>
-<span class="s">         ) t0</span>
-<span class="s">        ,temprunningcatalog t1</span>
+<span class="s">         ) one_to_many</span>
+<span class="s">        ,temprunningcatalog tmprc</span>
 <span class="s">        ,runningcatalog r</span>
-<span class="s">   WHERE t1.runcat = t0.runcat</span>
-<span class="s">     AND t1.inactive = FALSE</span>
-<span class="s">     AND r.xtrsrc = t1.xtrsrc</span>
+<span class="s">   WHERE tmprc.runcat = one_to_many.runcat</span>
+<span class="s">     AND tmprc.inactive = FALSE</span>
+<span class="s">     AND r.xtrsrc = tmprc.xtrsrc</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="_insert_1_to_many_basepoint_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_basepoint_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_basepoint_assoc</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Insert base points for one-to-many associations</span>
+<div class="viewcode-block" id="_insert_1_to_many_basepoint_assocxtrsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_basepoint_assocxtrsource">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_basepoint_assocxtrsource</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Insert &#39;base points&#39; for one-to-many associations</span>
 
 <span class="sd">    Before continuing, we have to insert the &#39;base points&#39; of the associations,</span>
 <span class="sd">    i.e. the links between the new runningcatalog entries</span>
@@ -983,6 +1003,11 @@
 <span class="sd">    We also calculate the variability indices at the timestamp of the</span>
 <span class="sd">    the current image.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># NB we pull the new runcat id from the runningcatalog by matching with</span>
+    <span class="c"># temprunningcatalog via xtrsrc. (temprunningcatalog.runcat points at old</span>
+    <span class="c"># runcat entries).</span>
+
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO assocxtrsource</span>
 <span class="s">  (runcat</span>
@@ -993,54 +1018,56 @@
 <span class="s">  ,v_int</span>
 <span class="s">  ,eta_int</span>
 <span class="s">  )</span>
-<span class="s">  SELECT t0.runcat</span>
+<span class="s">  SELECT t0.new_runcat_id</span>
 <span class="s">        ,t0.xtrsrc</span>
 <span class="s">        ,2</span>
 <span class="s">        ,t0.distance_arcsec</span>
 <span class="s">        ,t0.r</span>
 <span class="s">        ,t0.v_int_inter / t0.avg_f_int</span>
 <span class="s">        ,t0.eta_int_inter / t0.avg_f_int_weight</span>
-<span class="s">    FROM (SELECT r.id AS runcat</span>
-<span class="s">                ,t1.xtrsrc</span>
-<span class="s">                ,t1.distance_arcsec</span>
-<span class="s">                ,t1.r</span>
-<span class="s">                ,CASE WHEN t1.avg_f_int = 0.0</span>
+<span class="s">    FROM (SELECT runcat.id AS new_runcat_id</span>
+<span class="s">                ,tmprc.xtrsrc</span>
+<span class="s">                ,tmprc.distance_arcsec</span>
+<span class="s">                ,tmprc.r</span>
+<span class="s">                ,CASE WHEN tmprc.avg_f_int = 0.0</span>
 <span class="s">                      THEN 0.000001</span>
 <span class="s">                      ELSE avg_f_int</span>
 <span class="s">                 END AS avg_f_int</span>
-<span class="s">                ,t1.avg_f_int_weight</span>
-<span class="s">                ,CASE WHEN t1.f_datapoints = 1</span>
+<span class="s">                ,tmprc.avg_f_int_weight</span>
+<span class="s">                ,CASE WHEN tmprc.f_datapoints = 1</span>
 <span class="s">                      THEN 0</span>
-<span class="s">                      ELSE CASE WHEN ABS(t1.avg_f_int_sq - t1.avg_f_int * t1.avg_f_int) &lt; 8e-14</span>
+<span class="s">                      ELSE CASE WHEN ABS(tmprc.avg_f_int_sq - tmprc.avg_f_int * tmprc.avg_f_int) &lt; 8e-14</span>
 <span class="s">                                THEN 0</span>
-<span class="s">                                ELSE SQRT(CAST(t1.f_datapoints AS DOUBLE PRECISION)</span>
-<span class="s">                                         * (t1.avg_f_int_sq - t1.avg_f_int * t1.avg_f_int)</span>
-<span class="s">                                         / (CAST(t1.f_datapoints AS DOUBLE PRECISION) - 1.0)</span>
+<span class="s">                                ELSE SQRT(CAST(tmprc.f_datapoints AS DOUBLE PRECISION)</span>
+<span class="s">                                         * (tmprc.avg_f_int_sq - tmprc.avg_f_int * tmprc.avg_f_int)</span>
+<span class="s">                                         / (CAST(tmprc.f_datapoints AS DOUBLE PRECISION) - 1.0)</span>
 <span class="s">                                         )</span>
 <span class="s">                           END</span>
 <span class="s">                 END AS v_int_inter</span>
-<span class="s">                ,CASE WHEN t1.f_datapoints = 1</span>
+<span class="s">                ,CASE WHEN tmprc.f_datapoints = 1</span>
 <span class="s">                      THEN 0</span>
-<span class="s">                      ELSE (CAST(t1.f_datapoints AS DOUBLE PRECISION) / (CAST(t1.f_datapoints AS DOUBLE PRECISION) - 1.0))</span>
-<span class="s">                           * (t1.avg_f_int_weight * t1.avg_weighted_f_int_sq - t1.avg_weighted_f_int * t1.avg_weighted_f_int)</span>
+<span class="s">                      ELSE (CAST(tmprc.f_datapoints AS DOUBLE PRECISION) /</span>
+<span class="s">                              (CAST(tmprc.f_datapoints AS DOUBLE PRECISION) - 1.0))</span>
+<span class="s">                           * (tmprc.avg_f_int_weight * tmprc.avg_weighted_f_int_sq -</span>
+<span class="s">                                  tmprc.avg_weighted_f_int * tmprc.avg_weighted_f_int)</span>
 <span class="s">                 END AS eta_int_inter</span>
-<span class="s">            FROM (SELECT runcat</span>
+<span class="s">            FROM (SELECT runcat as old_runcat_id</span>
 <span class="s">                    FROM temprunningcatalog</span>
 <span class="s">                   WHERE inactive = FALSE</span>
 <span class="s">                  GROUP BY runcat</span>
 <span class="s">                  HAVING COUNT(*) &gt; 1</span>
-<span class="s">                 ) t0</span>
-<span class="s">                ,temprunningcatalog t1</span>
-<span class="s">                ,runningcatalog r</span>
-<span class="s">           WHERE t1.runcat = t0.runcat</span>
-<span class="s">             AND t1.inactive = FALSE</span>
-<span class="s">             AND r.xtrsrc = t1.xtrsrc</span>
+<span class="s">                 ) one_to_many</span>
+<span class="s">                ,temprunningcatalog tmprc</span>
+<span class="s">                ,runningcatalog runcat</span>
+<span class="s">           WHERE tmprc.runcat = one_to_many.old_runcat_id</span>
+<span class="s">             AND tmprc.inactive = FALSE</span>
+<span class="s">             AND runcat.xtrsrc = tmprc.xtrsrc</span>
 <span class="s">         ) t0</span>
 <span class="s">    &quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="_insert_1_to_many_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_assoc</span><span class="p">():</span>
+<div class="viewcode-block" id="_insert_1_to_many_replacement_assocxtrsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_replacement_assocxtrsource">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_replacement_assocxtrsource</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Insert links into the association table between the new runcat</span>
 <span class="sd">    entries and the old extractedsources.</span>
 <span class="sd">    (New to New (&#39;basepoint&#39;) links have been added earlier).</span>
@@ -1059,6 +1086,12 @@
 <span class="sd">    1. Why not?</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="c"># NB we pull the new runcat id from the runningcatalog by matching with</span>
+    <span class="c"># temprunningcatalog via xtrsrc. (temprunningcatalog.runcat points at old</span>
+    <span class="c"># runcat entries).</span>
+
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO assocxtrsource</span>
 <span class="s">  (runcat</span>
@@ -1069,57 +1102,65 @@
 <span class="s">  ,v_int</span>
 <span class="s">  ,eta_int</span>
 <span class="s">  )</span>
-<span class="s">  SELECT r.id AS runcat</span>
+<span class="s">  SELECT r.id AS new_runcat_id</span>
 <span class="s">        ,a.xtrsrc</span>
 <span class="s">        ,6</span>
 <span class="s">        ,a.distance_arcsec</span>
 <span class="s">        ,a.r</span>
 <span class="s">        ,a.v_int</span>
 <span class="s">        ,a.eta_int</span>
-<span class="s">    FROM (SELECT runcat</span>
+<span class="s">    FROM (SELECT runcat as old_runcat_id</span>
 <span class="s">            FROM temprunningcatalog</span>
 <span class="s">           WHERE inactive = FALSE</span>
 <span class="s">          GROUP BY runcat</span>
 <span class="s">          HAVING COUNT(*) &gt; 1</span>
-<span class="s">         ) t0</span>
-<span class="s">        ,temprunningcatalog t1</span>
+<span class="s">         ) one_to_many</span>
+<span class="s">        ,temprunningcatalog tmprc</span>
 <span class="s">        ,runningcatalog r</span>
 <span class="s">        ,assocxtrsource a</span>
-<span class="s">   WHERE t1.runcat = t0.runcat</span>
-<span class="s">     AND t1.inactive = FALSE</span>
-<span class="s">     AND r.xtrsrc = t1.xtrsrc</span>
-<span class="s">     AND a.runcat = t1.runcat</span>
+<span class="s">   WHERE tmprc.runcat = one_to_many.old_runcat_id</span>
+<span class="s">     AND tmprc.inactive = FALSE</span>
+<span class="s">     AND r.xtrsrc = tmprc.xtrsrc</span>
+<span class="s">     AND a.runcat = tmprc.runcat</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
-<span class="k">def</span> <span class="nf">_insert_1_to_many_skyrgn</span><span class="p">():</span>
+<div class="viewcode-block" id="_insert_1_to_many_assocskyrgn"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_assocskyrgn">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_assocskyrgn</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy skyregion associations from old runcat entries for new one-to-many</span>
+<span class="sd">    runningcatalog entries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># NB we pull the new runcat id from the runningcatalog by matching with</span>
+    <span class="c"># temprunningcatalog via xtrsrc. (temprunningcatalog.runcat points at old</span>
+    <span class="c"># runcat entries).</span>
+
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO assocskyrgn</span>
 <span class="s">  (runcat</span>
 <span class="s">  ,skyrgn</span>
 <span class="s">  ,distance_deg</span>
 <span class="s">  )</span>
-<span class="s">  SELECT r.id AS runcat</span>
+<span class="s">  SELECT r.id AS new_runcat_id</span>
 <span class="s">        ,a.skyrgn</span>
 <span class="s">        ,a.distance_deg</span>
-<span class="s">    FROM (SELECT runcat</span>
+<span class="s">    FROM (SELECT runcat as old_runcat_id</span>
 <span class="s">            FROM temprunningcatalog</span>
 <span class="s">           WHERE inactive = FALSE</span>
 <span class="s">          GROUP BY runcat</span>
 <span class="s">          HAVING COUNT(*) &gt; 1</span>
-<span class="s">         ) t0</span>
-<span class="s">        ,temprunningcatalog t1</span>
+<span class="s">         ) one_to_many</span>
+<span class="s">        ,temprunningcatalog tmprc</span>
 <span class="s">        ,runningcatalog r</span>
 <span class="s">        ,assocskyrgn a</span>
-<span class="s">   WHERE t1.runcat = t0.runcat</span>
-<span class="s">     AND t1.inactive = FALSE</span>
-<span class="s">     AND r.xtrsrc = t1.xtrsrc</span>
-<span class="s">     AND a.runcat = t1.runcat</span>
+<span class="s">   WHERE tmprc.runcat = one_to_many.old_runcat_id</span>
+<span class="s">     AND tmprc.inactive = FALSE</span>
+<span class="s">     AND r.xtrsrc = tmprc.xtrsrc</span>
+<span class="s">     AND a.runcat = tmprc.runcat</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-
+</div>
 <div class="viewcode-block" id="_insert_1_to_many_transient"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_transient">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_transient</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Update the runcat id for the one-to-many associations,</span>
 <span class="sd">    and delete the transient entries of the old runcat id</span>
@@ -1142,8 +1183,9 @@
 <span class="s">  ,status</span>
 <span class="s">  ,t_start</span>
 <span class="s">  ,transient_type</span>
+<span class="s">  ,previous_limits_image</span>
 <span class="s">  )</span>
-<span class="s">  SELECT r.id</span>
+<span class="s">  SELECT r.id as new_runcat_id</span>
 <span class="s">        ,tr.band</span>
 <span class="s">        ,tr.siglevel</span>
 <span class="s">        ,tr.v_int</span>
@@ -1153,19 +1195,20 @@
 <span class="s">        ,tr.status</span>
 <span class="s">        ,tr.t_start</span>
 <span class="s">        ,tr.transient_type</span>
-<span class="s">    FROM (SELECT runcat</span>
+<span class="s">        ,tr.previous_limits_image</span>
+<span class="s">    FROM (SELECT runcat as old_runcat_id</span>
 <span class="s">            FROM temprunningcatalog</span>
 <span class="s">           WHERE inactive = FALSE</span>
 <span class="s">          GROUP BY runcat</span>
 <span class="s">          HAVING COUNT(*) &gt; 1</span>
-<span class="s">         ) t0</span>
-<span class="s">        ,temprunningcatalog t1</span>
+<span class="s">         ) one_to_many</span>
+<span class="s">        ,temprunningcatalog tmprc</span>
 <span class="s">        ,runningcatalog r</span>
 <span class="s">        ,transient tr</span>
-<span class="s">   WHERE t1.runcat = t0.runcat</span>
-<span class="s">     AND t1.inactive = FALSE</span>
-<span class="s">     AND r.xtrsrc = t1.xtrsrc</span>
-<span class="s">     AND tr.runcat = t1.runcat</span>
+<span class="s">   WHERE tmprc.runcat = one_to_many.old_runcat_id</span>
+<span class="s">     AND tmprc.inactive = FALSE</span>
+<span class="s">     AND tr.runcat = one_to_many.old_runcat_id</span>
+<span class="s">     AND r.xtrsrc = tmprc.xtrsrc</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
@@ -1178,11 +1221,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">DELETE</span>
-<span class="s">  FROM assocskyrgn</span>
-<span class="s"> WHERE runcat IN (SELECT r.id as runcat</span>
-<span class="s">                FROM runningcatalog r</span>
-<span class="s">               WHERE r.inactive = TRUE</span>
-<span class="s">             )</span>
+<span class="s">    FROM assocskyrgn</span>
+<span class="s">    WHERE runcat IN (SELECT runcat</span>
+<span class="s">                       FROM temprunningcatalog</span>
+<span class="s">                       WHERE inactive = FALSE</span>
+<span class="s">                       GROUP BY runcat</span>
+<span class="s">                       HAVING COUNT(*) &gt; 1</span>
+<span class="s">                    )</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
@@ -1195,18 +1240,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">DELETE</span>
-<span class="s">  FROM transient</span>
-<span class="s"> WHERE id IN (SELECT tr.id</span>
-<span class="s">                FROM transient tr</span>
-<span class="s">                    ,runningcatalog r</span>
-<span class="s">               WHERE tr.runcat = r.id</span>
-<span class="s">                 AND r.inactive = TRUE</span>
-<span class="s">             )</span>
+<span class="s">    FROM transient</span>
+<span class="s">    WHERE runcat IN (SELECT runcat</span>
+<span class="s">                       FROM temprunningcatalog</span>
+<span class="s">                       WHERE inactive = FALSE</span>
+<span class="s">                       GROUP BY runcat</span>
+<span class="s">                       HAVING COUNT(*) &gt; 1</span>
+<span class="s">                    )</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="_delete_1_to_many_inactive_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_assoc">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_assoc</span><span class="p">():</span>
+<div class="viewcode-block" id="_delete_1_to_many_inactive_assocxtrsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_assocxtrsource">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_assocxtrsource</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the association pairs of the old runcat from assocxtrsource</span>
 
 <span class="sd">    NOTE: It might sound confusing, but those are not qualified</span>
@@ -1220,15 +1265,18 @@
 <span class="sd">    NOTE: We do not have to flag these rows as inactive,</span>
 <span class="sd">          no furthr processing depends on these in the assoc run</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">#NB temprunningcatalog &#39;runcat&#39; field still refers to old,</span>
+    <span class="c">#superceded runcat entries.</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">DELETE</span>
-<span class="s">  FROM assocxtrsource</span>
-<span class="s"> WHERE runcat IN (SELECT runcat</span>
-<span class="s">                    FROM temprunningcatalog</span>
+<span class="s">    FROM assocxtrsource</span>
+<span class="s">    WHERE runcat IN (SELECT runcat</span>
+<span class="s">                   FROM temprunningcatalog</span>
 <span class="s">                   WHERE inactive = FALSE</span>
-<span class="s">                  GROUP BY runcat</span>
-<span class="s">                  HAVING COUNT(*) &gt; 1</span>
-<span class="s">                 )</span>
+<span class="s">                   GROUP BY runcat</span>
+<span class="s">                   HAVING COUNT(*) &gt; 1</span>
+<span class="s">                )</span>
 <span class="s">    &quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
@@ -1242,13 +1290,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">DELETE</span>
-<span class="s">  FROM runningcatalog_flux</span>
-<span class="s"> WHERE runcat IN (SELECT runcat</span>
-<span class="s">                    FROM temprunningcatalog</span>
+<span class="s">    FROM runningcatalog_flux</span>
+<span class="s">    WHERE runcat IN (SELECT runcat</span>
+<span class="s">                   FROM temprunningcatalog</span>
 <span class="s">                   WHERE inactive = FALSE</span>
-<span class="s">                  GROUP BY runcat</span>
-<span class="s">                  HAVING COUNT(*) &gt; 1</span>
-<span class="s">                 )</span>
+<span class="s">                   GROUP BY runcat</span>
+<span class="s">                   HAVING COUNT(*) &gt; 1</span>
+<span class="s">                )</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
@@ -1256,9 +1304,8 @@
 <div class="viewcode-block" id="_flag_1_to_many_inactive_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._flag_1_to_many_inactive_runcat">[docs]</a><span class="k">def</span> <span class="nf">_flag_1_to_many_inactive_runcat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Flag the old runcat ids in the runningcatalog to inactive</span>
 
-<span class="sd">    We do not delete them yet, because we need them later on.</span>
-<span class="sd">    Since we replaced this runcat.id with multiple new one, we first</span>
-<span class="sd">    flag it as inactive, after which we delete it from the runningcatalog</span>
+<span class="sd">    We do not delete them yet, because we still need to clear up all the</span>
+<span class="sd">    superseded entries in assocskyrgn, etc.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">UPDATE runningcatalog</span>
@@ -1274,20 +1321,16 @@
 
 </div>
 <div class="viewcode-block" id="_flag_1_to_many_inactive_tempruncat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._flag_1_to_many_inactive_tempruncat">[docs]</a><span class="k">def</span> <span class="nf">_flag_1_to_many_inactive_tempruncat</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Delete the one-to-many associations from temprunningcatalog,</span>
-<span class="sd">    and delete the inactive rows from runningcatalog.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flag the one-to-many associations from temprunningcatalog.</span>
 
-<span class="sd">    We do not delete them yet, because we need them later on.</span>
-<span class="sd">    After the one-to-many associations have been processed,</span>
-<span class="sd">    they can be deleted from the temporary table and</span>
-<span class="sd">    the runningcatalog.</span>
+<span class="sd">    (Since we are done processing them, now.)</span>
+
+<span class="sd">    We do not delete them yet- if we did,</span>
+<span class="sd">    we would not be able to cross-match extractedsources to determine</span>
+<span class="sd">    which sources did not have a match in temprunningcatalog (&#39;new&#39; sources).</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># TODO: When we delete the many from the 1-to-many assocs here,</span>
-    <span class="c">#       it will later on pop up again in the list of extracted</span>
-    <span class="c">#       sources that did not have a match in temprunningcatalog</span>
-    <span class="c">#</span>
-    <span class="c"># See also comments at _insert_new_runcat()</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">UPDATE temprunningcatalog</span>
 <span class="s">   SET inactive = TRUE</span>
@@ -1325,38 +1368,38 @@
 <span class="s">        ,t0.r</span>
 <span class="s">        ,t0.v_int_inter / t0.avg_f_int</span>
 <span class="s">        ,t0.eta_int_inter / t0.avg_f_int_weight</span>
-<span class="s">    FROM (SELECT t.runcat</span>
-<span class="s">                ,t.xtrsrc</span>
-<span class="s">                ,t.distance_arcsec</span>
-<span class="s">                ,t.r</span>
-<span class="s">                ,CASE WHEN t.avg_f_int = 0.0</span>
+<span class="s">    FROM (SELECT tmprc.runcat</span>
+<span class="s">                ,tmprc.xtrsrc</span>
+<span class="s">                ,tmprc.distance_arcsec</span>
+<span class="s">                ,tmprc.r</span>
+<span class="s">                ,CASE WHEN tmprc.avg_f_int = 0.0</span>
 <span class="s">                      THEN 0.000001</span>
 <span class="s">                      ELSE avg_f_int</span>
 <span class="s">                 END AS avg_f_int</span>
-<span class="s">                ,t.avg_f_int_weight</span>
-<span class="s">                ,CASE WHEN t.f_datapoints = 1</span>
+<span class="s">                ,tmprc.avg_f_int_weight</span>
+<span class="s">                ,CASE WHEN tmprc.f_datapoints = 1</span>
 <span class="s">                      THEN 0</span>
-<span class="s">                      ELSE CASE WHEN ABS(t.avg_f_int_sq - t.avg_f_int * t.avg_f_int) &lt; 8e-14</span>
+<span class="s">                      ELSE CASE WHEN ABS(tmprc.avg_f_int_sq - tmprc.avg_f_int * tmprc.avg_f_int) &lt; 8e-14</span>
 <span class="s">                                THEN 0</span>
-<span class="s">                                ELSE SQRT(CAST(t.f_datapoints AS DOUBLE PRECISION)</span>
-<span class="s">                                         * (t.avg_f_int_sq - t.avg_f_int * t.avg_f_int)</span>
-<span class="s">                                         / (CAST(t.f_datapoints AS DOUBLE PRECISION) - 1.0)</span>
+<span class="s">                                ELSE SQRT(CAST(tmprc.f_datapoints AS DOUBLE PRECISION)</span>
+<span class="s">                                         * (tmprc.avg_f_int_sq - tmprc.avg_f_int * tmprc.avg_f_int)</span>
+<span class="s">                                         / (CAST(tmprc.f_datapoints AS DOUBLE PRECISION) - 1.0)</span>
 <span class="s">                                         )</span>
 <span class="s">                           END</span>
 <span class="s">                 END AS v_int_inter</span>
-<span class="s">                ,CASE WHEN t.f_datapoints = 1</span>
+<span class="s">                ,CASE WHEN tmprc.f_datapoints = 1</span>
 <span class="s">                      THEN 0</span>
-<span class="s">                      ELSE (CAST(t.f_datapoints AS DOUBLE PRECISION)</span>
-<span class="s">                            / (CAST(t.f_datapoints AS DOUBLE PRECISION) - 1.0))</span>
-<span class="s">                           * (t.avg_f_int_weight * t.avg_weighted_f_int_sq</span>
-<span class="s">                             - t.avg_weighted_f_int * t.avg_weighted_f_int)</span>
+<span class="s">                      ELSE (CAST(tmprc.f_datapoints AS DOUBLE PRECISION)</span>
+<span class="s">                            / (CAST(tmprc.f_datapoints AS DOUBLE PRECISION) - 1.0))</span>
+<span class="s">                           * (tmprc.avg_f_int_weight * tmprc.avg_weighted_f_int_sq</span>
+<span class="s">                             - tmprc.avg_weighted_f_int * tmprc.avg_weighted_f_int)</span>
 <span class="s">                 END AS eta_int_inter</span>
-<span class="s">            FROM temprunningcatalog t</span>
+<span class="s">            FROM temprunningcatalog tmprc</span>
 <span class="s">                ,runningcatalog r</span>
 <span class="s">                ,extractedsource x</span>
-<span class="s">           WHERE t.runcat = r.id</span>
-<span class="s">             AND t.inactive = FALSE</span>
-<span class="s">             AND t.xtrsrc = x.id</span>
+<span class="s">           WHERE tmprc.runcat = r.id</span>
+<span class="s">             AND tmprc.inactive = FALSE</span>
+<span class="s">             AND tmprc.xtrsrc = x.id</span>
 <span class="s">                 ) t0</span>
 <span class="s">        &quot;&quot;&quot;</span>
     <span class="c">#print &quot;Q:\n&quot;,query</span>
@@ -1700,9 +1743,9 @@
 <span class="s">           WHERE x0.image = i0.id</span>
 <span class="s">             AND x0.image = </span><span class="si">%s</span><span class="s"></span>
 <span class="s">         ) t0</span>
-<span class="s">         LEFT OUTER JOIN temprunningcatalog trc0</span>
-<span class="s">         ON t0.xtrsrc = trc0.xtrsrc</span>
-<span class="s">   WHERE trc0.xtrsrc IS NULL</span>
+<span class="s">         LEFT OUTER JOIN temprunningcatalog tmprc</span>
+<span class="s">         ON t0.xtrsrc = tmprc.xtrsrc</span>
+<span class="s">   WHERE tmprc.xtrsrc IS NULL</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">image_id</span><span class="p">,),</span> <span class="bp">True</span><span class="p">)</span>
     <span class="n">ins</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
@@ -1755,10 +1798,10 @@
 <span class="s">    FROM image i0</span>
 <span class="s">        ,(SELECT x1.id AS xtrsrc</span>
 <span class="s">            FROM extractedsource x1</span>
-<span class="s">                 LEFT OUTER JOIN temprunningcatalog trc1</span>
-<span class="s">                 ON x1.id = trc1.xtrsrc</span>
+<span class="s">                 LEFT OUTER JOIN temprunningcatalog tmprc</span>
+<span class="s">                 ON x1.id = tmprc.xtrsrc</span>
 <span class="s">            WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
-<span class="s">              AND trc1.xtrsrc IS NULL</span>
+<span class="s">              AND tmprc.xtrsrc IS NULL</span>
 <span class="s">          ) t0</span>
 <span class="s">        ,runningcatalog r0</span>
 <span class="s">        ,extractedsource x0</span>
@@ -1788,12 +1831,12 @@
 <span class="sd">        (That&#39;s a job for another day!)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c">#First, mark membership in the skyregion of the image of initial detection.</span>
-    <span class="c">#We look for extracted sources from this image</span>
-    <span class="c">#that are not in temprunningcatalog, i.e. have no association candidates.</span>
+    <span class="c"># First, mark membership in the skyregion of the image of initial detection.</span>
+    <span class="c"># We look for extracted sources from this image</span>
+    <span class="c"># that are not in temprunningcatalog, i.e. have no association candidates.</span>
 
-    <span class="c">#By dealing with these separately, we save a number of radius comparison</span>
-    <span class="c">#operations proportional to the number of new sources in this field.</span>
+    <span class="c"># By dealing with these separately, we save a number of radius comparison</span>
+    <span class="c"># operations proportional to the number of new sources in this field.</span>
     <span class="n">assocskyrgn_parent_qry</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO assocskyrgn</span>
 <span class="s">    (runcat</span>
@@ -1811,9 +1854,9 @@
 <span class="s">           AND rc.xtrsrc = ex.id</span>
 <span class="s">           AND ex.image = im.id</span>
 <span class="s">       ) t0</span>
-<span class="s">       LEFT OUTER JOIN temprunningcatalog trc</span>
-<span class="s">       ON t0.xtrsrc = trc.xtrsrc</span>
-<span class="s">WHERE trc.xtrsrc IS NULL</span>
+<span class="s">       LEFT OUTER JOIN temprunningcatalog tmprc</span>
+<span class="s">       ON t0.xtrsrc = tmprc.xtrsrc</span>
+<span class="s">WHERE tmprc.xtrsrc IS NULL</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">assocskyrgn_parent_qry</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;img_id&#39;</span><span class="p">:</span><span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
 
@@ -1824,7 +1867,7 @@
 <span class="s">    ,skyrgn</span>
 <span class="s">    ,distance_deg</span>
 <span class="s">    )</span>
-<span class="s">SELECT t1.runcat as runcatid</span>
+<span class="s">SELECT new_src.runcat as runcatid</span>
 <span class="s">      ,sky.id as skyrgnid</span>
 <span class="s">      ,DEGREES(2 * ASIN(SQRT( (rc1.x - sky.x) * (rc1.x - sky.x)</span>
 <span class="s">                         + (rc1.y - sky.y) * (rc1.y - sky.y)</span>
@@ -1845,13 +1888,13 @@
 <span class="s">                   AND rc0.xtrsrc = ex.id</span>
 <span class="s">                   AND ex.image = im.id</span>
 <span class="s">               ) t0</span>
-<span class="s">               LEFT OUTER JOIN temprunningcatalog trc</span>
-<span class="s">               ON t0.xtrsrc = trc.xtrsrc</span>
-<span class="s">        WHERE trc.xtrsrc IS NULL</span>
-<span class="s">        ) t1</span>
-<span class="s">    WHERE rc1.id = t1.runcat</span>
+<span class="s">               LEFT OUTER JOIN temprunningcatalog tmprc</span>
+<span class="s">               ON t0.xtrsrc = tmprc.xtrsrc</span>
+<span class="s">        WHERE tmprc.xtrsrc IS NULL</span>
+<span class="s">        ) new_src</span>
+<span class="s">    WHERE rc1.id = new_src.runcat</span>
 <span class="s">      AND sky.dataset = rc1.dataset</span>
-<span class="s">      AND sky.id &lt;&gt; t1.self_skyrgn</span>
+<span class="s">      AND sky.id &lt;&gt; new_src.self_skyrgn</span>
 <span class="s">      AND  DEGREES(2 * ASIN(SQRT( (rc1.x - sky.x) * (rc1.x - sky.x)</span>
 <span class="s">                                     + (rc1.y - sky.y) * (rc1.y - sky.y)</span>
 <span class="s">                                     + (rc1.z - sky.z) * (rc1.z - sky.z)</span>
@@ -1861,17 +1904,17 @@
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">assocskyrgn_others_qry</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;img_id&#39;</span><span class="p">:</span><span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="_insert_new_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_assoc</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+<div class="viewcode-block" id="_insert_new_assocxtrsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_assocxtrsource">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_assocxtrsource</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Insert new associations for unknown sources</span>
 
-<span class="sd">    Extractedsources for which not a counterpart was found in the</span>
-<span class="sd">    runningcatalog, will be added as a new source to the assocxtrsource,</span>
+<span class="sd">    Extractedsources for which no counterpart was found in the</span>
+<span class="sd">    runningcatalog will be added as a new source to the assocxtrsource,</span>
 <span class="sd">    runningcatalog and runningcatalog_flux tables.</span>
 <span class="sd">    This function inserts the new source in the assocxtrsource table,</span>
 <span class="sd">    where the runcat and xtrsrc ids are identical to each other</span>
 <span class="sd">    in order to have this data point included in the light curve.</span>
 
-<span class="sd">    The left outer join in combination with the trc0.xtrsrc is null,</span>
+<span class="sd">    The left outer join in combination with the tmprc.xtrsrc is null,</span>
 <span class="sd">    selects the extracted sources that were not present in</span>
 <span class="sd">    temprunningcatalog, i.e. did not have a counterpart in the runningcatalog.</span>
 <span class="sd">    These were just inserted as new sources in the runningcatalog</span>
@@ -1897,26 +1940,28 @@
 <span class="s">        ,0</span>
 <span class="s">    FROM (SELECT x1.id AS xtrsrc</span>
 <span class="s">            FROM extractedsource x1</span>
-<span class="s">                 LEFT OUTER JOIN temprunningcatalog trc1</span>
-<span class="s">                 ON x1.id = trc1.xtrsrc</span>
+<span class="s">                 LEFT OUTER JOIN temprunningcatalog tmprc</span>
+<span class="s">                 ON x1.id = tmprc.xtrsrc</span>
 <span class="s">            WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
-<span class="s">              AND trc1.xtrsrc IS NULL</span>
+<span class="s">              AND tmprc.xtrsrc IS NULL</span>
 <span class="s">          ) t0</span>
 <span class="s">        ,runningcatalog r0</span>
 <span class="s">   WHERE r0.xtrsrc = t0.xtrsrc</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span><span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="_insert_new_transient"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_transient">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_transient</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">):</span>
+<div class="viewcode-block" id="_determine_newsource_previous_limits"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits">[docs]</a><span class="k">def</span> <span class="nf">_determine_newsource_previous_limits</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determines which new-runcat sources are also probably transient.</span>
 
 <span class="sd">    Looks up previous images relevant to this source-position, using the</span>
 <span class="sd">    following criteria - images must:</span>
-<span class="sd">     - overlap the new-source position, according to the skyregion information</span>
-<span class="sd">     - be in the same dataset</span>
-<span class="sd">     - be in the same frequency band</span>
-<span class="sd">     - have an earlier timestamp than the current image,</span>
+
+<span class="sd">     - overlap the new-source position, according to the skyregion</span>
+<span class="sd">       information;</span>
+<span class="sd">     - be in the same dataset;</span>
+<span class="sd">     - be in the same frequency band;</span>
+<span class="sd">     - have an earlier timestamp than the current image;</span>
 <span class="sd">     - have not been rejected.</span>
 
 <span class="sd">    For those images we calculate the per-previous-image detection-thresholds,</span>
@@ -1924,19 +1969,35 @@
 
 <span class="sd">    A new source is &#39;possibly transient&#39; (type 0) if it</span>
 <span class="sd">    passes the following tests:</span>
-<span class="sd">     -Was not detected in a skyregion being surveyed for the first time.</span>
-<span class="sd">     -Has a flux-value such that:</span>
+
+<span class="sd">     - Was not detected in a skyregion being surveyed for the first time.</span>
+<span class="sd">     - Has a flux-value such that:</span>
+
 <span class="sd">        flux &gt; MIN_OVER_I [ (rms_min_I*(det_I + new_source_sigma_margin) ]</span>
+
 <span class="sd">      (where I indexes the images)</span>
-<span class="sd">      i.e. if it was a steady-source, it should have been detected if</span>
-<span class="sd">      it was in the *low-RMS* area of the lowest-RMS previous image overlapping</span>
-<span class="sd">      this position, even allowing for noise fluctuations.</span>
+<span class="sd">      i.e. if it was a steady-source, it should have been already detected if</span>
+<span class="sd">      it was in the *low-RMS* area of the previous image with best detection</span>
+<span class="sd">      threshold, even allowing for noise fluctuations.</span>
 
 <span class="sd">    Furthermore, a new source is &#39;likely transient&#39; (type 1) if it is additionally</span>
 <span class="sd">    bright enough that, if it were a steady source, it should have been detected</span>
-<span class="sd">    even if it was in the *high-RMS* area of the lowest-RMS image overlapping this</span>
-<span class="sd">    position, i.e.</span>
-<span class="sd">        flux &gt; MIN_OVER_I [ (rms_max_I*(det_I + new_source_sigma_margin) ]</span>
+<span class="sd">    even if it was in the *high-RMS* area of the aforementioned &#39;low rms_min&#39;</span>
+<span class="sd">    image, i.e.</span>
+
+<span class="sd">        flux &gt; (rms_max_I*(det_I + new_source_sigma_margin))</span>
+
+<span class="sd">    Note that, once we have located the image with best &#39;low rms threshold&#39;,</span>
+<span class="sd">    we then use that image to *also* generate the &#39;high rms threshold&#39;.</span>
+<span class="sd">    Strictly speaking, this is non-optimal - we should run a fresh search</span>
+<span class="sd">    against all images to find the best &#39;high rms threshold&#39;. However, I&#39;m</span>
+<span class="sd">    working on the assumption that most of</span>
+<span class="sd">    the time the image with best low-threshold will also have best</span>
+<span class="sd">    high-threshold, and even when that is not the case we won&#39;t lose too much</span>
+<span class="sd">    accuracy. The benefits of this assumption are simplicity, and possibly</span>
+<span class="sd">    faster performance, but this might need to be re-examined in future,</span>
+<span class="sd">    especially if we start ingesting images of wildly differing sizes and</span>
+<span class="sd">    noise non-uniformity characteristics (e.g. single pointings vs mosaics) etc.</span>
 
 <span class="sd">    We use peak flux (f_peak) as the flux value here, since that is likely</span>
 <span class="sd">    to be the deciding factor in whether a source gets blindly extracted or not.</span>
@@ -1949,17 +2010,25 @@
     <span class="c"># This is another hairy query, but it breaks down like so:</span>
     <span class="c">#</span>
     <span class="c"># The innermost SELECT (unassoc_xtr) is a standard query</span>
-    <span class="c"># (NB should probably be a view or a function) that we use to grab</span>
-    <span class="c"># extractedsources from the current image that do not have a candidate</span>
-    <span class="c"># runcat counterpart from previous images. Note that, by the time this</span>
-    <span class="c"># query is run, a new runningcatalog entry has been inserted for them,</span>
-    <span class="c"># and the skyregion matching has been done.</span>
+    <span class="c"># that we use to grab extractedsources from the current image that</span>
+    <span class="c"># do not have a candidate  runcat counterpart from previous images.</span>
+    <span class="c"># Note that, by the time this query is run, a new runningcatalog entry has</span>
+    <span class="c"># been inserted for them, and the skyregion matching has been done.</span>
     <span class="c">#</span>
-    <span class="c"># We then use the runcat -&gt; skyregion information to grab all the</span>
-    <span class="c"># matching images as outlined in the docstring above.</span>
+    <span class="c"># Next, we match those new sources with previous images overlapping</span>
+    <span class="c"># their position according to the criteria in the docstring above,</span>
+    <span class="c"># and calculate detection thresholds for each of those images.</span>
     <span class="c">#</span>
-    <span class="c"># We then take the minimum over those limits and apply the</span>
-    <span class="c"># type-determination logic as described in the docstring above.</span>
+    <span class="c"># We then thinly wrap the resulting &#39;matched_imgs&#39; set in a query</span>
+    <span class="c"># to sort them by low_flux_threshold, with high_flux_threshold as the</span>
+    <span class="c"># secondary criteria in case of a tie (&#39;ordered_matched_imgs&#39;).</span>
+    <span class="c">#</span>
+    <span class="c"># Finally, we pull out the results we want - new source flux above the low</span>
+    <span class="c"># threshold, image ID of the &#39;best&#39; previous image according to the sorting,</span>
+    <span class="c"># and run a final CASE to determine if the new source also passes the</span>
+    <span class="c"># high flux threshold.</span>
+    <span class="c">#</span>
+
 
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO transient</span>
@@ -1970,62 +2039,64 @@
 <span class="s">  ,eta_int</span>
 <span class="s">  ,trigger_xtrsrc</span>
 <span class="s">  ,transient_type</span>
+<span class="s">  ,previous_limits_image</span>
 <span class="s">  )</span>
-<span class="s">  SELECT best_limits.new_src_runcat_id AS runcat</span>
-<span class="s">        ,best_limits.new_src_band AS band</span>
-<span class="s">        ,1</span>
-<span class="s">        ,0</span>
-<span class="s">        ,0</span>
-<span class="s">        ,best_limits.new_src_xtr_id AS trigger_xtrsrc</span>
-<span class="s">        ,CASE WHEN best_limits.new_src_flux &gt; best_limits.best_high_thresh</span>
-<span class="s">              THEN 1</span>
-<span class="s">              ELSE 0</span>
-<span class="s">         END as transient_type</span>
-<span class="s">    FROM (SELECT MIN(matched_imgs.low_flux_threshold) AS best_low_thresh</span>
-<span class="s">                ,MIN(matched_imgs.high_flux_threshold) as best_high_thresh</span>
-<span class="s">                ,matched_imgs.new_src_runcat_id</span>
-<span class="s">                ,matched_imgs.new_src_xtr_id</span>
-<span class="s">                ,matched_imgs.new_src_flux</span>
-<span class="s">                ,matched_imgs.new_src_band</span>
-<span class="s">            FROM (SELECT runcat1.id as new_src_runcat_id</span>
-<span class="s">                        ,unassoc_xtr.xtrsrc_id as new_src_xtr_id</span>
-<span class="s">                        ,unassoc_xtr.f_peak as new_src_flux</span>
-<span class="s">                        ,this_img.band as new_src_band</span>
-<span class="s">                        ,(prev_imgs.rms_min *</span>
-<span class="s">                              (prev_imgs.detection_thresh + </span><span class="si">%(sigma_margin)s</span><span class="s">))</span>
-<span class="s">                          AS low_flux_threshold</span>
-<span class="s">                        ,(prev_imgs.rms_max *</span>
-<span class="s">                              (prev_imgs.detection_thresh + </span><span class="si">%(sigma_margin)s</span><span class="s">))</span>
-<span class="s">                          AS high_flux_threshold</span>
-<span class="s">                  FROM (SELECT x1.id AS xtrsrc_id</span>
-<span class="s">                            ,x1.f_peak</span>
-<span class="s">                        FROM extractedsource x1</span>
-<span class="s">                             LEFT OUTER JOIN temprunningcatalog trc1</span>
-<span class="s">                             ON x1.id = trc1.xtrsrc</span>
-<span class="s">                        WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
-<span class="s">                          AND trc1.xtrsrc IS NULL</span>
-<span class="s">                      ) unassoc_xtr</span>
-<span class="s">                     ,runningcatalog runcat1</span>
-<span class="s">                     ,assocskyrgn asky1</span>
-<span class="s">                     ,image this_img</span>
-<span class="s">                     ,image prev_imgs</span>
-<span class="s">                        LEFT OUTER JOIN rejection rj</span>
-<span class="s">                        ON prev_imgs.id = rj.image</span>
-<span class="s">                  WHERE this_img.id = </span><span class="si">%(image_id)s</span><span class="s"></span>
-<span class="s">                  AND runcat1.xtrsrc = unassoc_xtr.xtrsrc_id</span>
-<span class="s">                  AND asky1.runcat = runcat1.id</span>
-<span class="s">                  AND prev_imgs.dataset = this_img.dataset</span>
-<span class="s">                  AND prev_imgs.skyrgn = asky1.skyrgn</span>
-<span class="s">                  AND prev_imgs.band = this_img.band</span>
-<span class="s">                  AND this_img.taustart_ts &gt; prev_imgs.taustart_ts</span>
-<span class="s">                  AND rj.image IS NULL</span>
-<span class="s">            ) matched_imgs</span>
-<span class="s">            GROUP BY matched_imgs.new_src_runcat_id</span>
-<span class="s">                    ,matched_imgs.new_src_xtr_id</span>
-<span class="s">                    ,matched_imgs.new_src_flux</span>
-<span class="s">                    ,matched_imgs.new_src_band</span>
-<span class="s">         ) best_limits</span>
-<span class="s">   WHERE best_limits.new_src_flux &gt; best_limits.best_low_thresh</span>
+<span class="s">  SELECT new_src_runcat_id AS runcat</span>
+<span class="s">         ,band AS band</span>
+<span class="s">         ,1 AS siglevel</span>
+<span class="s">         ,0 AS v_int</span>
+<span class="s">         ,0 AS eta_int</span>
+<span class="s">         ,new_src_xtr_id AS trigger_xtrsrc</span>
+<span class="s">         ,CASE WHEN new_src_flux &gt; high_flux_threshold</span>
+<span class="s">               THEN 1</span>
+<span class="s">               ELSE 0</span>
+<span class="s">          END as transient_type</span>
+<span class="s">         ,prev_img_id AS previous_limits_image</span>
+<span class="s">  FROM ( SELECT  new_src_runcat_id</span>
+<span class="s">                ,new_src_xtr_id</span>
+<span class="s">                ,new_src_flux</span>
+<span class="s">                ,band</span>
+<span class="s">                ,prev_img_id</span>
+<span class="s">                ,low_flux_threshold</span>
+<span class="s">                ,high_flux_threshold</span>
+<span class="s">                ,ROW_NUMBER() OVER (</span>
+<span class="s">                         PARTITION BY new_src_xtr_id</span>
+<span class="s">                         ORDER BY low_flux_threshold ASC,</span>
+<span class="s">                                  high_flux_threshold ASC</span>
+<span class="s">                         ) AS row_num</span>
+<span class="s">         FROM ( SELECT runcat1.id as new_src_runcat_id</span>
+<span class="s">                      ,unassoc_xtr.xtrsrc_id as new_src_xtr_id</span>
+<span class="s">                      ,unassoc_xtr.f_peak as new_src_flux</span>
+<span class="s">                      ,this_img.band</span>
+<span class="s">                      ,prev_imgs.id as prev_img_id</span>
+<span class="s">                      ,(prev_imgs.rms_min *</span>
+<span class="s">                            (prev_imgs.detection_thresh + </span><span class="si">%(sigma_margin)s</span><span class="s">))</span>
+<span class="s">                        AS low_flux_threshold</span>
+<span class="s">                      ,(prev_imgs.rms_max *</span>
+<span class="s">                            (prev_imgs.detection_thresh + </span><span class="si">%(sigma_margin)s</span><span class="s">))</span>
+<span class="s">                        AS high_flux_threshold</span>
+<span class="s">                FROM (SELECT x1.id AS xtrsrc_id</span>
+<span class="s">                          ,x1.f_peak</span>
+<span class="s">                      FROM extractedsource x1</span>
+<span class="s">                      WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">                      AND x1.id NOT IN (SELECT xtrsrc FROM temprunningcatalog)</span>
+<span class="s">                    ) unassoc_xtr</span>
+<span class="s">                   ,runningcatalog runcat1</span>
+<span class="s">                   ,assocskyrgn asky1</span>
+<span class="s">                   ,image this_img</span>
+<span class="s">                   ,image prev_imgs</span>
+<span class="s">                WHERE this_img.id = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">                AND runcat1.xtrsrc = unassoc_xtr.xtrsrc_id</span>
+<span class="s">                AND asky1.runcat = runcat1.id</span>
+<span class="s">                AND prev_imgs.dataset = this_img.dataset</span>
+<span class="s">                AND prev_imgs.skyrgn = asky1.skyrgn</span>
+<span class="s">                AND prev_imgs.band = this_img.band</span>
+<span class="s">                AND this_img.taustart_ts &gt; prev_imgs.taustart_ts</span>
+<span class="s">                AND prev_imgs.id NOT IN (select image from rejection)</span>
+<span class="s">         ) matched_imgs</span>
+<span class="s">  ) ordered_matched_imgs</span>
+<span class="s">  WHERE row_num = 1</span>
+<span class="s">    AND new_src_flux &gt; low_flux_threshold</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">,</span>
               <span class="s">&#39;sigma_margin&#39;</span><span class="p">:</span> <span class="n">new_source_sigma_margin</span><span class="p">}</span>
@@ -2036,7 +2107,8 @@
 
 </div>
 <div class="viewcode-block" id="_update_ff_runcat_extractedsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._update_ff_runcat_extractedsource">[docs]</a><span class="k">def</span> <span class="nf">_update_ff_runcat_extractedsource</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;We are about to delete the runcats that are inactivated, and</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    We are about to delete the runcats that are inactivated, and</span>
 <span class="sd">    therefore have to set the ff_runcat reference in extractedsource to NULL.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>

@@ -117,18 +117,19 @@ runcat ids will be inserted into the extractedsource table as well,
 to simplify further null-detection processing.
 For blind extractions this list is empty (None).</p>
 <p>For all extracted sources additional parameters are calculated,
-and appended to the sourcefinder data. Appended and converted are:
-- the image id to which the extracted sources belong to
-- the zone in which an extracted source falls is calculated, based</p>
+and appended to the sourcefinder data. Appended and converted are:</p>
 <blockquote>
-<div>on its declination. We adopt a zoneheight of 1 degree, so
-the floor of the declination represents the zone.</div></blockquote>
-<ul class="simple">
+<div><ul class="simple">
+<li>the image id to which the extracted sources belong to</li>
+<li>the zone in which an extracted source falls is calculated, based
+on its declination. We adopt a zoneheight of 1 degree, so
+the floor of the declination represents the zone.</li>
 <li>the positional errors are converted from degrees to arcsecs</li>
 <li>the Cartesian coordinates of the source position</li>
 <li>ra * cos(radians(decl)), this is very often being used in
 source-distance calculations</li>
 </ul>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">

@@ -192,7 +192,8 @@
 
 </div>
 <div class="viewcode-block" id="insert_extracted_sources"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_extracted_sources">[docs]</a><span class="k">def</span> <span class="nf">insert_extracted_sources</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">extract</span><span class="p">,</span> <span class="n">ff_runcatids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Insert all detections from sourcefinder into the extractedsource table.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Insert all detections from sourcefinder into the extractedsource table.</span>
 
 <span class="sd">    Besides the source properties from sourcefinder, we calculate additional</span>
 <span class="sd">    attributes that are increase performance in other tasks.</span>
@@ -241,14 +242,15 @@
 
 <span class="sd">    For all extracted sources additional parameters are calculated,</span>
 <span class="sd">    and appended to the sourcefinder data. Appended and converted are:</span>
-<span class="sd">    - the image id to which the extracted sources belong to</span>
-<span class="sd">    - the zone in which an extracted source falls is calculated, based</span>
-<span class="sd">      on its declination. We adopt a zoneheight of 1 degree, so</span>
-<span class="sd">      the floor of the declination represents the zone.</span>
-<span class="sd">    - the positional errors are converted from degrees to arcsecs</span>
-<span class="sd">    - the Cartesian coordinates of the source position</span>
-<span class="sd">    - ra * cos(radians(decl)), this is very often being used in</span>
-<span class="sd">      source-distance calculations</span>
+
+<span class="sd">        - the image id to which the extracted sources belong to</span>
+<span class="sd">        - the zone in which an extracted source falls is calculated, based</span>
+<span class="sd">          on its declination. We adopt a zoneheight of 1 degree, so</span>
+<span class="sd">          the floor of the declination represents the zone.</span>
+<span class="sd">        - the positional errors are converted from degrees to arcsecs</span>
+<span class="sd">        - the Cartesian coordinates of the source position</span>
+<span class="sd">        - ra * cos(radians(decl)), this is very often being used in</span>
+<span class="sd">          source-distance calculations</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;No extract_type=</span><span class="si">%s</span><span class="s"> sources added to extractedsource for&quot;</span>
