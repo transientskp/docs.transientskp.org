@@ -66,14 +66,10 @@ between images in a single databset, for instance. All images being processed
 are added to the same dataset.</p>
 <p>Optionally, a copy of the image pixel data may be stored to a <a class="reference internal" href="../../../getstart/concepts/mongodb.html#mongodb-intro"><em>MongoDB</em></a> instance at the same time. This is configured in
 the <a class="reference internal" href="../../config/pipeline_cfg.html#pipeline-cfg-image-cache"><em>image_cache section</em></a> of the pipeline config.</p>
-<div class="section" id="image-rms">
-<h2>Image RMS<a class="headerlink" href="#image-rms" title="Permalink to this headline">¶</a></h2>
-<p>The central subsection of the image is iteratively sigma-clipped
-until it reaches a user-defined convergence. The RMS of the clipped value is
-compared to the theoretically expected image noise based on the LOFAR
-configuration in use. The image is rejected if the noise is signifcantly
-greater than expected.</p>
-</div>
+<p>Note that only images which meet the <a class="reference internal" href="../../../devref/tkp/accessors.html#accessors"><em>data accessor</em></a>
+requirements are stored in the database. Any other data provided to the
+pipeline will be processed: an error will be logged, and that data will not be
+included in further processing.</p>
 <div class="section" id="section-persistence">
 <h2>Section <tt class="docutils literal"><span class="pre">persistence</span></tt><a class="headerlink" href="#section-persistence" title="Permalink to this headline">¶</a></h2>
 <p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
@@ -108,7 +104,6 @@ the central <tt class="docutils literal"><span class="pre">1/f</span></tt> of th
   <h3><a href="../../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Persistence</a><ul>
-<li><a class="reference internal" href="#image-rms">Image RMS</a></li>
 <li><a class="reference internal" href="#section-persistence">Section <tt class="docutils literal"><span class="pre">persistence</span></tt></a></li>
 </ul>
 </li>
