@@ -57,6 +57,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">execute</span> <span class="k">as</span> <span class="n">execute</span>
 <span class="kn">from</span> <span class="nn">tkp.db.associations</span> <span class="kn">import</span> <span class="n">_empty_temprunningcatalog</span> <span class="k">as</span> <span class="n">_del_tempruncat</span>
+<span class="kn">from</span> <span class="nn">tkp.db.associations</span> <span class="kn">import</span> <span class="n">ONE_TO_ONE_ASSOC_QUERY</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
@@ -334,51 +335,7 @@
 <span class="sd">    differences might get too small to cause divisions by zero.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
-<span class="s">INSERT INTO assocxtrsource</span>
-<span class="s">  (runcat</span>
-<span class="s">  ,xtrsrc</span>
-<span class="s">  ,type</span>
-<span class="s">  ,distance_arcsec</span>
-<span class="s">  ,r</span>
-<span class="s">  ,v_int</span>
-<span class="s">  ,eta_int</span>
-<span class="s">  )</span>
-<span class="s">  SELECT t.runcat</span>
-<span class="s">        ,t.xtrsrc</span>
-<span class="s">        ,7 AS type</span>
-<span class="s">        ,0 AS distance_arcsec</span>
-<span class="s">        ,0 AS r</span>
-<span class="s">        ,t.v_int_inter / t.avg_f_int</span>
-<span class="s">        ,t.eta_int_inter / t.avg_f_int_weight</span>
-<span class="s">    FROM (SELECT runcat</span>
-<span class="s">                ,xtrsrc</span>
-<span class="s">                ,CASE WHEN avg_f_int = 0.0</span>
-<span class="s">                      THEN 0.000001</span>
-<span class="s">                      ELSE avg_f_int</span>
-<span class="s">                 END AS avg_f_int</span>
-<span class="s">                ,avg_f_int_weight</span>
-<span class="s">                ,CASE WHEN f_datapoints = 1</span>
-<span class="s">                      THEN 0</span>
-<span class="s">                      ELSE CASE WHEN ABS(avg_f_int_sq - avg_f_int * avg_f_int) &lt; 8e-14</span>
-<span class="s">                                THEN 0</span>
-<span class="s">                                ELSE SQRT(CAST(f_datapoints AS DOUBLE PRECISION)</span>
-<span class="s">                                         * (avg_f_int_sq - avg_f_int * avg_f_int)</span>
-<span class="s">                                         / (CAST(f_datapoints AS DOUBLE PRECISION) - 1.0)</span>
-<span class="s">                                         )</span>
-<span class="s">                           END</span>
-<span class="s">                 END AS v_int_inter</span>
-<span class="s">                ,CASE WHEN f_datapoints = 1</span>
-<span class="s">                      THEN 0</span>
-<span class="s">                      ELSE (CAST(f_datapoints AS DOUBLE PRECISION)</span>
-<span class="s">                            / (CAST(f_datapoints AS DOUBLE PRECISION) - 1.0))</span>
-<span class="s">                           * (avg_f_int_weight * avg_weighted_f_int_sq</span>
-<span class="s">                             - avg_weighted_f_int * avg_weighted_f_int)</span>
-<span class="s">                 END AS eta_int_inter</span>
-<span class="s">            FROM temprunningcatalog</span>
-<span class="s">           ) t</span>
-<span class="s">&quot;&quot;&quot;</span>
-    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">ONE_TO_ONE_ASSOC_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">},</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%s</span><span class="s"> 1-to-1 null detections in assocxtrsource&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
 

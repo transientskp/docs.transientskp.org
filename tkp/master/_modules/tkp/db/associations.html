@@ -1343,15 +1343,11 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="_insert_1_to_1_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_1_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_1_assoc</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Insert remaining associations from temprunningcatalog into assocxtrsource.</span>
 
-<span class="sd">    We also calculate the variability indices at the timestamp of the</span>
-<span class="sd">    the current image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="c"># This is the &quot;master&quot; 1-to-1 association query. We reuse it for associating</span>
+<span class="c"># both null detections and monitoring list sources, tweaking the type as</span>
+<span class="c"># appropriate.</span></div>
+<span class="n">ONE_TO_ONE_ASSOC_QUERY</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO assocxtrsource</span>
 <span class="s">  (runcat</span>
 <span class="s">  ,xtrsrc</span>
@@ -1363,7 +1359,7 @@
 <span class="s">  )</span>
 <span class="s">  SELECT t0.runcat</span>
 <span class="s">        ,t0.xtrsrc</span>
-<span class="s">        ,3</span>
+<span class="s">        ,</span><span class="si">%(type)s</span><span class="s"></span>
 <span class="s">        ,t0.distance_arcsec</span>
 <span class="s">        ,t0.r</span>
 <span class="s">        ,t0.v_int_inter / t0.avg_f_int</span>
@@ -1395,18 +1391,18 @@
 <span class="s">                             - tmprc.avg_weighted_f_int * tmprc.avg_weighted_f_int)</span>
 <span class="s">                 END AS eta_int_inter</span>
 <span class="s">            FROM temprunningcatalog tmprc</span>
-<span class="s">                ,runningcatalog r</span>
-<span class="s">                ,extractedsource x</span>
-<span class="s">           WHERE tmprc.runcat = r.id</span>
-<span class="s">             AND tmprc.inactive = FALSE</span>
-<span class="s">             AND tmprc.xtrsrc = x.id</span>
-<span class="s">                 ) t0</span>
-<span class="s">        &quot;&quot;&quot;</span>
-    <span class="c">#print &quot;Q:\n&quot;,query</span>
-    <span class="c">#answer = raw_input(&quot;Do you want to continue? [y/N]: &quot;)</span>
-    <span class="c">#if answer.lower() != &#39;y&#39;:</span>
-    <span class="c">#    sys.exit(1)</span>
-    <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="s">           WHERE tmprc.inactive = FALSE</span>
+<span class="s">           ) t0</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="_insert_1_to_1_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_1_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_1_assoc</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Insert remaining associations from temprunningcatalog into assocxtrsource.</span>
+
+<span class="sd">    We also calculate the variability indices at the timestamp of the</span>
+<span class="sd">    the current image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ONE_TO_ONE_ASSOC_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="_update_1_to_1_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._update_1_to_1_runcat">[docs]</a><span class="k">def</span> <span class="nf">_update_1_to_1_runcat</span><span class="p">():</span>
