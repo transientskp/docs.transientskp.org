@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Monitoring list &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
+    <link rel="up" title="TKP Package Reference" href="index.html" />
+    <link rel="next" title="testutil" href="testutil.html" />
+    <link rel="prev" title="Alerts recipe" href="alerts.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testutil.html" title="testutil"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="alerts.html" title="Alerts recipe"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">TKP Package Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="monitoring-list">
+<span id="monitoringlist"></span><h1>Monitoring list<a class="headerlink" href="#monitoring-list" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Evert Rol</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Last updated:</th><td class="field-body">2014-5-22</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The monitoring list is a list of sources that require the flux to be
+measured at the given source position, regardless of actually being
+detected (i.e., their flux is above the detection level).
+The list is provided only externally in two ways, either as a tuple of
+source positions (ra,dec) on the command line or by a file containing
+the source positions. The sources can have their coordinates derived
+from e.g. optical or X-ray observations, and it is therefore important
+that these exact coordinates will be used in the flux
+measurements.</p>
+<p>The monitoring list is active for the duration of a &#8220;dataset&#8221; entity
+(as implemented in the database), which may span a single observation,
+but certainly could span multiple observations of the same field. It
+is user defined.</p>
+</div>
+<div class="section" id="database-tables">
+<h2>Database tables<a class="headerlink" href="#database-tables" title="Permalink to this headline">¶</a></h2>
+<p>The database tables concerned are three:</p>
+<ul class="simple">
+<li>runningcatalog: this is the growing list of detected sources, with
+their weighted averaged coordinates. This catalog is tied to a
+dataset, as mentioned before. Sources from the monitoring list
+are the special property of <tt class="docutils literal"><span class="pre">mon_src</span> <span class="pre">=</span> <span class="pre">true</span></tt> set.</li>
+<li>extractedsources: forced fits at the positions of the monitoring sources
+are added to this table for every image. To discriminate these from the
+blind and null detections, the monitoring sources have the attribute
+<tt class="docutils literal"><span class="pre">extract_type</span> <span class="pre">=</span> <span class="pre">2</span></tt> set.</li>
+<li>assocxtrsource: the light curve of the monitoring sources are maintained
+in this table. All associations are of the type 1-to-1, so monitoring sources
+not associated or mixed up with the blind and/or null detections.</li>
+</ul>
+</div>
+<div class="section" id="program-flow">
+<h2>Program flow<a class="headerlink" href="#program-flow" title="Permalink to this headline">¶</a></h2>
+<p>Below, the flow of pipeline in the context of the monitoringlist is
+indicated.</p>
+<ol class="arabic simple">
+<li>Recipe: monitoringlist</li>
+</ol>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li>It should be noted that the monitoring list procedures run a
+after the <cite>normal</cite> association procedures of the blindly extracted
+sources and null detections are completed.</li>
+<li>Obtain the list of source positions to be monitored that were
+provided at the start of a pipeline run.</li>
+<li>Measure the flux levels at the given positions (forced fit) in
+every image, if it is in the field of view.</li>
+<li>Insert the fluxes into the <cite>extractedsources</cite> as <tt class="docutils literal"><span class="pre">extract_type</span> <span class="pre">=</span> <span class="pre">2</span></tt>,
+and associate with <cite>runningcatalog</cite> sources that are marked as
+monitoring sources (<tt class="docutils literal"><span class="pre">mon_src</span> <span class="pre">=</span> <span class="pre">true</span></tt>) for 1-to-1 light curves.</li>
+<li>Association of the extracted monitoring sources with the known
+monitoring sources in the runningcatalog are carried out. Only
+1-to-1 associations are done. Together with the counterpart ids
+are the variability indices stored for every image timestep.
+The average positions for the <tt class="docutils literal"><span class="pre">mon_src</span></tt> <cite>runningcatalog</cite> will
+not be updated, since at these the positions are fixed.</li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Recipe: transient_search</li>
+</ol>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li>New (and current) transients are searched for by calculating the
+deviation from a flat light curve.</li>
+<li>Newly found transients are added to the transient table. Known
+transients in the table are updated.</li>
+</ol>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Monitoring list</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#database-tables">Database tables</a></li>
+<li><a class="reference internal" href="#program-flow">Program flow</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="alerts.html"
+                        title="previous chapter">Alerts recipe</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="testutil.html"
+                        title="next chapter">testutil</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/tkp/monitoringlist.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testutil.html" title="testutil"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="alerts.html" title="Alerts recipe"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >TKP Package Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

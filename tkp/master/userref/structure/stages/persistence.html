@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Persistence &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Pipeline Design" href="../index.html" />
+    <link rel="next" title="Quality check" href="quality.html" />
+    <link rel="prev" title="Database dump" href="dump.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quality.html" title="Quality check"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dump.html" title="Database dump"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Pipeline Design</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="persistence">
+<span id="stage-persistence"></span><h1>Persistence<a class="headerlink" href="#persistence" title="Permalink to this headline">¶</a></h1>
+<p>A record of all images to be processed is made in the database. Within the
+database, images are sorted into <a class="reference internal" href="../../../devref/database/schema.html#dataset"><em>datasets</em></a>, which group
+related images together for processing: searches for transients are performed
+between images in a single databset, for instance. All images being processed
+are added to the same dataset.</p>
+<p>Optionally, a copy of the image pixel data may be stored to a <a class="reference internal" href="../../../getstart/concepts/mongodb.html#mongodb-intro"><em>MongoDB</em></a> instance at the same time. This is configured in
+the <a class="reference internal" href="../../config/pipeline_cfg.html#pipeline-cfg-image-cache"><em>image_cache section</em></a> of the pipeline config.</p>
+<p>Note that only images which meet the <a class="reference internal" href="../../../devref/tkp/accessors.html#accessors"><em>data accessor</em></a>
+requirements are stored in the database. Any other data provided to the
+pipeline will be processed: an error will be logged, and that data will not be
+included in further processing.</p>
+<div class="section" id="section-persistence">
+<h2>Section <tt class="docutils literal"><span class="pre">persistence</span></tt><a class="headerlink" href="#section-persistence" title="Permalink to this headline">¶</a></h2>
+<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">dataset_id</span></tt></dt>
+<dd>Integer. Specifies the unique ID of a dataset to which the current pipeline
+run should be appended. If <tt class="docutils literal"><span class="pre">-1</span></tt>, a new dataset is created. If you specify
+a specific data set ID the configuration of your job is retrieved from the
+database. This will override your job configuration.</dd>
+<dt><tt class="docutils literal"><span class="pre">description</span></tt></dt>
+<dd>String. The name under which the database will be stored in the database.
+This value is only used if a new dataset is constructed (see
+<tt class="docutils literal"><span class="pre">dataset_id</span></tt>, below).</dd>
+<dt><tt class="docutils literal"><span class="pre">sigma</span></tt></dt>
+<dd>Float. Sigma value used for iterative clipping.</dd>
+<dt><tt class="docutils literal"><span class="pre">f</span></tt></dt>
+<dd>Integer. Determines the size of the subsection used for RMS measurement:
+the central <tt class="docutils literal"><span class="pre">1/f</span></tt> of the image will be used.</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Persistence</a><ul>
+<li><a class="reference internal" href="#section-persistence">Section <tt class="docutils literal"><span class="pre">persistence</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dump.html"
+                        title="previous chapter">Database dump</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="quality.html"
+                        title="next chapter">Quality check</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/userref/structure/stages/persistence.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quality.html" title="Quality check"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dump.html" title="Database dump"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >Pipeline Design</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

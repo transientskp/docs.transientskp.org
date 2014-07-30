@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.sourcefinder.utils – Utility routines &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Sourcefinder package" href="index.html" />
+    <link rel="next" title="Utility package" href="../utility/index.html" />
+    <link rel="prev" title="tkp.sourcefinder.stats – Statistics specific to source finding for radio images." href="stats.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../utility/index.html" title="Utility package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="stats.html" title="tkp.sourcefinder.stats – Statistics specific to source finding for radio images."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Sourcefinder package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.sourcefinder.utils">
+<span id="tkp-sourcefinder-utils-utility-routines"></span><span id="sourcefinder-utils"></span><h1><a class="reference internal" href="#module-tkp.sourcefinder.utils" title="tkp.sourcefinder.utils: Utility routines"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.sourcefinder.utils</span></tt></a> &#8211; Utility routines<a class="headerlink" href="#module-tkp.sourcefinder.utils" title="Permalink to this headline">¶</a></h1>
+<p>This module contain utilities for the source finding routines</p>
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.calculate_beamsize">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">calculate_beamsize</tt><big>(</big><em>semimajor</em>, <em>semiminor</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#calculate_beamsize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.calculate_beamsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the beamsize based on the semi major and minor axes</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.calculate_correlation_lengths">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">calculate_correlation_lengths</tt><big>(</big><em>semimajor</em>, <em>semiminor</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#calculate_correlation_lengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.calculate_correlation_lengths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Condon correlation length</p>
+<p>In order to derive the error bars from Gauss fitting from the
+Condon (1997, PASP 109, 116C) formulae, one needs the so called
+correlation length. The Condon formulae assumes a circular area
+with diameter theta_N (in pixels) for the correlation. This was
+later generalized by Hopkins et al. (2003, AJ 125, 465) for
+correlation areas which are not axisymmetric.</p>
+<p>Basically one has theta_N^2 = theta_B*theta_b.</p>
+<p>Good estimates in general are:</p>
+<ul class="simple">
+<li>theta_B = 2.0 * semimajar</li>
+<li>theta_b = 2.0 * semiminor</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.circular_mask">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">circular_mask</tt><big>(</big><em>xdim</em>, <em>ydim</em>, <em>radius</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#circular_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.circular_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a numpy array of shape (xdim, ydim). All points with radius of
+the centre are set to 0; outside that region, they are set to 1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.flatten">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">flatten</tt><big>(</big><em>nested_list</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten a nested list</p>
+<p>Nested lists are made in the deblending algorithm. They&#8217;re
+awful. This is a piece of code I grabbed from
+<a class="reference external" href="http://www.daniweb.com/code/snippet216879.html">http://www.daniweb.com/code/snippet216879.html</a>.</p>
+<p>The output from this method is a generator, so make sure to turn
+it into a list, like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>flattened = list(flatten(nested)).
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.fudge_max_pix">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">fudge_max_pix</tt><big>(</big><em>semimajor</em>, <em>semiminor</em>, <em>theta</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#fudge_max_pix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.fudge_max_pix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate peak flux correction at pixel of maximum flux</p>
+<p>Previously, we adopted Rengelink&#8217;s correction for the
+underestimate of the peak of the Gaussian by the maximum pixel
+method: fudge_max_pix = 1.06. See the WENSS paper
+(1997A&amp;AS..124..259R) or his thesis.  (The peak of the Gaussian
+is, of course, never at the exact center of the pixel, that&#8217;s why
+the maximum pixel method will always underestimate it.)</p>
+<p>But, instead of just taking 1.06 one can make an estimate of the
+overall correction by assuming that the true peak is at a random
+position on the peak pixel and averaging over all possible
+corrections.  This overall correction makes use of the beamshape,
+so strictly speaking only accurate for unresolved sources.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.generate_result_maps">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">generate_result_maps</tt><big>(</big><em>data</em>, <em>sourcelist</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#generate_result_maps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.generate_result_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a source and residual image</p>
+<p>Given a data array (image) and list of sources, return two images, one
+showing the sources themselves and the other the residual after the
+sources have been removed from the input data.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.generate_subthresholds">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">generate_subthresholds</tt><big>(</big><em>min_value</em>, <em>max_value</em>, <em>num_thresholds</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#generate_subthresholds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.generate_subthresholds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a series of &#64;num_thresholds&#64; logarithmically spaced values
+in the range (min_value, max_value) (both exclusive).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.maximum_pixel_method_variance">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">maximum_pixel_method_variance</tt><big>(</big><em>semimajor</em>, <em>semiminor</em>, <em>theta</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#maximum_pixel_method_variance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.maximum_pixel_method_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate variance for peak flux at pixel position of maximum</p>
+<p>When we use the maximum pixel method, with a correction
+fudge_max_pix, there should be no bias, unless the peaks of the
+Gaussians are not randomly distributed, but relatively close to
+the centres of the pixels due to selection effects from detection
+thresholds.</p>
+<p>Disregarding the latter effect and noise, we can compute the
+variance of the maximum pixel method by integrating (the true
+flux-the average true flux)^2 = (the true flux-fudge_max_pix)^2
+over the pixel area and dividing by the pixel area ( = 1).  This
+is just equal to integral of the true flux^2 over the pixel area
+- fudge_max_pix^2.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="stats.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.stats</span></tt> &#8211; Statistics specific to source finding for radio images.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../utility/index.html"
+                        title="next chapter">Utility package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/sourcefinder/utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../utility/index.html" title="Utility package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="stats.html" title="tkp.sourcefinder.stats – Statistics specific to source finding for radio images."
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li>
+          <li><a href="index.html" >Sourcefinder package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

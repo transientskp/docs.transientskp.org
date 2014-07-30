@@ -1,0 +1,444 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.db.general &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.db.general</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A collection of back end subroutines (mostly SQL queries).</span>
+
+<span class="sd">In this module we collect together various routines</span>
+<span class="sd">that don&#39;t fit into a more specific collection.</span>
+
+<span class="sd">Most of the basic insertion routines are kept here,</span>
+<span class="sd">with exception of transients.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">tkp.db</span>
+<span class="kn">from</span> <span class="nn">tkp.db.database</span> <span class="kn">import</span> <span class="n">sanitize_db_inputs</span>
+<span class="kn">from</span> <span class="nn">tkp.utility.coordinates</span> <span class="kn">import</span> <span class="n">eq_to_cart</span>
+<span class="kn">from</span> <span class="nn">tkp.utility.coordinates</span> <span class="kn">import</span> <span class="n">alpha_inflate</span>
+<span class="kn">from</span> <span class="nn">tkp.utility</span> <span class="kn">import</span> <span class="n">substitute_inf</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="n">lightcurve_query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">SELECT im.taustart_ts</span>
+<span class="s">      ,im.tau_time</span>
+<span class="s">      ,ex.f_int</span>
+<span class="s">      ,ex.f_int_err</span>
+<span class="s">      ,ex.id</span>
+<span class="s">      ,im.band</span>
+<span class="s">      ,im.stokes</span>
+<span class="s">      ,bd.freq_central</span>
+<span class="s">  FROM extractedsource ex</span>
+<span class="s">      ,assocxtrsource ax</span>
+<span class="s">      ,image im</span>
+<span class="s">      ,frequencyband bd</span>
+<span class="s"> WHERE ax.runcat IN (SELECT runcat</span>
+<span class="s">                       FROM assocxtrsource</span>
+<span class="s">                      WHERE xtrsrc = </span><span class="si">%(xtrsrc)s</span><span class="s"></span>
+<span class="s">                    )</span>
+<span class="s">   AND ax.xtrsrc = ex.id</span>
+<span class="s">   AND ex.image = im.id</span>
+<span class="s">   AND bd.id = im.band</span>
+<span class="s">ORDER BY im.taustart_ts</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">update_dataset_process_end_ts_query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">UPDATE dataset</span>
+<span class="s">   SET process_end_ts = NOW()</span>
+<span class="s"> WHERE id = </span><span class="si">%(dataset_id)s</span><span class="s"></span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="update_dataset_process_end_ts"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.update_dataset_process_end_ts">[docs]</a><span class="k">def</span> <span class="nf">update_dataset_process_end_ts</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Update dataset start-of-processing timestamp.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;dataset_id&#39;</span><span class="p">:</span> <span class="n">dataset_id</span><span class="p">}</span>
+    <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">update_dataset_process_end_ts_query</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dataset_id</span>
+
+</div>
+<div class="viewcode-block" id="insert_dataset"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_dataset">[docs]</a><span class="k">def</span> <span class="nf">insert_dataset</span><span class="p">(</span><span class="n">description</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Insert dataset with description as given by argument.</span>
+
+<span class="sd">    DB function insertDataset() sets the necessary default values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;SELECT insertDataset(</span><span class="si">%s</span><span class="s">)&quot;</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="p">(</span><span class="n">description</span><span class="p">,)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">dataset_id</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">dataset_id</span>
+
+</div>
+<div class="viewcode-block" id="insert_image"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_image">[docs]</a><span class="k">def</span> <span class="nf">insert_image</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">freq_eff</span><span class="p">,</span> <span class="n">freq_bw</span><span class="p">,</span> <span class="n">taustart_ts</span><span class="p">,</span> <span class="n">tau_time</span><span class="p">,</span>
+                 <span class="n">beam_smaj_pix</span><span class="p">,</span> <span class="n">beam_smin_pix</span><span class="p">,</span> <span class="n">beam_pa_rad</span><span class="p">,</span> <span class="n">deltax</span><span class="p">,</span> <span class="n">deltay</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span>
+                 <span class="n">centre_ra</span><span class="p">,</span> <span class="n">centre_decl</span><span class="p">,</span> <span class="n">xtr_radius</span><span class="p">,</span> <span class="n">rms_qc</span><span class="p">,</span>
+                 <span class="n">rms_min</span><span class="p">,</span> <span class="n">rms_max</span><span class="p">,</span> <span class="n">detection_thresh</span><span class="p">,</span> <span class="n">analysis_thresh</span>
+                 <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Insert an image for a given dataset with the column values</span>
+<span class="sd">    given in the argument list.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     - restoring beam: beam_smaj_pix, beam_smin_pix are the semimajor and</span>
+<span class="sd">       semiminor axes in pixel values; beam_pa_rad is the position angle</span>
+<span class="sd">       in radians.</span>
+<span class="sd">       They all will be converted to degrees, because that is unit used in</span>
+<span class="sd">       the database.</span>
+<span class="sd">     - centre_ra, centre_decl, xtr_radius:</span>
+<span class="sd">       These define the region within ``xtr_radius`` degrees of the</span>
+<span class="sd">       field centre, that will be used for source extraction.</span>
+<span class="sd">       (This obviously implies a promised on behalf of the pipeline not to do</span>
+<span class="sd">       anything else!)</span>
+<span class="sd">       Note centre_ra, centre_decl, extracion_radius should all be in degrees.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">    SELECT insertImage(</span><span class="si">%(dataset)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(tau_time)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(freq_eff)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(freq_bw)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(taustart_ts)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(rb_smaj)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(rb_smin)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(rb_pa)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(deltax)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(deltay)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(url)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(centre_ra)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(centre_decl)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(xtr_radius)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(rms_qc)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(rms_min)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(rms_max)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(detection_thresh)s</span><span class="s"></span>
+<span class="s">                      ,</span><span class="si">%(analysis_thresh)s</span><span class="s"></span>
+<span class="s">                      )</span>
+<span class="s">    &quot;&quot;&quot;</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;dataset&#39;</span><span class="p">:</span> <span class="n">dataset</span><span class="p">,</span>
+                 <span class="s">&#39;tau_time&#39;</span><span class="p">:</span> <span class="n">tau_time</span><span class="p">,</span>
+                 <span class="s">&#39;freq_eff&#39;</span><span class="p">:</span> <span class="n">freq_eff</span><span class="p">,</span>
+                 <span class="s">&#39;freq_bw&#39;</span><span class="p">:</span> <span class="n">freq_bw</span><span class="p">,</span>
+                 <span class="s">&#39;taustart_ts&#39;</span><span class="p">:</span> <span class="n">taustart_ts</span><span class="p">,</span>
+                 <span class="s">&#39;rb_smaj&#39;</span><span class="p">:</span> <span class="n">beam_smaj_pix</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">deltax</span><span class="p">),</span>
+                 <span class="s">&#39;rb_smin&#39;</span><span class="p">:</span> <span class="n">beam_smin_pix</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">deltay</span><span class="p">),</span>
+                 <span class="s">&#39;rb_pa&#39;</span><span class="p">:</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">beam_pa_rad</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+                 <span class="s">&#39;deltax&#39;</span><span class="p">:</span> <span class="n">deltax</span><span class="p">,</span>
+                 <span class="s">&#39;deltay&#39;</span><span class="p">:</span> <span class="n">deltay</span><span class="p">,</span>
+                 <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+                 <span class="s">&#39;centre_ra&#39;</span><span class="p">:</span> <span class="n">centre_ra</span><span class="p">,</span>
+                 <span class="s">&#39;centre_decl&#39;</span><span class="p">:</span> <span class="n">centre_decl</span><span class="p">,</span>
+                 <span class="s">&#39;xtr_radius&#39;</span><span class="p">:</span> <span class="n">xtr_radius</span><span class="p">,</span>
+                 <span class="s">&#39;rms_qc&#39;</span><span class="p">:</span> <span class="n">rms_qc</span><span class="p">,</span>
+                 <span class="s">&#39;rms_min&#39;</span><span class="p">:</span> <span class="n">rms_min</span><span class="p">,</span>
+                 <span class="s">&#39;rms_max&#39;</span><span class="p">:</span> <span class="n">rms_max</span><span class="p">,</span>
+                 <span class="s">&#39;detection_thresh&#39;</span><span class="p">:</span> <span class="n">detection_thresh</span><span class="p">,</span>
+                 <span class="s">&#39;analysis_thresh&#39;</span><span class="p">:</span> <span class="n">analysis_thresh</span><span class="p">,</span>
+                 <span class="p">}</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">image_id</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">image_id</span>
+
+</div>
+<div class="viewcode-block" id="insert_extracted_sources"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_extracted_sources">[docs]</a><span class="k">def</span> <span class="nf">insert_extracted_sources</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">extract</span><span class="p">,</span> <span class="n">ff_runcatids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Insert all detections from sourcefinder into the extractedsource table.</span>
+
+<span class="sd">    Besides the source properties from sourcefinder, we calculate additional</span>
+<span class="sd">    attributes that are increase performance in other tasks.</span>
+
+<span class="sd">    The strict sequence from results (the sourcefinder detections) is given below.</span>
+<span class="sd">    Note the units between sourcefinder and database.</span>
+<span class="sd">    (0) ra [deg], (1) dec [deg],</span>
+<span class="sd">    (2) ra_fit_err [deg], (3) decl_fit_err [deg],</span>
+<span class="sd">    (4) peak_flux [Jy], (5) peak_flux_err [Jy],</span>
+<span class="sd">    (6) int_flux [Jy], (7) int_flux_err [Jy],</span>
+<span class="sd">    (8) significance detection level,</span>
+<span class="sd">    (9) beam major width (arcsec), (10) - minor width (arcsec), (11) - parallactic angle [deg],</span>
+<span class="sd">    (12) ew_sys_err [arcsec], (13) ns_sys_err [arcsec],</span>
+<span class="sd">    (14) error_radius [arcsec]</span>
+<span class="sd">    (15) gaussian fit (bool)</span>
+
+<span class="sd">    ra_fit_err and decl_fit_err are the 1-sigma errors from the gaussian fit,</span>
+<span class="sd">    in degrees. Note that for a source located towards the poles the ra_fit_err</span>
+<span class="sd">    increases with absolute declination.</span>
+<span class="sd">    error_radius is a pessimistic on-sky error estimate in arcsec.</span>
+<span class="sd">    ew_sys_err and ns_sys_err represent the telescope dependent systematic errors</span>
+<span class="sd">    and are in arcsec.</span>
+<span class="sd">    An on-sky error (declination independent, and used in de ruiter calculations)</span>
+<span class="sd">    is then:</span>
+<span class="sd">    uncertainty_ew^2 = ew_sys_err^2 + error_radius^2</span>
+<span class="sd">    uncertainty_ns^2 = ns_sys_err^2 + error_radius^2</span>
+<span class="sd">    The units of uncertainty_ew and uncertainty_ns are in degrees.</span>
+<span class="sd">    The error on RA is given by ra_err. For a source with an RA of ra and an error</span>
+<span class="sd">    of ra_err, its RA lies in the range [ra-ra_err, ra+ra_err].</span>
+<span class="sd">    ra_err^2 = ra_fit_err^2 + [alpha_inflate(ew_sys_err,decl)]^2</span>
+<span class="sd">    decl_err^2 = decl_fit_err^2 + ns_sys_err^2.</span>
+<span class="sd">    The units of ra_err and decl_err are in degrees.</span>
+<span class="sd">    Here alpha_inflate() is the RA inflation function, it converts an</span>
+<span class="sd">    angular on-sky distance to a ra distance at given declination.</span>
+
+<span class="sd">    Input argument &quot;extract&quot; tells whether the source detections originate from:</span>
+<span class="sd">    &#39;blind&#39;: blind source extraction</span>
+<span class="sd">    &#39;ff_nd&#39;: from forced fits at null detection locations</span>
+<span class="sd">    &#39;ff_ms&#39;: from forced fits at monitoringlist positions</span>
+
+<span class="sd">    Input argument ff_runcat is not empty in the case of forced fits from</span>
+<span class="sd">    null detections. It contains the runningcatalog ids from which the</span>
+<span class="sd">    source positions were derived for the forced fits. In that case the</span>
+<span class="sd">    runcat ids will be inserted into the extractedsource table as well,</span>
+<span class="sd">    to simplify further null-detection processing.</span>
+<span class="sd">    For blind extractions this list is empty (None).</span>
+
+<span class="sd">    For all extracted sources additional parameters are calculated,</span>
+<span class="sd">    and appended to the sourcefinder data. Appended and converted are:</span>
+
+<span class="sd">        - the image id to which the extracted sources belong to</span>
+<span class="sd">        - the zone in which an extracted source falls is calculated, based</span>
+<span class="sd">          on its declination. We adopt a zoneheight of 1 degree, so</span>
+<span class="sd">          the floor of the declination represents the zone.</span>
+<span class="sd">        - the positional errors are converted from degrees to arcsecs</span>
+<span class="sd">        - the Cartesian coordinates of the source position</span>
+<span class="sd">        - ra * cos(radians(decl)), this is very often being used in</span>
+<span class="sd">          source-distance calculations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;No extract_type=</span><span class="si">%s</span><span class="s"> sources added to extractedsource for&quot;</span>
+                    <span class="s">&quot; image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">extract</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+        <span class="k">return</span>
+
+    <span class="n">xtrsrc</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="c"># Use 360 degree rather than infinite uncertainty for</span>
+        <span class="c"># unconstrained positions.</span>
+        <span class="n">r</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">=</span> <span class="n">substitute_inf</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">14</span><span class="p">],</span> <span class="mf">360.0</span><span class="p">)</span>
+        <span class="n">r</span><span class="p">[</span><span class="mi">15</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">15</span><span class="p">])</span>
+        <span class="c"># ra_err: sqrt of quadratic sum of fitted and systematic errors.</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">alpha_inflate</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span><span class="o">/</span><span class="mf">3600.</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="c"># decl_err: sqrt of quadratic sum of fitted and systematic errors.</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span><span class="o">/</span><span class="mf">3600.</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="c"># uncertainty_ew: sqrt of quadratic sum of systematic error and error_radius</span>
+        <span class="c"># divided by 3600 because uncertainty in degrees and others in arcsec.</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">3600.</span><span class="p">)</span>
+        <span class="c"># uncertainty_ns: sqrt of quadratic sum of systematic error and error_radius</span>
+        <span class="c"># divided by 3600 because uncertainty in degrees and others in arcsec.</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">3600.</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span> <span class="c"># id of the image</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span> <span class="c"># zone</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">eq_to_cart</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="c"># Cartesian x,y,z</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span> <span class="c"># ra * cos(radians(decl))</span>
+        <span class="k">if</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;blind&#39;</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_nd&#39;</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_ms&#39;</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Not a valid extractedsource insert type: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">extract</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff_runcatids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># If not empty, we add the runcat id as well</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ff_runcatids</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">xtrsrc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sanitize_db_inputs</span><span class="p">(</span><span class="n">xsrc</span><span class="p">)))</span> <span class="k">for</span> <span class="n">xsrc</span> <span class="ow">in</span> <span class="n">xtrsrc</span><span class="p">]</span>
+
+    <span class="n">q_basic</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO extractedsource</span>
+<span class="s">  (ra</span>
+<span class="s">  ,decl</span>
+<span class="s">  ,ra_fit_err</span>
+<span class="s">  ,decl_fit_err</span>
+<span class="s">  ,f_peak</span>
+<span class="s">  ,f_peak_err</span>
+<span class="s">  ,f_int</span>
+<span class="s">  ,f_int_err</span>
+<span class="s">  ,det_sigma</span>
+<span class="s">  ,semimajor</span>
+<span class="s">  ,semiminor</span>
+<span class="s">  ,pa</span>
+<span class="s">  ,ew_sys_err</span>
+<span class="s">  ,ns_sys_err</span>
+<span class="s">  ,error_radius</span>
+<span class="s">  ,fit_type</span>
+<span class="s">  ,ra_err</span>
+<span class="s">  ,decl_err</span>
+<span class="s">  ,uncertainty_ew</span>
+<span class="s">  ,uncertainty_ns</span>
+<span class="s">  ,image</span>
+<span class="s">  ,zone</span>
+<span class="s">  ,x</span>
+<span class="s">  ,y</span>
+<span class="s">  ,z</span>
+<span class="s">  ,racosdecl</span>
+<span class="s">  ,extract_type</span>
+<span class="s">  )</span>
+<span class="s">VALUES</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">q_ff</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO extractedsource</span>
+<span class="s">  (ra</span>
+<span class="s">  ,decl</span>
+<span class="s">  ,ra_fit_err</span>
+<span class="s">  ,decl_fit_err</span>
+<span class="s">  ,f_peak</span>
+<span class="s">  ,f_peak_err</span>
+<span class="s">  ,f_int</span>
+<span class="s">  ,f_int_err</span>
+<span class="s">  ,det_sigma</span>
+<span class="s">  ,semimajor</span>
+<span class="s">  ,semiminor</span>
+<span class="s">  ,pa</span>
+<span class="s">  ,ew_sys_err</span>
+<span class="s">  ,ns_sys_err</span>
+<span class="s">  ,error_radius</span>
+<span class="s">  ,fit_type</span>
+<span class="s">  ,ra_err</span>
+<span class="s">  ,decl_err</span>
+<span class="s">  ,uncertainty_ew</span>
+<span class="s">  ,uncertainty_ns</span>
+<span class="s">  ,image</span>
+<span class="s">  ,zone</span>
+<span class="s">  ,x</span>
+<span class="s">  ,y</span>
+<span class="s">  ,z</span>
+<span class="s">  ,racosdecl</span>
+<span class="s">  ,extract_type</span>
+<span class="s">  ,ff_runcat</span>
+<span class="s">  )</span>
+<span class="s">VALUES</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ff_runcatids</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">q_basic</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">q_ff</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">insert_num</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="c">#if insert_num == 0:</span>
+    <span class="c">#    logger.info(&quot;No forced-fit sources added to extractedsource for &quot;</span>
+    <span class="c">#                &quot;image %s&quot; % (image_id,))</span>
+    <span class="k">if</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;blind&#39;</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> sources in extractedsource for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_nd&#39;</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> forced-fit null detections in extractedsource&quot;</span>
+                    <span class="s">&quot; for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_ms&#39;</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> forced-fit for monitoring sourcs in extractedsource&quot;</span>
+                    <span class="s">&quot; for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="lightcurve"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.lightcurve">[docs]</a><span class="k">def</span> <span class="nf">lightcurve</span><span class="p">(</span><span class="n">xtrsrcid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Obtain a light curve for a specific extractedsource</span>
+<span class="sd">    Args:</span>
+<span class="sd">        xtrsrcid (int): the source identifier that corresponds to a</span>
+<span class="sd">        point on the light curve. Note that the point does not have to</span>
+<span class="sd">        be the start (first) point of the light curve.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of tuples, each tuple containing (in order):</span>
+<span class="sd">            - observation start time as a datetime.datetime object</span>
+<span class="sd">            - integration time (float)</span>
+<span class="sd">            - integrated flux (float)</span>
+<span class="sd">            - integrated flux error (float)</span>
+<span class="sd">            - database ID of this particular source</span>
+<span class="sd">            - frequency band ID</span>
+<span class="sd">            - stokes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;xtrsrc&#39;</span><span class="p">:</span> <span class="n">xtrsrcid</span><span class="p">}</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">lightcurve_query</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.sourcefinder.stats &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.sourcefinder.stats</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># LOFAR Transients Key Project</span>
+<span class="c">#</span>
+<span class="c"># discovery@transientskp.org</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># Some generic utility routines for number handling and</span>
+<span class="c"># calculating (specific) variances</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">numpy.ma</span> <span class="kn">import</span> <span class="n">MaskedArray</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erf</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erfcinv</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">calculate_correlation_lengths</span>
+
+
+<span class="c"># CODE &amp; NUMBER HANDLING ROUTINES</span>
+<span class="c">#</span>
+<div class="viewcode-block" id="var_helper"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/stats.html#tkp.sourcefinder.stats.var_helper">[docs]</a><span class="k">def</span> <span class="nf">var_helper</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correct for the fact the rms noise is computed from a clipped</span>
+<span class="sd">    distribution.</span>
+
+<span class="sd">    That noise will always be lower than the noise from the complete</span>
+<span class="sd">    distribution.  The correction factor is a function of the computed</span>
+<span class="sd">    rms noise only.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">term1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">erf</span><span class="p">(</span><span class="n">N</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="p">))</span>
+    <span class="n">term2</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">N</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">term1</span> <span class="o">/</span> <span class="p">(</span><span class="n">term1</span> <span class="o">-</span> <span class="n">term2</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="indep_pixels"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/stats.html#tkp.sourcefinder.stats.indep_pixels">[docs]</a><span class="k">def</span> <span class="nf">indep_pixels</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">beam</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+    <span class="n">corlengthlong</span><span class="p">,</span> <span class="n">corlengthshort</span> <span class="o">=</span> <span class="n">calculate_correlation_lengths</span><span class="p">(</span>
+        <span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">correlated_area</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">corlengthlong</span> <span class="o">*</span> <span class="n">corlengthshort</span>
+    <span class="k">return</span> <span class="n">N</span> <span class="o">/</span> <span class="n">correlated_area</span>
+
+</div>
+<div class="viewcode-block" id="unbiased_sigma"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/stats.html#tkp.sourcefinder.stats.unbiased_sigma">[docs]</a><span class="k">def</span> <span class="nf">unbiased_sigma</span><span class="p">(</span><span class="n">N_indep</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate an unbiased sigma for using in sigma clipping.</span>
+
+<span class="sd">    The formula below for cliplim is pretty subtle. Kappa, sigma</span>
+<span class="sd">    clipping should be such that the noise is not biased by</span>
+<span class="sd">    it. Consequently, the clipping boundaries should be such that</span>
+<span class="sd">    exactly half an independent pixel should exceed it if the map were</span>
+<span class="sd">    source free. A rigid boundary of 3 sigma is appropriate only if the</span>
+<span class="sd">    number of independent pixels is about 185 (the number of</span>
+<span class="sd">    independent pixels equals the number of pixels divided by the</span>
+<span class="sd">    beamsize in pixels).</span>
+
+<span class="sd">    The condition that kappa, sigma clipping may not bias the noise is</span>
+<span class="sd">    translated in the formula below, using Gaussian statistics. A</span>
+<span class="sd">    disadvantage of this is that more iterations of kappa, sigma</span>
+<span class="sd">    clipping are needed, compared to 3 sigma clipping. However, the</span>
+<span class="sd">    noise values derived are generally significantly different (lower)</span>
+<span class="sd">    compared to 3 sigma clipping.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="mf">1.4142135623730951</span> <span class="o">*</span> <span class="n">erfcinv</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">/</span> <span class="n">N_indep</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="sigma_clip"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/stats.html#tkp.sourcefinder.stats.sigma_clip">[docs]</a><span class="k">def</span> <span class="nf">sigma_clip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">beam</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">unbiased_sigma</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+               <span class="n">centref</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">distf</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">var</span><span class="p">,</span> <span class="n">my_iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+               <span class="n">corr_clip</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Iterative clipping</span>
+
+<span class="sd">    By default, this performs clipping of the standard deviation about the</span>
+<span class="sd">    median of the data. But by tweaking centref/distf, it could be much</span>
+<span class="sd">    more general.</span>
+
+<span class="sd">    max_iter sets the maximum number of iterations used.</span>
+
+<span class="sd">    my_iterations is a counter for recursive operation of the code; leave it</span>
+<span class="sd">    alone unless you really want to pretend to jump into the middle of a loop.</span>
+
+<span class="sd">    sigma is subtle: if a callable is given, it is passed a copy of the data</span>
+<span class="sd">    array and can calculate a clipping limit. See, for e.g., unbiased_sigma()</span>
+<span class="sd">    defined above. However, if it isn&#39;t callable, sigma is assumed to just set</span>
+<span class="sd">    a hard limit.</span>
+
+<span class="sd">    To do: Improve documentation</span>
+<span class="sd">            -Returns???</span>
+<span class="sd">            -How does it make use of the beam? (It estimates the noise correlation)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">my_iterations</span> <span class="o">&gt;=</span> <span class="n">max_iter</span><span class="p">:</span>
+        <span class="c"># Exceeded maximum number of iterations; return</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">my_iterations</span>
+
+    <span class="c"># Numpy 1.1 breaks std() for MaskedArray: see</span>
+    <span class="c"># &lt;http://www.scipy.org/scipy/numpy/wiki/MaskedArray&gt;.</span>
+    <span class="c"># MaskedArray.compressed() returns a 1-D array of non-masked data.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">MaskedArray</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
+    <span class="n">centre</span> <span class="o">=</span> <span class="n">centref</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">N_indep</span> <span class="o">=</span> <span class="n">indep_pixels</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">beam</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">N_indep</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c"># This chunk is too small for processing; return an empty array.</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="c"># If sigma is callable, use it to dynamically calculate the clipping</span>
+    <span class="c"># limits.</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">sigma</span><span class="p">):</span>
+        <span class="n">my_sigma</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">(</span><span class="n">N_indep</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">my_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+
+    <span class="c"># distf=numpy.var is a sample variance with the factor N/(N-1)</span>
+    <span class="c"># already built in, N being the number of pixels. So, we are</span>
+    <span class="c"># going to remove that and replace it by N_indep/(N_indep-1)</span>
+    <span class="n">clipped_var</span> <span class="o">=</span> <span class="n">distf</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">*</span> <span class="n">N_indep</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="n">N_indep</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">))</span>
+    <span class="n">unbiased_var</span> <span class="o">=</span> <span class="n">corr_clip</span> <span class="o">*</span> <span class="n">clipped_var</span>
+
+    <span class="c"># There is an extra factor c4 needed to get a unbiased standard</span>
+    <span class="c"># deviation, unbiased if we disregard clipping bias, see</span>
+    <span class="c"># http://en.wikipedia.org/wiki/Unbiased_estimation_of_standard_deviation\</span>
+    <span class="c">#         #Results_for_the_normal_distribution</span>
+    <span class="n">c4</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="mf">0.25</span> <span class="o">/</span> <span class="n">N_indep</span> <span class="o">-</span> <span class="mf">0.21875</span> <span class="o">/</span> <span class="n">N_indep</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">unbiased_std</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">unbiased_var</span><span class="p">)</span> <span class="o">/</span> <span class="n">c4</span>
+
+    <span class="n">limit</span> <span class="o">=</span> <span class="n">my_sigma</span> <span class="o">*</span> <span class="n">unbiased_std</span>
+
+    <span class="n">newdata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">centre</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">limit</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">newdata</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">newdata</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">corr_clip</span> <span class="o">=</span> <span class="n">var_helper</span><span class="p">(</span><span class="n">my_sigma</span><span class="p">)</span>
+        <span class="n">my_iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">sigma_clip</span><span class="p">(</span><span class="n">newdata</span><span class="p">,</span> <span class="n">beam</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">,</span> <span class="n">centref</span><span class="p">,</span> <span class="n">distf</span><span class="p">,</span>
+                          <span class="n">my_iterations</span><span class="p">,</span> <span class="n">corr_clip</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">newdata</span><span class="p">,</span> <span class="n">unbiased_std</span><span class="p">,</span> <span class="n">centre</span><span class="p">,</span> <span class="n">my_iterations</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

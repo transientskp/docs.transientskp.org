@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Database &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
+    <link rel="up" title="Overview of the TKP Database" href="index.html" />
+    <link rel="next" title="Schema" href="schema.html" />
+    <link rel="prev" title="Overview of the TKP Database" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="schema.html" title="Schema"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Overview of the TKP Database"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Overview of the TKP Database</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="database">
+<span id="database-section"></span><h1>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
+<p>This section concerns the (MonetDB or PostgreSQL) database that is used to
+store extracted sources and determine variable sources.</p>
+<div class="section" id="creating-a-database">
+<h2>Creating a database<a class="headerlink" href="#creating-a-database" title="Permalink to this headline">¶</a></h2>
+<p>When <a class="reference internal" href="../../getstart/installation.html#installation"><em>installing the TraP</em></a> you will have installed and
+configured a pipeline database management system and configured it to allow
+access to authorized users.</p>
+<p>A single database management system can support a number of active databases.
+Each database can contain the results from a number of separate pipeline runs.
+Creating multiple databases can be convenient in a range of situations. For
+example, different databases could correspond to different science projects,
+or to different end users.</p>
+<p>The procedure for creating a database varies slightly between PostgreSQL and
+MonetDB.</p>
+<div class="section" id="monetdb">
+<h3>MonetDB<a class="headerlink" href="#monetdb" title="Permalink to this headline">¶</a></h3>
+<p>Set the details of the database you would like to create in the <tt class="docutils literal"><span class="pre">database</span></tt>
+section of your <a class="reference internal" href="../../userref/config/pipeline_cfg.html#pipeline-cfg"><em>Project Configuration File</em></a>. These include the host and port number of
+the system running the database management system, the name of the database,
+and the username and password of a user that will have access to that
+database. The last three are all at your discretion: choose appropriate
+database and user names, and make sure the password is secure.</p>
+<p>In addition, when configuring MonetDB, you will have set a passphrase. This
+passphrase provides the appropriate administrative access to create new
+databases and users on the database management system. Specify it in the
+pipeline configuration.</p>
+<p>Finally, run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initdb
+</pre></div>
+</div>
+<p>Your database will be created, and is then available for use.</p>
+</div>
+<div class="section" id="postgresql">
+<h3>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h3>
+<p>When installing PostgreSQL, you will have created a user with administrative
+powers. In order to create a new database, you must log in as that user.
+Therefore, edit the <tt class="docutils literal"><span class="pre">database</span></tt> section of your <a class="reference internal" href="../../userref/config/pipeline_cfg.html#pipeline-cfg"><em>Project Configuration File</em></a>. Set the
+host name and port number of the system running the database management
+system, provide the username and password of the administrative user, and set
+the database name to the name of the database you wish to create. Then run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initdb
+</pre></div>
+</div>
+<p>This will create a database with the name you have requested. It will also
+create a new user which has username and password equal to the database name,
+and which has access to the database. You should use this user to access the
+database when running pipeline jobs. Therefore, you will need to edit your
+pipeline configuration and replace the name and password of the superuser with
+the name of the newly created database.</p>
+<p>Your database is now available for use.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Database</a><ul>
+<li><a class="reference internal" href="#creating-a-database">Creating a database</a><ul>
+<li><a class="reference internal" href="#monetdb">MonetDB</a></li>
+<li><a class="reference internal" href="#postgresql">PostgreSQL</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Overview of the TKP Database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="schema.html"
+                        title="next chapter">Schema</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/database/intro.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="schema.html" title="Schema"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Overview of the TKP Database"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Overview of the TKP Database</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>
