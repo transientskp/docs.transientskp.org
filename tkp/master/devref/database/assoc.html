@@ -704,7 +704,7 @@ candidate associations with runningcatalog entries which are:<ul>
 <li>Have a weighted mean position for which the RA and DEC are within a box
 of half-width <tt class="docutils literal"><span class="pre">radius</span></tt> degrees from the extractedsource.
 (This places a hard limit on the maximum association radius).</li>
-<li>Have a weighted mean position within a user-specified DeRuiter radius of
+<li>Have a weighted mean position within a user-specified De Ruiter radius of
 the extractedsource.</li>
 </ul>
 </li>
@@ -718,7 +718,7 @@ determined to be definitive.</li>
 <div class="section" id="trim-the-many-to-many-links-to-prevent-exponentional-database-growth">
 <h3>Trim the &#8216;many-to-many&#8217; links to prevent exponentional database growth<a class="headerlink" href="#trim-the-many-to-many-links-to-prevent-exponentional-database-growth" title="Permalink to this headline">¶</a></h3>
 <p>Performed by: <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._flag_many_to_many_tempruncat" title="tkp.db.associations._flag_many_to_many_tempruncat"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._flag_many_to_many_tempruncat()</span></tt></a></p>
-<p>Especially if we employ a large DeRuiter radius limit, we may generate a large
+<p>Especially if we employ a large De Ruiter radius limit, we may generate a large
 number of candidate associations which result in a complex web of possible
 lightcurves. We reduce this to a more manageable situation by trimming some of
 the &#8216;weaker&#8217; candidate associations.</p>
@@ -728,7 +728,7 @@ the &#8216;weaker&#8217; candidate associations.</p>
 <li>Select entries for which the extractedsource is listed more than once.</li>
 <li>Of these entries, select those for which the runcat id is listed more than
 once in temprunningcatalog.</li>
-<li>Use this selection to determine the runningcatalog id of minimum DeRuiter
+<li>Use this selection to determine the runningcatalog id of minimum De Ruiter
 radius, for each extracted source which is part of a many-to-many set.</li>
 <li>Then, using this per-extractedsource minimum DR radius, reapply the above
 filters to select multiply-associated entries, and select all entries for
@@ -742,7 +742,7 @@ non-optimal entries in many-to-many sets.</li>
 <p>Or, in pseudo-mathematical terms, tempruncat describes the edges of a graph,
 linking nodes (sources) from two spaces (previous runcat entries, newly
 extracted entries).  (There are no intra-space links).
-<a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._flag_many_to_many_tempruncat" title="tkp.db.associations._flag_many_to_many_tempruncat"><tt class="xref py py-func docutils literal"><span class="pre">_flag_many_to_many_tempruncat()</span></tt></a> trims this graph using the DeRuiter
+<a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._flag_many_to_many_tempruncat" title="tkp.db.associations._flag_many_to_many_tempruncat"><tt class="xref py py-func docutils literal"><span class="pre">_flag_many_to_many_tempruncat()</span></tt></a> trims this graph using the De Ruiter
 radius as a ranking metric, to ensure that any connected sub-graph has
 multiple nodes in <em>at most</em> one of the two spaces.</p>
 </div>
