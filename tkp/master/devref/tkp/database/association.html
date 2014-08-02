@@ -372,44 +372,26 @@ Therefore, we have to update the references to these new ids as well.</p>
 <dl class="function">
 <dt id="tkp.db.associations._insert_new_assocxtrsource">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_new_assocxtrsource</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_new_assocxtrsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_new_assocxtrsource" title="Permalink to this definition">¶</a></dt>
-<dd><p>Insert new associations for unknown sources</p>
-<p>Extractedsources for which no counterpart was found in the
-runningcatalog will be added as a new source to the assocxtrsource,
-runningcatalog and runningcatalog_flux tables.
-This function inserts the new source in the assocxtrsource table,
-where the runcat and xtrsrc ids are identical to each other
-in order to have this data point included in the light curve.</p>
-<p>The left outer join in combination with the tmprc.xtrsrc is null,
-selects the extracted sources that were not present in
-temprunningcatalog, i.e. did not have a counterpart in the runningcatalog.
-These were just inserted as new sources in the runningcatalog
-of which we want to use the ids to have them
-in the assocxtrsource as well.</p>
+<dd><p>Insert new associations for previously unknown sources.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="tkp.db.associations._insert_new_runcat">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_new_runcat</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_new_runcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_new_runcat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Insert new sources into the running catalog</p>
+<dd><p>Insert previously unknown sources into the <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> table.</p>
 <p>Extractedsources for which no counterpart was found in the
 runningcatalog (i.e. no pair exists in tempruncat),
 will be added as a new source to the assocxtrsource,
-runningcatalog and runningcatalog_flux tables.
-This function inserts the new source in the runningcatalog table,
-where xtrsrc is the id of the new extractedsource.
-This is the first of the series, since the other insertions have
-references to the runningcatalog table.</p>
+runningcatalog and runningcatalog_flux tables.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="tkp.db.associations._insert_new_runcat_flux">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_new_runcat_flux</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_new_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_new_runcat_flux" title="Permalink to this definition">¶</a></dt>
-<dd><p>Insert new sources into the runningicatalog_flux</p>
+<dd><p>Insert previously unknown sources into the <tt class="docutils literal"><span class="pre">runningcatalog_flux</span></tt> table.</p>
 <p>Extractedsources for which not a counterpart was found in the
 runningcatalog, will be added as a new source to the assocxtrsource,
-runningcatalog and runningcatalog_flux tables.
-This function inserts the new source in the runningcatalog table,
-where xtrsrc is the id of the new extractedsource.</p>
+runningcatalog and runningcatalog_flux tables.</p>
 </dd></dl>
 
 <dl class="function">

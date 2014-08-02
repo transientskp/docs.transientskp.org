@@ -1017,6 +1017,7 @@
 <span class="s">  ,r</span>
 <span class="s">  ,v_int</span>
 <span class="s">  ,eta_int</span>
+<span class="s">  ,f_datapoints</span>
 <span class="s">  )</span>
 <span class="s">  SELECT t0.new_runcat_id</span>
 <span class="s">        ,t0.xtrsrc</span>
@@ -1025,10 +1026,12 @@
 <span class="s">        ,t0.r</span>
 <span class="s">        ,t0.v_int_inter / t0.avg_f_int</span>
 <span class="s">        ,t0.eta_int_inter / t0.avg_f_int_weight</span>
+<span class="s">        ,t0.f_datapoints</span>
 <span class="s">    FROM (SELECT runcat.id AS new_runcat_id</span>
 <span class="s">                ,tmprc.xtrsrc</span>
 <span class="s">                ,tmprc.distance_arcsec</span>
 <span class="s">                ,tmprc.r</span>
+<span class="s">                ,tmprc.f_datapoints</span>
 <span class="s">                ,CASE WHEN tmprc.avg_f_int = 0.0</span>
 <span class="s">                      THEN 0.000001</span>
 <span class="s">                      ELSE avg_f_int</span>
@@ -1101,6 +1104,7 @@
 <span class="s">  ,r</span>
 <span class="s">  ,v_int</span>
 <span class="s">  ,eta_int</span>
+<span class="s">  ,f_datapoints</span>
 <span class="s">  )</span>
 <span class="s">  SELECT r.id AS new_runcat_id</span>
 <span class="s">        ,a.xtrsrc</span>
@@ -1109,6 +1113,7 @@
 <span class="s">        ,a.r</span>
 <span class="s">        ,a.v_int</span>
 <span class="s">        ,a.eta_int</span>
+<span class="s">        ,a.f_datapoints</span>
 <span class="s">    FROM (SELECT runcat as old_runcat_id</span>
 <span class="s">            FROM temprunningcatalog</span>
 <span class="s">           WHERE inactive = FALSE</span>
@@ -1356,6 +1361,7 @@
 <span class="s">  ,r</span>
 <span class="s">  ,v_int</span>
 <span class="s">  ,eta_int</span>
+<span class="s">  ,f_datapoints</span>
 <span class="s">  )</span>
 <span class="s">  SELECT t0.runcat</span>
 <span class="s">        ,t0.xtrsrc</span>
@@ -1364,10 +1370,12 @@
 <span class="s">        ,t0.r</span>
 <span class="s">        ,t0.v_int_inter / t0.avg_f_int</span>
 <span class="s">        ,t0.eta_int_inter / t0.avg_f_int_weight</span>
+<span class="s">        ,t0.f_datapoints</span>
 <span class="s">    FROM (SELECT tmprc.runcat</span>
 <span class="s">                ,tmprc.xtrsrc</span>
 <span class="s">                ,tmprc.distance_arcsec</span>
 <span class="s">                ,tmprc.r</span>
+<span class="s">                ,tmprc.f_datapoints</span>
 <span class="s">                ,CASE WHEN tmprc.avg_f_int = 0.0</span>
 <span class="s">                      THEN 0.000001</span>
 <span class="s">                      ELSE avg_f_int</span>
@@ -1659,27 +1667,17 @@
 
 </div>
 <div class="viewcode-block" id="_insert_new_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_runcat">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Insert new sources into the running catalog</span>
+    <span class="sd">&quot;&quot;&quot;Insert previously unknown sources into the ``runningcatalog`` table.</span>
 
 <span class="sd">    Extractedsources for which no counterpart was found in the</span>
 <span class="sd">    runningcatalog (i.e. no pair exists in tempruncat),</span>
 <span class="sd">    will be added as a new source to the assocxtrsource,</span>
 <span class="sd">    runningcatalog and runningcatalog_flux tables.</span>
-<span class="sd">    This function inserts the new source in the runningcatalog table,</span>
-<span class="sd">    where xtrsrc is the id of the new extractedsource.</span>
-<span class="sd">    This is the first of the series, since the other insertions have</span>
-<span class="sd">    references to the runningcatalog table.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Unfortunately, this does not work,</span>
-    <span class="c"># since we previous deleted the extractedsources from the</span>
-    <span class="c"># tempruncat table that had the same runcat counterpart</span>
-    <span class="c"># (1-to-many assocs).</span>
-    <span class="c"># To get it working we need to not to delete the tempruncat entries,</span>
-    <span class="c"># but set them to inactive and empty the table (and the inactive</span>
-    <span class="c"># runningcatalog sources) at the end of image processing</span>
-    <span class="c">#</span>
-    <span class="c"># NOTE: Here we include all (inactive TRUE&amp;FALSE) tempruncat</span>
-    <span class="c"># source to have the original assocs available</span>
+
+    <span class="c"># NOTE: Here we select all (inactive TRUE&amp;FALSE) tempruncat entries</span>
+    <span class="c"># source in order to exclude all extractedsources that have been associated.</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO runningcatalog</span>
 <span class="s">  (xtrsrc</span>
@@ -1700,23 +1698,23 @@
 <span class="s">  ,y</span>
 <span class="s">  ,z</span>
 <span class="s">  )</span>
-<span class="s">  SELECT t0.xtrsrc</span>
-<span class="s">        ,t0.dataset</span>
-<span class="s">        ,t0.datapoints</span>
-<span class="s">        ,t0.zone</span>
-<span class="s">        ,t0.wm_ra</span>
-<span class="s">        ,t0.wm_decl</span>
-<span class="s">        ,t0.avg_ra_err</span>
-<span class="s">        ,t0.avg_decl_err</span>
-<span class="s">        ,t0.wm_uncertainty_ew</span>
-<span class="s">        ,t0.wm_uncertainty_ns</span>
-<span class="s">        ,t0.avg_wra</span>
-<span class="s">        ,t0.avg_wdecl</span>
-<span class="s">        ,t0.avg_weight_ra</span>
-<span class="s">        ,t0.avg_weight_decl</span>
-<span class="s">        ,t0.x</span>
-<span class="s">        ,t0.y</span>
-<span class="s">        ,t0.z</span>
+<span class="s">  SELECT new_src.xtrsrc</span>
+<span class="s">        ,new_src.dataset</span>
+<span class="s">        ,new_src.datapoints</span>
+<span class="s">        ,new_src.zone</span>
+<span class="s">        ,new_src.wm_ra</span>
+<span class="s">        ,new_src.wm_decl</span>
+<span class="s">        ,new_src.avg_ra_err</span>
+<span class="s">        ,new_src.avg_decl_err</span>
+<span class="s">        ,new_src.wm_uncertainty_ew</span>
+<span class="s">        ,new_src.wm_uncertainty_ns</span>
+<span class="s">        ,new_src.avg_wra</span>
+<span class="s">        ,new_src.avg_wdecl</span>
+<span class="s">        ,new_src.avg_weight_ra</span>
+<span class="s">        ,new_src.avg_weight_decl</span>
+<span class="s">        ,new_src.x</span>
+<span class="s">        ,new_src.y</span>
+<span class="s">        ,new_src.z</span>
 <span class="s">    FROM (SELECT x0.id AS xtrsrc</span>
 <span class="s">                ,i0.dataset</span>
 <span class="s">                ,1 AS datapoints</span>
@@ -1738,9 +1736,9 @@
 <span class="s">                ,image i0</span>
 <span class="s">           WHERE x0.image = i0.id</span>
 <span class="s">             AND x0.image = </span><span class="si">%s</span><span class="s"></span>
-<span class="s">         ) t0</span>
+<span class="s">         ) new_src</span>
 <span class="s">         LEFT OUTER JOIN temprunningcatalog tmprc</span>
-<span class="s">         ON t0.xtrsrc = tmprc.xtrsrc</span>
+<span class="s">         ON new_src.xtrsrc = tmprc.xtrsrc</span>
 <span class="s">   WHERE tmprc.xtrsrc IS NULL</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">image_id</span><span class="p">,),</span> <span class="bp">True</span><span class="p">)</span>
@@ -1751,13 +1749,11 @@
 
 </div>
 <div class="viewcode-block" id="_insert_new_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat_flux</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Insert new sources into the runningicatalog_flux</span>
+    <span class="sd">&quot;&quot;&quot;Insert previously unknown sources into the ``runningcatalog_flux`` table.</span>
 
 <span class="sd">    Extractedsources for which not a counterpart was found in the</span>
 <span class="sd">    runningcatalog, will be added as a new source to the assocxtrsource,</span>
 <span class="sd">    runningcatalog and runningcatalog_flux tables.</span>
-<span class="sd">    This function inserts the new source in the runningcatalog table,</span>
-<span class="sd">    where xtrsrc is the id of the new extractedsource.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
@@ -1798,11 +1794,11 @@
 <span class="s">                 ON x1.id = tmprc.xtrsrc</span>
 <span class="s">            WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
 <span class="s">              AND tmprc.xtrsrc IS NULL</span>
-<span class="s">          ) t0</span>
+<span class="s">          ) new_src</span>
 <span class="s">        ,runningcatalog r0</span>
 <span class="s">        ,extractedsource x0</span>
 <span class="s">   WHERE i0.id = </span><span class="si">%(image_id)s</span><span class="s"></span>
-<span class="s">     AND r0.xtrsrc = t0.xtrsrc</span>
+<span class="s">     AND r0.xtrsrc = new_src.xtrsrc</span>
 <span class="s">     AND x0.id = r0.xtrsrc</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
@@ -1824,7 +1820,7 @@
 <span class="sd">        This could be made more efficient, at the cost of added complexity,</span>
 <span class="sd">        by tracking which skyregions overlap,</span>
 <span class="sd">        and then only testing for membership of overlapping regions.</span>
-<span class="sd">        (That&#39;s a job for another day!)</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c"># First, mark membership in the skyregion of the image of initial detection.</span>
@@ -1901,22 +1897,10 @@
 
 </div>
 <div class="viewcode-block" id="_insert_new_assocxtrsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_assocxtrsource">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_assocxtrsource</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Insert new associations for unknown sources</span>
-
-<span class="sd">    Extractedsources for which no counterpart was found in the</span>
-<span class="sd">    runningcatalog will be added as a new source to the assocxtrsource,</span>
-<span class="sd">    runningcatalog and runningcatalog_flux tables.</span>
-<span class="sd">    This function inserts the new source in the assocxtrsource table,</span>
-<span class="sd">    where the runcat and xtrsrc ids are identical to each other</span>
-<span class="sd">    in order to have this data point included in the light curve.</span>
-
-<span class="sd">    The left outer join in combination with the tmprc.xtrsrc is null,</span>
-<span class="sd">    selects the extracted sources that were not present in</span>
-<span class="sd">    temprunningcatalog, i.e. did not have a counterpart in the runningcatalog.</span>
-<span class="sd">    These were just inserted as new sources in the runningcatalog</span>
-<span class="sd">    of which we want to use the ids to have them</span>
-<span class="sd">    in the assocxtrsource as well.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Insert new associations for previously unknown sources.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO assocxtrsource</span>
 <span class="s">  (runcat</span>
@@ -1926,6 +1910,7 @@
 <span class="s">  ,r</span>
 <span class="s">  ,v_int</span>
 <span class="s">  ,eta_int</span>
+<span class="s">  ,f_datapoints</span>
 <span class="s">  )</span>
 <span class="s">  SELECT r0.id AS runcat</span>
 <span class="s">        ,r0.xtrsrc</span>
@@ -1934,15 +1919,16 @@
 <span class="s">        ,0</span>
 <span class="s">        ,0</span>
 <span class="s">        ,0</span>
+<span class="s">        ,1</span>
 <span class="s">    FROM (SELECT x1.id AS xtrsrc</span>
 <span class="s">            FROM extractedsource x1</span>
 <span class="s">                 LEFT OUTER JOIN temprunningcatalog tmprc</span>
 <span class="s">                 ON x1.id = tmprc.xtrsrc</span>
 <span class="s">            WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
 <span class="s">              AND tmprc.xtrsrc IS NULL</span>
-<span class="s">          ) t0</span>
+<span class="s">          ) new_src</span>
 <span class="s">        ,runningcatalog r0</span>
-<span class="s">   WHERE r0.xtrsrc = t0.xtrsrc</span>
+<span class="s">   WHERE r0.xtrsrc = new_src.xtrsrc</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span><span class="n">image_id</span><span class="p">},</span> <span class="bp">True</span><span class="p">)</span>
 </div>

@@ -116,11 +116,15 @@ errors, calculated by the association procedure inside the database
 <dd>The logarithm of the likelihood ratio of the associated sources, defaults to
 NULL if not calculated (<a class="reference internal" href="../../bibliography.html#scheers-2011"><em>Scheers, 2011</em></a>, chapter 3).</dd>
 <dt><strong>v_int</strong></dt>
-<dd>The first variability index, <span class="math">\(V_{\nu}\)</span>, based on the integrated flux
-values.</dd>
+<dd>The &#8216;normalised standard deviation&#8217; variability index, <span class="math">\(V_{\nu}\)</span>,
+based on the integrated flux values up to this datapoint.</dd>
 <dt><strong>eta_int</strong></dt>
-<dd>The second variability index, <span class="math">\(\eta_{\nu}\)</span>, based on the integrated
-flux values.</dd>
+<dd>The &#8216;reduced chi-squared&#8217; variability index,
+<span class="math">\(\eta_{\nu}\)</span>,
+based on the integrated flux values up to this datapoint.</dd>
+<dt><strong>f_datapoints</strong></dt>
+<dd>The number of flux datapoints (including the extractedsource
+referenced in this entry) used to calculate the variability indices.</dd>
 </dl>
 </div>
 <div class="section" id="assocskyrgn">

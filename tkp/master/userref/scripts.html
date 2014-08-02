@@ -166,24 +166,12 @@ optional arguments:
 <h3>initdb<a class="headerlink" href="#initdb" title="Permalink to this headline">¶</a></h3>
 <p>Initialise a database with the TKP schema. The semantics of this command vary
 depending on the database system in use; see the <a class="reference internal" href="../devref/database/intro.html#database-section"><em>relevant section</em></a> for details.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py initdb [-h] [-d DATABASE] [-u USER] [-p PASSWORD]
-                            [-H HOST] [-P PORT] [-s PASSPHRASE]
-                            [-e {monetdb,postgresql}] [-y]
+<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py initdb [-h] [-y] [-d]
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -d DATABASE, --database DATABASE
-                        database name
-  -u USER, --user USER  user
-  -p PASSWORD, --password PASSWORD
-                        password
-  -H HOST, --host HOST  host
-  -P PORT, --port PORT  port
-  -s PASSPHRASE, --passphrase PASSPHRASE
-                        database management passphrase
-  -e {monetdb,postgresql}, --engine {monetdb,postgresql}
-                        what database backend to use
-  -y, --yes             don&#39;t ask for confirmation
+  -h, --help     show this help message and exit
+  -y, --yes      don&#39;t ask for confirmation
+  -d, --destroy  remove all tables before population
 </pre></div>
 </div>
 </div>

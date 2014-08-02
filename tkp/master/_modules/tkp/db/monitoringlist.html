@@ -672,6 +672,7 @@
 <span class="s">  ,r</span>
 <span class="s">  ,v_int</span>
 <span class="s">  ,eta_int</span>
+<span class="s">  ,f_datapoints</span>
 <span class="s">  )</span>
 <span class="s">  SELECT r0.id AS runcat</span>
 <span class="s">        ,r0.xtrsrc</span>
@@ -680,6 +681,7 @@
 <span class="s">        ,0 AS r</span>
 <span class="s">        ,0 AS v_int</span>
 <span class="s">        ,0 AS eta_int</span>
+<span class="s">        ,1 as f_datapoints</span>
 <span class="s">    FROM (SELECT x1.id AS xtrsrc</span>
 <span class="s">            FROM extractedsource x1</span>
 <span class="s">                 LEFT OUTER JOIN temprunningcatalog trc1</span>
