@@ -61,73 +61,6 @@
 <p>This documents deals (shortly) with writing software for the
 Transients Pipeline, either the TraP part (recipes) or the underlying
 modules (the TKP package).</p>
-<div class="section" id="tkp">
-<h2>TKP<a class="headerlink" href="#tkp" title="Permalink to this headline">¶</a></h2>
-<p>The TKP package is a set of modules (or actually modules within four
-subpackages) that implement the algorithms used by the transients
-pipeline. The subpackages are:</p>
-<ul class="simple">
-<li>database</li>
-<li>sourcefinder</li>
-<li>classification</li>
-<li>utility</li>
-</ul>
-<p>The names of the subpackages should speak for themselves; utility is
-more or less a collection of code that does not really fit anywhere
-else, or ties a few subpackages together (such as the database and
-sourcefinder).</p>
-<p>The main thing to keep in mind when writing (new) code is that the
-subpackages are, as much as possible, independent of each other. There
-are some minor dependencies still among the packages, but these will
-hopefully be removed in the future. Other than that, the individual
-module names should give one a good idea what code to put where. An
-overview of the most used modules and a short description of their
-task follows:</p>
-<ul class="simple">
-<li>database<ul>
-<li>database: take care of database connection</li>
-<li>dataset: mini-ORM to some database tables</li>
-<li>utils: all the SQL queries inside their respective Python functions</li>
-</ul>
-</li>
-<li>sourcefinder<ul>
-<li>image: image (data) handling through the Image class</li>
-<li>extract: source extraction routines</li>
-<li>fitting: actual source fitting routines</li>
-<li>gaussian: 2D gaussian function</li>
-<li>stats: specific statistic routines</li>
-<li>utils: some sourcefinder specific utilities</li>
-</ul>
-</li>
-<li>classification<ul>
-<li>manual: subpackage for manual classification<ul>
-<li>transient: define transient class</li>
-<li>classifier: classifier routines</li>
-<li>classification: defines the classification (decision tree); can be user overriden</li>
-<li>utils: utility classes for the transient class</li>
-</ul>
-</li>
-<li>features: feature detection subpackage<ul>
-<li>lightcurve: obtain characteristics of the transient light curve</li>
-<li>catalog: catalog (position) matching routines</li>
-<li>sql: SQL routines (to be integrated into the lightcurve module)</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>utility:<ul>
-<li>accessors: (Image) data file handling classes</li>
-<li>containers: classes for handling the sourcefinder results</li>
-<li>coordinates: various coordinate handling routines, and WCS class</li>
-<li>fits: few routines to handle MS to FITS metadata and combination (stacking) of FITS files</li>
-<li>memoize: decorator to cache results of methods</li>
-<li>sigmaclip: generic kapp, sigma clipping routine (used by classification.features)</li>
-<li>uncertain: Uncertainty class that can hold a value plus its errors</li>
-<li>exceptions: a few (rarely used) TKP exception classes</li>
-</ul>
-</li>
-</ul>
-</div>
 <div class="section" id="coding-guidelines">
 <h2>Coding guidelines<a class="headerlink" href="#coding-guidelines" title="Permalink to this headline">¶</a></h2>
 <p>We try to follow PEP 8 as much as possible, although at times, this is
@@ -236,7 +169,6 @@ problems).</p>
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Guidelines for Developers</a><ul>
-<li><a class="reference internal" href="#tkp">TKP</a></li>
 <li><a class="reference internal" href="#coding-guidelines">Coding guidelines</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a><ul>
 <li><a class="reference internal" href="#doc-strings">Doc strings</a></li>

@@ -134,19 +134,19 @@ This table records which <a class="reference internal" href="#schema-runningcata
 we expect to see in any given skyregion. This serves two purposes:
 it allows us to determine when we <em>do not</em> see previously detected sources,
 presumably because they have dropped in flux
-(see <a class="reference internal" href="../tkp/database/nulldetections.html#tkp.db.nulldetections.get_nulldetections" title="tkp.db.nulldetections.get_nulldetections"><tt class="xref py py-func docutils literal"><span class="pre">get_nulldetections()</span></tt></a>).
+(see <a class="reference internal" href="../tkp/database/nulldetections.html#tkp.db.nulldetections.get_nulldetections" title="tkp.db.nulldetections.get_nulldetections"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.nulldetections.get_nulldetections()</span></tt></a>).
 It also allows us to determine whether a new runningcatalog entry (i.e.
 a newly detected source without associated historical detections) is being
 detected for the first time because it is actually a new transient, or
 if it is simply the first time that region of sky has been surveyed
-(see <tt class="xref py py-func docutils literal"><span class="pre">_insert_new_transient()</span></tt>).</p>
+(see <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits" title="tkp.db.associations._determine_newsource_previous_limits"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._determine_newsource_previous_limits()</span></tt></a>).</p>
 <p>This table is updated under 2 circumstances:</p>
 <ul class="simple">
 <li>A new skyregion is processed, and associations must be made with pre-existing
 runcat entries (see SQL function <tt class="docutils literal"><span class="pre">updateSkyRgnMembers</span></tt>).</li>
 <li>A new runningcatalog source is added, and must be associated with pre-existing
 skyregions
-(see <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_skyrgn_assocs" title="tkp.db.associations._insert_new_runcat_skyrgn_assocs"><tt class="xref py py-func docutils literal"><span class="pre">_insert_new_runcat_skyrgn_assocs()</span></tt></a>).</li>
+(see <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._insert_new_runcat_skyrgn_assocs" title="tkp.db.associations._insert_new_runcat_skyrgn_assocs"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._insert_new_runcat_skyrgn_assocs()</span></tt></a>).</li>
 </ul>
 <dl class="docutils">
 <dt><strong>runcat</strong></dt>
@@ -588,8 +588,6 @@ to</dd>
 <dd>Stokes parameter: 1 = I, 2 = Q, 3 = U, 4 = V</dd>
 <dt><strong>f_datapoints</strong>   <span class="math">\(=N_I\)</span></dt>
 <dd>the number of <em>flux</em> datapoints for which the flux averages were calculated.</dd>
-<dt><strong>resolution</strong></dt>
-<dd>Not used.</dd>
 <dt><strong>avg_f_peak</strong>  <span class="math">\(=\overline{I}\)</span></dt>
 <dd>Average of peak flux</dd>
 <dt><strong>avg_f_peak_sq</strong> <span class="math">\(=\overline{{I}^2}\)</span></dt>
@@ -661,57 +659,39 @@ inactive (TRUE), defaults to FALSE.</dd>
 <dd>Not used (yet)</dd>
 </dl>
 </div>
-<div class="section" id="transient">
-<span id="schema-transient"></span><h3>transient<a class="headerlink" href="#transient" title="Permalink to this headline">¶</a></h3>
-<p>This table contains the detected transients and their characteristics. Based on
-the values of the variability indices a source is considered a transient and
-appended to the transient table.</p>
-<p>We choose to test the null hypothesis, <span class="math">\(H_0\)</span>, that the source under
-consideration is not variable. Contributing terms to <span class="math">\(\eta_{\nu}\)</span> in the
-sum will be of the order of unity, giving a value of roughly one after
-<span class="math">\(N\)</span> measurements.  With the integral probability, we can quantify the
-probability of having a value equal to or larger than the <span class="math">\(\eta_{\nu}\)</span>
-obtained from the measurements.</p>
+<div class="section" id="newsource">
+<span id="schema-newsource"></span><h3>newsource<a class="headerlink" href="#newsource" title="Permalink to this headline">¶</a></h3>
+<p>For discovering transient or variable sources, our primary tools are variability
+statistics. However, a bright single-epoch source cannot sensibly be assigned
+variability statistics until at least a second measurement
+(possibly non-detection) has been made.</p>
+<p>This table tracks new sources, in the hopes that new sources considered
+sufficiently bright enough to be interesting may be flagged up immediately.</p>
+<p>See <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits" title="tkp.db.associations._determine_newsource_previous_limits"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._determine_newsource_previous_limits()</span></tt></a> for
+details on how these values are assigned.</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>Every source in the transient table gets a unique id, set by the database</dd>
+<dd>Unique id, set by the database.</dd>
 <dt><strong>runcat</strong></dt>
-<dd>Reference to the runningcatalog source to which this transient belongs to.
-Since every trasient has an entry in th erunningcatalog this cannot be
-NULL.</dd>
-<dt><strong>band</strong></dt>
-<dd>The frequency band in which the transient was found, and for which th
-evariability are calculated</dd>
-<dt><strong>siglevel</strong></dt>
-<dd>The significance level of the 2nd variability index value. Calculated by
-the scipy module chisqprob(), where we use <span class="math">\(N-1\)</span> as the degree of
-freedom</dd>
-<dt><strong>v_int</strong></dt>
-<dd>The first variability index, <span class="math">\(V_{\nu}\)</span>, based on the integrated flux
-values.</dd>
-<dt><strong>eta_int</strong></dt>
-<dd>The second variability index, <span class="math">\(\eta_{\nu}\)</span>, based on the integrated
-flux values.</dd>
-<dt><strong>detection_level</strong></dt>
-<dd>Currently not set</dd>
+<dd>Reference to the associated runningcatalog entry.</dd>
 <dt><strong>trigger_xtrsrc</strong></dt>
-<dd>Reference to the extracted source id that caused this transient to be added</dd>
-<dt><strong>transient_type</strong></dt>
-<dd>Refers to how the transient was discovered, and how certain we are that it
-is a real transient. Type 0 / 1 transients are discovered when they appear
-in a previously surveyed sky region. Type 0 transients may be a fluctuating
-steady source that is located in a high-RMS region, while type 1 transients
-are bright enough that we can be fairly certain they are really new.
-Type 2 transients are identified by their variability indices.</dd>
+<dd>Reference to the extracted source id that caused insertion of this
+newsource.</dd>
+<dt><strong>newsource_type</strong></dt>
+<dd>Refers to how certain we are that the newly discovered source is
+really &#8220;physically new&#8221;, i.e. transient. Since we do not store fine-grained
+noise-maps in the database, we must be fairly conservative in our labelling
+here.
+Type 0 sources may be a steady source located in a high-RMS region,
+newly detected due to noise fluctuations, or may be a real
+transient in a low-RMS region.
+Type 1 sources are bright enough that we can be fairly certain
+they are really new - they are significantly brighter than the <tt class="docutils literal"><span class="pre">rms_max</span></tt>
+in the previous image with best detection limits.</dd>
 <dt><strong>previous_limits_image</strong></dt>
 <dd>The ID of the previous image with the best upper limits on previous
 detections of this source. Can be used to calculate the significance
-level of the new-source detection.
-(See <tt class="xref py py-func docutils literal"><span class="pre">_insert_new_transient()</span></tt> for details.)</dd>
-<dt><strong>status</strong></dt>
-<dd>Currently not set</dd>
-<dt><strong>t_start</strong></dt>
-<dd>Currently not set</dd>
+level of the new-source detection.</dd>
 </dl>
 </div>
 <div class="section" id="version">
@@ -909,7 +889,7 @@ the reduced-<span class="math">\(\chi^2\)</span>:</p>
 <li><a class="reference internal" href="#runningcatalog-flux">runningcatalog_flux</a></li>
 <li><a class="reference internal" href="#skyregion">skyregion</a></li>
 <li><a class="reference internal" href="#temprunningcatalog">temprunningcatalog</a></li>
-<li><a class="reference internal" href="#transient">transient</a></li>
+<li><a class="reference internal" href="#newsource">newsource</a></li>
 <li><a class="reference internal" href="#version">version</a></li>
 <li><a class="reference internal" href="#rejectreason">rejectreason</a></li>
 <li><a class="reference internal" href="#rejection">rejection</a></li>

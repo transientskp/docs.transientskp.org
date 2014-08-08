@@ -118,8 +118,8 @@
     <span class="n">_insert_1_to_many_assocskyrgn</span><span class="p">()</span>
     <span class="n">_delete_1_to_many_inactive_assocskyrgn</span><span class="p">()</span>
 
-    <span class="n">_insert_1_to_many_transient</span><span class="p">()</span>
-    <span class="n">_delete_1_to_many_inactive_transient</span><span class="p">()</span>
+    <span class="n">_insert_1_to_many_newsource</span><span class="p">()</span>
+    <span class="n">_delete_1_to_many_inactive_newsource</span><span class="p">()</span>
 
     <span class="n">_flag_1_to_many_inactive_tempruncat</span><span class="p">()</span>
 
@@ -1195,9 +1195,9 @@
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="_insert_1_to_many_transient"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_transient">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_transient</span><span class="p">():</span>
+<div class="viewcode-block" id="_insert_1_to_many_newsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_many_newsource">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_many_newsource</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Update the runcat id for the one-to-many associations,</span>
-<span class="sd">    and delete the transient entries of the old runcat id</span>
+<span class="sd">    and delete the newsource entries of the old runcat id</span>
 <span class="sd">    (the new ones have been added earlier).</span>
 
 <span class="sd">    In this case, new entries in the runningcatalog and runningcatalog_flux</span>
@@ -1206,29 +1206,15 @@
 <span class="sd">    Therefore, we have to update the references to these new ids as well.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
-<span class="s">INSERT INTO transient</span>
+<span class="s">INSERT INTO newsource</span>
 <span class="s">  (runcat</span>
-<span class="s">  ,band</span>
-<span class="s">  ,siglevel</span>
-<span class="s">  ,v_int</span>
-<span class="s">  ,eta_int</span>
-<span class="s">  ,detection_level</span>
 <span class="s">  ,trigger_xtrsrc</span>
-<span class="s">  ,status</span>
-<span class="s">  ,t_start</span>
-<span class="s">  ,transient_type</span>
+<span class="s">  ,newsource_type</span>
 <span class="s">  ,previous_limits_image</span>
 <span class="s">  )</span>
 <span class="s">  SELECT r.id as new_runcat_id</span>
-<span class="s">        ,tr.band</span>
-<span class="s">        ,tr.siglevel</span>
-<span class="s">        ,tr.v_int</span>
-<span class="s">        ,tr.eta_int</span>
-<span class="s">        ,tr.detection_level</span>
 <span class="s">        ,tr.trigger_xtrsrc</span>
-<span class="s">        ,tr.status</span>
-<span class="s">        ,tr.t_start</span>
-<span class="s">        ,tr.transient_type</span>
+<span class="s">        ,tr.newsource_type</span>
 <span class="s">        ,tr.previous_limits_image</span>
 <span class="s">    FROM (SELECT runcat as old_runcat_id</span>
 <span class="s">            FROM temprunningcatalog</span>
@@ -1238,7 +1224,7 @@
 <span class="s">         ) one_to_many</span>
 <span class="s">        ,temprunningcatalog tmprc</span>
 <span class="s">        ,runningcatalog r</span>
-<span class="s">        ,transient tr</span>
+<span class="s">        ,newsource tr</span>
 <span class="s">   WHERE tmprc.runcat = one_to_many.old_runcat_id</span>
 <span class="s">     AND tmprc.inactive = FALSE</span>
 <span class="s">     AND tr.runcat = one_to_many.old_runcat_id</span>
@@ -1266,15 +1252,15 @@
     <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="_delete_1_to_many_inactive_transient"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_transient">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_transient</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Delete the transient sources of the old runcat</span>
+<div class="viewcode-block" id="_delete_1_to_many_inactive_newsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_1_to_many_inactive_newsource">[docs]</a><span class="k">def</span> <span class="nf">_delete_1_to_many_inactive_newsource</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Delete the newsource sources of the old runcat</span>
 
 <span class="sd">    Since we replaced this runcat.id with multiple new ones, we now</span>
 <span class="sd">    delete the old one.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">DELETE</span>
-<span class="s">    FROM transient</span>
+<span class="s">    FROM newsource</span>
 <span class="s">    WHERE runcat IN (SELECT runcat</span>
 <span class="s">                       FROM temprunningcatalog</span>
 <span class="s">                       WHERE inactive = FALSE</span>
@@ -2014,8 +2000,6 @@
 <span class="sd">    to be the deciding factor in whether a source gets blindly extracted or not.</span>
 <span class="sd">    (NB This is a hunch, rigorous investigation welcome.)</span>
 
-<span class="sd">    We set the siglevel to 1 and the variability indices 0 for</span>
-<span class="sd">    new transients.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c"># This is another hairy query, but it breaks down like so:</span>
@@ -2042,31 +2026,22 @@
 
 
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
-<span class="s">INSERT INTO transient</span>
+<span class="s">INSERT INTO newsource</span>
 <span class="s">  (runcat</span>
-<span class="s">  ,band</span>
-<span class="s">  ,siglevel</span>
-<span class="s">  ,V_int</span>
-<span class="s">  ,eta_int</span>
 <span class="s">  ,trigger_xtrsrc</span>
-<span class="s">  ,transient_type</span>
+<span class="s">  ,newsource_type</span>
 <span class="s">  ,previous_limits_image</span>
 <span class="s">  )</span>
 <span class="s">  SELECT new_src_runcat_id AS runcat</span>
-<span class="s">         ,band AS band</span>
-<span class="s">         ,1 AS siglevel</span>
-<span class="s">         ,0 AS v_int</span>
-<span class="s">         ,0 AS eta_int</span>
 <span class="s">         ,new_src_xtr_id AS trigger_xtrsrc</span>
 <span class="s">         ,CASE WHEN new_src_flux &gt; high_flux_threshold</span>
 <span class="s">               THEN 1</span>
 <span class="s">               ELSE 0</span>
-<span class="s">          END as transient_type</span>
+<span class="s">          END as newsource_type</span>
 <span class="s">         ,prev_img_id AS previous_limits_image</span>
 <span class="s">  FROM ( SELECT  new_src_runcat_id</span>
 <span class="s">                ,new_src_xtr_id</span>
 <span class="s">                ,new_src_flux</span>
-<span class="s">                ,band</span>
 <span class="s">                ,prev_img_id</span>
 <span class="s">                ,low_flux_threshold</span>
 <span class="s">                ,high_flux_threshold</span>
@@ -2078,7 +2053,6 @@
 <span class="s">         FROM ( SELECT runcat1.id as new_src_runcat_id</span>
 <span class="s">                      ,unassoc_xtr.xtrsrc_id as new_src_xtr_id</span>
 <span class="s">                      ,unassoc_xtr.f_peak as new_src_flux</span>
-<span class="s">                      ,this_img.band</span>
 <span class="s">                      ,prev_imgs.id as prev_img_id</span>
 <span class="s">                      ,(prev_imgs.rms_min *</span>
 <span class="s">                            (prev_imgs.detection_thresh + </span><span class="si">%(sigma_margin)s</span><span class="s">))</span>
@@ -2114,7 +2088,7 @@
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">ins</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
     <span class="k">if</span> <span class="n">ins</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to transient table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ins</span><span class="p">,))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to newsource table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ins</span><span class="p">,))</span>
 
 </div>
 <div class="viewcode-block" id="_update_ff_runcat_extractedsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._update_ff_runcat_extractedsource">[docs]</a><span class="k">def</span> <span class="nf">_update_ff_runcat_extractedsource</span><span class="p">():</span>

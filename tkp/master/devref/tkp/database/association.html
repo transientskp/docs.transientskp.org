@@ -125,19 +125,19 @@ the ones that were not set to inactive for the many-to-many associations).</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="tkp.db.associations._delete_1_to_many_inactive_newsource">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_delete_1_to_many_inactive_newsource</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_delete_1_to_many_inactive_newsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._delete_1_to_many_inactive_newsource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the newsource sources of the old runcat</p>
+<p>Since we replaced this runcat.id with multiple new ones, we now
+delete the old one.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="tkp.db.associations._delete_1_to_many_inactive_runcat_flux">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_delete_1_to_many_inactive_runcat_flux</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_delete_1_to_many_inactive_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._delete_1_to_many_inactive_runcat_flux" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flag the old runcat ids in the runningcatalog to inactive</p>
 <p>Since we replaced this runcat.id with multiple new one, we first
 flag it as inactive, after which we delete it from the runningcatalog</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tkp.db.associations._delete_1_to_many_inactive_transient">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_delete_1_to_many_inactive_transient</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_delete_1_to_many_inactive_transient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._delete_1_to_many_inactive_transient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete the transient sources of the old runcat</p>
-<p>Since we replaced this runcat.id with multiple new ones, we now
-delete the old one.</p>
 </dd></dl>
 
 <dl class="function">
@@ -233,8 +233,6 @@ noise non-uniformity characteristics (e.g. single pointings vs mosaics) etc.</p>
 <p>We use peak flux (f_peak) as the flux value here, since that is likely
 to be the deciding factor in whether a source gets blindly extracted or not.
 (NB This is a hunch, rigorous investigation welcome.)</p>
-<p>We set the siglevel to 1 and the variability indices 0 for
-new transients.</p>
 </dd></dl>
 
 <dl class="function">
@@ -315,6 +313,18 @@ the current image.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="tkp.db.associations._insert_1_to_many_newsource">
+<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_newsource</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_newsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_newsource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the runcat id for the one-to-many associations,
+and delete the newsource entries of the old runcat id
+(the new ones have been added earlier).</p>
+<p>In this case, new entries in the runningcatalog and runningcatalog_flux
+were already added (for every extractedsource one), which will replace
+the existing ones in the runningcatalog.
+Therefore, we have to update the references to these new ids as well.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="tkp.db.associations._insert_1_to_many_replacement_assocxtrsource">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_replacement_assocxtrsource</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_replacement_assocxtrsource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_replacement_assocxtrsource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert links into the association table between the new runcat
@@ -355,18 +365,6 @@ is increasing over time.</p>
 to a one-to-many association in the runningcatalog.</p>
 <p>Analogous to the runningcatalog, extracted source properties
 are added to the runningcatalog_flux table.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tkp.db.associations._insert_1_to_many_transient">
-<tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_1_to_many_transient</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_1_to_many_transient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_1_to_many_transient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the runcat id for the one-to-many associations,
-and delete the transient entries of the old runcat id
-(the new ones have been added earlier).</p>
-<p>In this case, new entries in the runningcatalog and runningcatalog_flux
-were already added (for every extractedsource one), which will replace
-the existing ones in the runningcatalog.
-Therefore, we have to update the references to these new ids as well.</p>
 </dd></dl>
 
 <dl class="function">
