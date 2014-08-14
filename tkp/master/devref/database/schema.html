@@ -129,17 +129,17 @@ referenced in this entry) used to calculate the variability indices.</dd>
 </div>
 <div class="section" id="assocskyrgn">
 <span id="schema-assocskyrgn"></span><h3>assocskyrgn<a class="headerlink" href="#assocskyrgn" title="Permalink to this headline">¶</a></h3>
-<p>(See also <a class="reference internal" href="#schema-skyregion"><em>skyregion table</em></a>.)
-This table records which <a class="reference internal" href="#schema-runningcatalog"><em>runningcatalog</em></a> sources
-we expect to see in any given skyregion. This serves two purposes:
-it allows us to determine when we <em>do not</em> see previously detected sources,
-presumably because they have dropped in flux
-(see <a class="reference internal" href="../tkp/database/nulldetections.html#tkp.db.nulldetections.get_nulldetections" title="tkp.db.nulldetections.get_nulldetections"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.nulldetections.get_nulldetections()</span></tt></a>).
-It also allows us to determine whether a new runningcatalog entry (i.e.
-a newly detected source without associated historical detections) is being
-detected for the first time because it is actually a new transient, or
-if it is simply the first time that region of sky has been surveyed
-(see <a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits" title="tkp.db.associations._determine_newsource_previous_limits"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._determine_newsource_previous_limits()</span></tt></a>).</p>
+<p>(See also <a class="reference internal" href="#schema-skyregion"><em>skyregion table</em></a>.)</p>
+<p>This table records which <a class="reference internal" href="#schema-runningcatalog"><em>runningcatalog</em></a> sources
+we expect to see in any given skyregion. This serves two purposes: it allows
+us to determine when we <em>do not</em> see previously detected sources, presumably
+because they have dropped in flux (see
+<a class="reference internal" href="../tkp/database/nulldetections.html#tkp.db.nulldetections.get_nulldetections" title="tkp.db.nulldetections.get_nulldetections"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.nulldetections.get_nulldetections()</span></tt></a>).  It also allows us to
+determine whether a new runningcatalog entry (i.e.  a newly detected source
+without associated historical detections) is being detected for the first time
+because it is actually a new transient, or if it is simply the first time that
+region of sky has been surveyed (see
+<a class="reference internal" href="../tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits" title="tkp.db.associations._determine_newsource_previous_limits"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._determine_newsource_previous_limits()</span></tt></a>).</p>
 <p>This table is updated under 2 circumstances:</p>
 <ul class="simple">
 <li>A new skyregion is processed, and associations must be made with pre-existing
@@ -247,46 +247,45 @@ sourcefinder procedures.</dd>
 <dd>Declination of the measurement [in J2000 degrees], calculated by the
 sourcefinder procedures.</dd>
 <dt><strong>ra_err</strong></dt>
-<dd>The 1-sigma error on ra [in degrees], ie. the square root of the
-quadratic sum of the fitted error (<tt class="docutils literal"><span class="pre">ra_fit_err</span></tt>) and the systematic
-error (<tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>) after the latter has been corrected for
-ra inflation depending on declination.
-It is calculated by the database at insertion time.
-Note that this error is declination dependent and the source
-lies in the range [ra - ra_err, ra + ra_err].</dd>
+<dd>The 1-sigma error on ra [in degrees], ie. the square root of the quadratic
+sum of the fitted error (<tt class="docutils literal"><span class="pre">ra_fit_err</span></tt>) and the systematic error
+(<tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>) after the latter has been corrected for ra inflation
+depending on declination.  It is calculated by the database at insertion
+time.  Note that this error is declination dependent and the source lies
+in the range [ra - ra_err, ra + ra_err].</dd>
 <dt><strong>decl_err</strong></dt>
 <dd>The 1-sigma error on declination [in degrees], ie. the square root of the
-quadratic sum of the fitted error (<tt class="docutils literal"><span class="pre">decl_fit_err</span></tt>) and the systematic error
-(<tt class="docutils literal"><span class="pre">ns_sys_err</span></tt>), calculated by the database at insertion time.
-Note that the source lies in the range [decl - decl_err, decl + decl_err]</dd>
+quadratic sum of the fitted error (<tt class="docutils literal"><span class="pre">decl_fit_err</span></tt>) and the systematic
+error (<tt class="docutils literal"><span class="pre">ns_sys_err</span></tt>), calculated by the database at insertion time.
+Note that the source lies in the range [<tt class="docutils literal"><span class="pre">decl</span> <span class="pre">-</span> <span class="pre">decl_err</span></tt>, <tt class="docutils literal"><span class="pre">decl</span> <span class="pre">+</span>
+<span class="pre">decl_err</span></tt>]</dd>
 <dt><strong>uncertainty_ew</strong></dt>
-<dd>The 1-sigma on-sky error on ra (in the east-west direction) [in degrees],
-ie. the square root of the quadratic sum of the error radius (<tt class="docutils literal"><span class="pre">error_radius</span></tt>)
-and the systematic error (<tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>).
-It is calculated by the database at insertion time.
-Note that this is a positional uncertainty and is declination independent.
-This error is being used in the De Ruiter calculations.</dd>
+<dd>The 1-sigma on-sky error on <tt class="docutils literal"><span class="pre">ra</span></tt> (in the east-west direction) [in degrees],
+ie. the square root of the quadratic sum of the error radius
+(<tt class="docutils literal"><span class="pre">error_radius</span></tt>) and the systematic error (<tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>).  It is
+calculated by the database at insertion time.  Note that this is a
+positional uncertainty and is declination independent.  This error is
+being used in the De Ruiter calculations.</dd>
 <dt><strong>uncertainty_ns</strong></dt>
 <dd>Analogous to uncertainty_ew.</dd>
 <dt><strong>ra_fit_err</strong></dt>
-<dd>The 1-sigma error on ra [in degrees] from the source gaussian fitting, calculated by the
-sourcefinder procedures. It is important to note that a source&#8217;s fitted ra error increases
-towards the poles, and is thus declination dependent (see also error_radius).</dd>
+<dd>The 1-sigma error on <tt class="docutils literal"><span class="pre">ra</span></tt> [degrees] from the source gaussian fitting,
+calculated by the sourcefinder procedures. It is important to note that a
+source&#8217;s fitted ra error increases towards the poles, and is thus
+declination dependent (see also error_radius).</dd>
 <dt><strong>decl_fit_err</strong></dt>
 <dd>The 1-sigma error from the source fitting for declination [in degrees],
 calculated by the sourcefinder procedures (see also error_radius).</dd>
 <dt><strong>ew_sys_err</strong></dt>
-<dd><dl class="first last docutils">
-<dt>The systematic error on RA [arcsec].</dt>
-<dd>(As an on-sky angular uncertainty, independent of Declination.)
-It is a telescope dependent error and is provided by the user in the parset file.</dd>
-</dl>
-</dd>
+<dd>The systematic error on RA [arcsec].  (As an on-sky angular uncertainty,
+independent of Declination.) It is a telescope dependent error and is
+provided by the user in the parset file.</dd>
 <dt><strong>ns_sys_err</strong></dt>
 <dd>Analogous to ew_sys_err.</dd>
 <dt><strong>error_radius</strong></dt>
-<dd>Estimate of the absolute angular error on a source&#8217;s central position [arcsec].
-It is a pessimistic estimate, because it takes the sum of the error along the X and Y axes.</dd>
+<dd>Estimate of the absolute angular error on a source&#8217;s central position
+[arcsec].  It is a pessimistic estimate, because it takes the sum of the
+error along the X and Y axes.</dd>
 <dt><strong>x, y, z</strong></dt>
 <dd>Cartesian coordinate representation of (ra,decl), calculated by the
 database at insertion time.</dd>
@@ -417,22 +416,21 @@ coords subsection from the <tt class="docutils literal"><span class="pre">stokes
 The char value is converted by the database to one of the four (tiny)
 integers.</dd>
 <dt><strong>tau_time</strong></dt>
-<dd>The integration time (in seconds) of the image.
-The value originates or is read from the CASA LOFAR_OBSERVATION table
-by differencing the <tt class="docutils literal"><span class="pre">OBSERVATION_END</span></tt> and <tt class="docutils literal"><span class="pre">OBSERVATION_START</span></tt> data
-fields.</dd>
+<dd>The integration time (in seconds) of the image.  The value originates or
+is read from the CASA LOFAR_OBSERVATION table by differencing the
+<tt class="docutils literal"><span class="pre">OBSERVATION_END</span></tt> and <tt class="docutils literal"><span class="pre">OBSERVATION_START</span></tt> data fields.</dd>
 <dt><strong>freq_eff</strong></dt>
-<dd>The effective frequency (or synonymously rest frequency) (in Hz) at
-which the observation was carried out.
-The value originates or is read from the CASA Main table in the coords
-subsection from the <tt class="docutils literal"><span class="pre">spectralX</span></tt> record and the <tt class="docutils literal"><span class="pre">crval</span></tt> field.
-Note that in the case of FITS files the header keywords representing the
-effective frequency are not uniquely defined and may differ per FITS file.</dd>
+<dd>The effective frequency (or synonymously rest frequency) (in Hz) at which
+the observation was carried out.  The value originates or is read from the
+CASA Main table in the coords subsection from the <tt class="docutils literal"><span class="pre">spectralX</span></tt> record and
+the <tt class="docutils literal"><span class="pre">crval</span></tt> field.  Note that in the case of FITS files the header
+keywords representing the effective frequency are not uniquely defined and
+may differ per FITS file.</dd>
 <dt><strong>freq_bw</strong></dt>
-<dd>The frequency bandwidth (in Hz) of the observation.
-Value originates or is read from the CASA Main table in the coords
-subsection from the <tt class="docutils literal"><span class="pre">spectralX</span></tt> record and the <tt class="docutils literal"><span class="pre">cdelt</span></tt> field. N
-This is a required value and when it is not available an error is thrown.</dd>
+<dd>The frequency bandwidth (in Hz) of the observation.  Value originates or
+is read from the CASA Main table in the coords subsection from the
+<tt class="docutils literal"><span class="pre">spectralX</span></tt> record and the <tt class="docutils literal"><span class="pre">cdelt</span></tt> field. N This is a required value
+and when it is not available an error is thrown.</dd>
 <dt><strong>taustart_ts</strong></dt>
 <dd>The timestamp of the start of the observation, originating or read from
 the CASA LOFAR_OBSERVATION table from the <tt class="docutils literal"><span class="pre">OBSERVATION_START</span></tt> data field.</dd>
@@ -471,6 +469,9 @@ NOTE that this needs to be updated when the image is moved.</dd>
 <dd>Determine the current and number of nodes in case of a sharded database
 set-up.</dd>
 </dl>
+</div>
+<div class="section" id="node">
+<h3>node<a class="headerlink" href="#node" title="Permalink to this headline">¶</a></h3>
 <p>This table keeps track of zones (declinations) of the stored sources on the
 nodes in a sharded database configuration. Every node in such a set-up will
 have this table, but with different content.</p>
@@ -885,6 +886,7 @@ the reduced-<span class="math">\(\chi^2\)</span>:</p>
 <li><a class="reference internal" href="#extractedsource">extractedsource</a></li>
 <li><a class="reference internal" href="#frequencyband">frequencyband</a></li>
 <li><a class="reference internal" href="#image">image</a></li>
+<li><a class="reference internal" href="#node">node</a></li>
 <li><a class="reference internal" href="#runningcatalog">runningcatalog</a></li>
 <li><a class="reference internal" href="#runningcatalog-flux">runningcatalog_flux</a></li>
 <li><a class="reference internal" href="#skyregion">skyregion</a></li>
