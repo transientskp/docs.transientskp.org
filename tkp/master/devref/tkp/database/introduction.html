@@ -27,7 +27,7 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Database package" href="index.html" />
-    <link rel="next" title="tkp.db.database – Database connection interface" href="database.html" />
+    <link rel="next" title="tkp.db – TKP database root package" href="root.html" />
     <link rel="prev" title="Database package" href="index.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="database.html" title="tkp.db.database – Database connection interface"
+          <a href="root.html" title="tkp.db – TKP database root package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Database package"
@@ -69,13 +69,14 @@ main three modules are:</p>
 </ul>
 <div class="section" id="database">
 <h2>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h2>
-<p>The database module provides a single class, <tt class="xref py py-class docutils literal"><span class="pre">Database</span></tt>, which takes
-care of the connection to the database. It provides a <cite>connection</cite> and
-a <cite>cursor</cite> object to the database, as well as a few shortcut utility functions
-for executing SQL queries.</p>
-<p>The most typical use for the <tt class="xref py py-class docutils literal"><span class="pre">Database</span></tt> class is something as follows,
-assuming the default login settings (taking from the tkp configuration file)
-are appropriate:</p>
+<p>The database module provides a single class,
+<a class="reference internal" href="database.html#tkp.db.database.Database" title="tkp.db.database.Database"><tt class="xref py py-class docutils literal"><span class="pre">tkp.db.database.Database</span></tt></a>, which takes care of the connection to
+the database. It provides a <cite>connection</cite> and a <cite>cursor</cite> object to the
+database, as well as a few shortcut utility functions for executing SQL
+queries.</p>
+<p>The most typical use for the <a class="reference internal" href="database.html#tkp.db.database.Database" title="tkp.db.database.Database"><tt class="xref py py-class docutils literal"><span class="pre">tkp.db.database.Database</span></tt></a> class is
+something as follows, assuming the default login settings (taking from the tkp
+configuration file) are appropriate:</p>
 <div class="highlight-python"><div class="highlight"><pre>from contextlib import closing
 
 with closing(Database()) as database:
@@ -157,8 +158,8 @@ called from another funtion within utils, and should only be used as such.</p>
   <p class="topless"><a href="index.html"
                         title="previous chapter">Database package</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="database.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.database</span></tt> &#8211; Database connection interface</a></p>
+  <p class="topless"><a href="root.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; TKP database root package</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/devref/tkp/database/introduction.txt"
@@ -191,7 +192,7 @@ called from another funtion within utils, and should only be used as such.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="database.html" title="tkp.db.database – Database connection interface"
+          <a href="root.html" title="tkp.db – TKP database root package"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Database package"
