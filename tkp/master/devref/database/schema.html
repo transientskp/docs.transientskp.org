@@ -434,6 +434,8 @@ and when it is not available an error is thrown.</dd>
 <dt><strong>taustart_ts</strong></dt>
 <dd>The timestamp of the start of the observation, originating or read from
 the CASA LOFAR_OBSERVATION table from the <tt class="docutils literal"><span class="pre">OBSERVATION_START</span></tt> data field.</dd>
+<dt><strong>skyrgn</strong></dt>
+<dd>The sky region to which the image belongs.</dd>
 <dt><strong>rb_smaj</strong></dt>
 <dd>The semi-major axis of the restoring beam, in degrees.
 Full major axis value originates or is read from the CASA Main table in the imageinfor
@@ -447,6 +449,8 @@ subsection from the <tt class="docutils literal"><span class="pre">restoringbeam
 axis), in degrees.
 Value originates or is read from the CASA Main table in the imageinfor
 subsection from the <tt class="docutils literal"><span class="pre">restoringbeam</span></tt> record.</dd>
+<dt><strong>deltax, deltay</strong></dt>
+<dd>Pixel sizes along the X &amp; Y axes in degrees.</dd>
 <dt><strong>fwhm_arcsec</strong></dt>
 <dd>The full width half maximum of the primary beam, in arcsec. Value not yet
 stored in table.</dd>
