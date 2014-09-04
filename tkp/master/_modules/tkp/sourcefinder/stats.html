@@ -49,16 +49,10 @@
           <div class="body">
             
   <h1>Source code for tkp.sourcefinder.stats</h1><div class="highlight"><pre>
-<span class="c"># -*- coding: utf-8 -*-</span>
-<span class="c">#</span>
-<span class="c"># LOFAR Transients Key Project</span>
-<span class="c">#</span>
-<span class="c"># discovery@transientskp.org</span>
-<span class="c">#</span>
-<span class="c">#</span>
-<span class="c"># Some generic utility routines for number handling and</span>
-<span class="c"># calculating (specific) variances</span>
-<span class="c">#</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Generic utility routines for number handling and calculating (specific)</span>
+<span class="sd">variances used by the TKP sourcefinder.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">numpy.ma</span> <span class="kn">import</span> <span class="n">MaskedArray</span>
@@ -82,14 +76,13 @@
     <span class="k">return</span> <span class="n">term1</span> <span class="o">/</span> <span class="p">(</span><span class="n">term1</span> <span class="o">-</span> <span class="n">term2</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="indep_pixels"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/stats.html#tkp.sourcefinder.stats.indep_pixels">[docs]</a><span class="k">def</span> <span class="nf">indep_pixels</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">beam</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">indep_pixels</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">beam</span><span class="p">):</span>
     <span class="n">corlengthlong</span><span class="p">,</span> <span class="n">corlengthshort</span> <span class="o">=</span> <span class="n">calculate_correlation_lengths</span><span class="p">(</span>
         <span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">correlated_area</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">corlengthlong</span> <span class="o">*</span> <span class="n">corlengthshort</span>
     <span class="k">return</span> <span class="n">N</span> <span class="o">/</span> <span class="n">correlated_area</span>
 
-</div>
+
 <div class="viewcode-block" id="unbiased_sigma"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/stats.html#tkp.sourcefinder.stats.unbiased_sigma">[docs]</a><span class="k">def</span> <span class="nf">unbiased_sigma</span><span class="p">(</span><span class="n">N_indep</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Calculate an unbiased sigma for using in sigma clipping.</span>
 
@@ -224,7 +217,7 @@
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
     </div>
   </body>
 </html>

@@ -60,14 +60,11 @@
             
   <div class="section" id="module-tkp.sourcefinder.stats">
 <span id="tkp-sourcefinder-stats-statistics-specific-to-source-finding-for-radio-images"></span><span id="sourcefinder-stats"></span><h1><a class="reference internal" href="#module-tkp.sourcefinder.stats" title="tkp.sourcefinder.stats: Statistics routines specific to radio image source finding"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.sourcefinder.stats</span></tt></a> &#8211; Statistics specific to source finding for radio images.<a class="headerlink" href="#module-tkp.sourcefinder.stats" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="tkp.sourcefinder.stats.indep_pixels">
-<tt class="descclassname">tkp.sourcefinder.stats.</tt><tt class="descname">indep_pixels</tt><big>(</big><em>N</em>, <em>beam</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/stats.html#indep_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.stats.indep_pixels" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<p>Generic utility routines for number handling and calculating (specific)
+variances used by the TKP sourcefinder.</p>
 <dl class="function">
 <dt id="tkp.sourcefinder.stats.sigma_clip">
-<tt class="descclassname">tkp.sourcefinder.stats.</tt><tt class="descname">sigma_clip</tt><big>(</big><em>data</em>, <em>beam</em>, <em>sigma=&lt;function unbiased_sigma at 0x2b2919b541b8&gt;</em>, <em>max_iter=100</em>, <em>centref=&lt;function median at 0x2b290c88ea28&gt;</em>, <em>distf=&lt;function var at 0x2b290c1235f0&gt;</em>, <em>my_iterations=0</em>, <em>corr_clip=1.0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/stats.html#sigma_clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.stats.sigma_clip" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.sourcefinder.stats.</tt><tt class="descname">sigma_clip</tt><big>(</big><em>data</em>, <em>beam</em>, <em>sigma=&lt;function unbiased_sigma at 0x2b4be291f1b8&gt;</em>, <em>max_iter=100</em>, <em>centref=&lt;function median at 0x2b4bd5658a28&gt;</em>, <em>distf=&lt;function var at 0x2b4bd4eee5f0&gt;</em>, <em>my_iterations=0</em>, <em>corr_clip=1.0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/stats.html#sigma_clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.stats.sigma_clip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterative clipping</p>
 <p>By default, this performs clipping of the standard deviation about the
 median of the data. But by tweaking centref/distf, it could be much
@@ -177,7 +174,7 @@ rms noise only.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2011—2014, LOFAR Transients Key Science Project.
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
     </div>
   </body>
 </html>
