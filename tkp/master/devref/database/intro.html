@@ -98,11 +98,35 @@ database.</p>
 to your pipeline.cfg you can populate the database with the TKP schema. You can
 use the tkp-manage.py initdb subcommand for this.</p>
 <p>inside your project folder run:</p>
-<div class="highlight-python"><div class="highlight"><pre>$   $ tkp-manage.py initdb
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initdb
 </pre></div>
 </div>
-<p>For PostgreSQL there is the optional <strong>-d</strong> flag, which removes all content
-before populating the database.</p>
+</div>
+<div class="section" id="recreating-the-database-schema">
+<h2>Recreating the database schema<a class="headerlink" href="#recreating-the-database-schema" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>PostgreSQL<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>For PostgreSQL there is the optional <strong>-d</strong> flag for the initdb subcommand,
+which removes all content before populating the database.</p>
+</div>
+<div class="section" id="id2">
+<h3>MonetDB<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>In the case of MonetDB you need to do this manually. You can do this with the
+following commands, where <strong>${dbname}</strong> should be replaced with the database
+name:</p>
+<div class="highlight-python"><div class="highlight"><pre>monetdb stop ${dbname}
+monetdb destroy -f ${dbname}
+monetdb create ${dbname}
+monetdb start ${dbname}
+monetdb release ${dbname}
+</pre></div>
+</div>
+<p>For security reasons you should change the default password:</p>
+<div class="highlight-python"><div class="highlight"><pre>mclient -d ${dbname} -s&quot;ALTER USER \&quot;monetdb\&quot; RENAME TO \&quot;${uname}\&quot;;
+ALTER USER SET PASSWORD &#39;${passw}&#39; USING OLD PASSWORD &#39;monetdb&#39;;&quot;
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -124,6 +148,11 @@ before populating the database.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#populating-the-database">Populating the database</a></li>
+<li><a class="reference internal" href="#recreating-the-database-schema">Recreating the database schema</a><ul>
+<li><a class="reference internal" href="#id1">PostgreSQL</a></li>
+<li><a class="reference internal" href="#id2">MonetDB</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

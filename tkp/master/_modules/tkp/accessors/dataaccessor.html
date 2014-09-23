@@ -59,26 +59,26 @@
 
 <div class="viewcode-block" id="DataAccessor"><a class="viewcode-back" href="../../../devref/tkp/accessors/accessor_types.html#tkp.accessors.dataaccessor.DataAccessor">[docs]</a><span class="k">class</span> <span class="nc">DataAccessor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Base class for accessors used with :class:`..sourcefinder.image.ImageData`.</span>
-
-<span class="sd">    Data accessors provide a uniform way for the ImageData class (ie, generic</span>
-<span class="sd">    image representation) to access the various ways in which images may be</span>
-<span class="sd">    stored (FITS files, arrays in memory, potentially HDF5, etc).</span>
-
-<span class="sd">    This class cannot be instantiated directly, but should be subclassed and</span>
-<span class="sd">    the abstract properties provided. Note that all abstract properties are</span>
-<span class="sd">    required to provide a valid accessor.</span>
-
-<span class="sd">    Additional properties may also be provided by subclasses. However, TraP</span>
-<span class="sd">    components are required to degrade gracefully in the absence of this</span>
-<span class="sd">    optional properties.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialise the `sigma` and `f` properties used for calculating the</span>
-<span class="sd">        RMS value of the data. See `tkp.quality.statistics` for details.</span>
+<span class="sd">        Base class for accessors used with</span>
+<span class="sd">        :class:`tkp.sourcefinder.image.ImageData`.</span>
+
+<span class="sd">        Data accessors provide a uniform way for the ImageData class (ie,</span>
+<span class="sd">        generic image representation) to access the various ways in which</span>
+<span class="sd">        images may be stored (FITS files, arrays in memory, potentially HDF5,</span>
+<span class="sd">        etc).</span>
+
+<span class="sd">        This class cannot be instantiated directly, but should be subclassed</span>
+<span class="sd">        and the abstract properties provided. Note that all abstract</span>
+<span class="sd">        properties are required to provide a valid accessor.</span>
+
+<span class="sd">        Additional properties may also be provided by subclasses. However,</span>
+<span class="sd">        TraP components are required to degrade gracefully in the absence of</span>
+<span class="sd">        this optional properties.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Initialise the `sigma` and `f` properties used for calculating the</span>
+        <span class="c"># RMS value of the data. See `tkp.quality.statistics` for details.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="mi">3</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="mi">4</span>
 

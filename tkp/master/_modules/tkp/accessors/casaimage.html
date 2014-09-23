@@ -60,7 +60,7 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CasaImage"><a class="viewcode-back" href="../../../devref/tkp/accessors/accessor_types.html#tkp.accessors.casaimage.CasaImage">[docs]</a><span class="k">class</span> <span class="nc">CasaImage</span><span class="p">(</span><span class="n">DataAccessor</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">CasaImage</span><span class="p">(</span><span class="n">DataAccessor</span><span class="p">):</span>
     <span class="c"># NB CasaImage does not provide tau_time or taustart_ts, so cannot be</span>
     <span class="c"># instantiated.</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beam</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -116,7 +116,7 @@
     <span class="k">def</span> <span class="nf">beam</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam</span>
 
-</div>
+
 <span class="k">def</span> <span class="nf">parse_data</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;extract and massage data from CASA table&quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;map&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>

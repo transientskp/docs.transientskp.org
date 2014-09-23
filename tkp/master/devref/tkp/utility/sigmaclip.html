@@ -58,20 +58,20 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="tkp-utility-sigmaclip-generic-sigma-clipping-routine">
-<span id="utility-sigmaclip"></span><h1><tt class="xref py py-mod docutils literal"><span class="pre">tkp.utility.sigmaclip</span></tt> &#8211; Generic sigma clipping routine<a class="headerlink" href="#tkp-utility-sigmaclip-generic-sigma-clipping-routine" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-tkp.utility.sigmaclip">
+<span id="tkp-utility-sigmaclip-generic-sigma-clipping-routine"></span><span id="utility-sigmaclip"></span><h1><a class="reference internal" href="#module-tkp.utility.sigmaclip" title="tkp.utility.sigmaclip: Generic sigma clipping routine"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.utility.sigmaclip</span></tt></a> &#8211; Generic sigma clipping routine<a class="headerlink" href="#module-tkp.utility.sigmaclip" title="Permalink to this headline">¶</a></h1>
 <p>Generic kappa-sigma clipping routine.</p>
 <p>Note: this does <em>not</em> replace the specialized sigma_clip function in
 utilities.py</p>
 <dl class="function">
-<dt>
-<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">calcmean</tt><big>(</big><em>data</em>, <em>errors=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#calcmean"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="tkp.utility.sigmaclip.calcmean">
+<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">calcmean</tt><big>(</big><em>data</em>, <em>errors=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#calcmean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.sigmaclip.calcmean" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the mean and the standard deviation of the mean</p>
 </dd></dl>
 
 <dl class="function">
-<dt>
-<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">calcsigma</tt><big>(</big><em>data</em>, <em>errors=None</em>, <em>mean=None</em>, <em>axis=None</em>, <em>errors_as_weight=False</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#calcsigma"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="tkp.utility.sigmaclip.calcsigma">
+<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">calcsigma</tt><big>(</big><em>data</em>, <em>errors=None</em>, <em>mean=None</em>, <em>axis=None</em>, <em>errors_as_weight=False</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#calcsigma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.sigmaclip.calcsigma" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the sample standard deviation</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -111,8 +111,8 @@ the whole array</dd>
 </dd></dl>
 
 <dl class="function">
-<dt>
-<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">clip</tt><big>(</big><em>data</em>, <em>mean</em>, <em>sigma</em>, <em>siglow</em>, <em>sighigh</em>, <em>indices=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#clip"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="tkp.utility.sigmaclip.clip">
+<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">clip</tt><big>(</big><em>data</em>, <em>mean</em>, <em>sigma</em>, <em>siglow</em>, <em>sighigh</em>, <em>indices=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.sigmaclip.clip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform kappa-sigma clipping of data around mean</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -143,8 +143,8 @@ the whole array</dd>
 </dd></dl>
 
 <dl class="function">
-<dt>
-<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">sigmaclip</tt><big>(</big><em>data</em>, <em>errors=None</em>, <em>niter=0</em>, <em>siglow=3.0</em>, <em>sighigh=3.0</em>, <em>use_median=False</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#sigmaclip"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="tkp.utility.sigmaclip.sigmaclip">
+<tt class="descclassname">tkp.utility.sigmaclip.</tt><tt class="descname">sigmaclip</tt><big>(</big><em>data</em>, <em>errors=None</em>, <em>niter=0</em>, <em>siglow=3.0</em>, <em>sighigh=3.0</em>, <em>use_median=False</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/sigmaclip.html#sigmaclip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.sigmaclip.sigmaclip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove outliers from data which lie more than siglow/sighigh
 sample standard deviations from mean.</p>
 <table class="docutils field-list" frame="void" rules="none">

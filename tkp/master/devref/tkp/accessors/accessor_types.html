@@ -61,12 +61,22 @@
   <div class="section" id="data-accessor-variants">
 <h1>Data Accessor Variants<a class="headerlink" href="#data-accessor-variants" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-tkp.accessors.dataaccessor">
-<span id="tkp-accessors-dataaccessor-base-data-accessor-class"></span><h2><a class="reference internal" href="#module-tkp.accessors.dataaccessor" title="tkp.accessors.dataaccessor"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.accessors.dataaccessor</span></tt></a> &#8211; Base data accessor class<a class="headerlink" href="#module-tkp.accessors.dataaccessor" title="Permalink to this headline">¶</a></h2>
+<span id="basic-data-accessors"></span><h2>Basic data accessors<a class="headerlink" href="#module-tkp.accessors.dataaccessor" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="tkp.accessors.dataaccessor.DataAccessor">
 <em class="property">class </em><tt class="descclassname">tkp.accessors.dataaccessor.</tt><tt class="descname">DataAccessor</tt><a class="reference internal" href="../../../_modules/tkp/accessors/dataaccessor.html#DataAccessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.dataaccessor.DataAccessor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialise the <cite>sigma</cite> and <cite>f</cite> properties used for calculating the
-RMS value of the data. See <cite>tkp.quality.statistics</cite> for details.</p>
+<dd><p>Base class for accessors used with
+<a class="reference internal" href="../sourcefinder/image.html#tkp.sourcefinder.image.ImageData" title="tkp.sourcefinder.image.ImageData"><tt class="xref py py-class docutils literal"><span class="pre">tkp.sourcefinder.image.ImageData</span></tt></a>.</p>
+<p>Data accessors provide a uniform way for the ImageData class (ie,
+generic image representation) to access the various ways in which
+images may be stored (FITS files, arrays in memory, potentially HDF5,
+etc).</p>
+<p>This class cannot be instantiated directly, but should be subclassed
+and the abstract properties provided. Note that all abstract
+properties are required to provide a valid accessor.</p>
+<p>Additional properties may also be provided by subclasses. However,
+TraP components are required to degrade gracefully in the absence of
+this optional properties.</p>
 <dl class="attribute">
 <dt id="tkp.accessors.dataaccessor.DataAccessor.beam">
 <tt class="descname">beam</tt><a class="reference internal" href="../../../_modules/tkp/accessors/dataaccessor.html#DataAccessor.beam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.dataaccessor.DataAccessor.beam" title="Permalink to this definition">¶</a></dt>
@@ -161,9 +171,28 @@ processing.</p>
 
 </dd></dl>
 
+<p>The following acessors are derived from the basic <a class="reference internal" href="#tkp.accessors.dataaccessor.DataAccessor" title="tkp.accessors.dataaccessor.DataAccessor"><tt class="xref py py-class docutils literal"><span class="pre">DataAccessor</span></tt></a> class:</p>
+<span class="target" id="module-tkp.accessors.fitsimage"></span><dl class="class">
+<dt id="tkp.accessors.fitsimage.tkp.accessors.fitsimage.FitsImage">
+<em class="property">class </em><tt class="descclassname">tkp.accessors.fitsimage.</tt><tt class="descname">FitsImage</tt><a class="headerlink" href="#tkp.accessors.fitsimage.tkp.accessors.fitsimage.FitsImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic FITS data access.</p>
+</dd></dl>
+
+<span class="target" id="module-tkp.accessors.casaimage"></span><dl class="class">
+<dt id="tkp.accessors.casaimage.tkp.accessors.casaimage.CasaImage">
+<em class="property">class </em><tt class="descclassname">tkp.accessors.casaimage.</tt><tt class="descname">CasaImage</tt><a class="headerlink" href="#tkp.accessors.casaimage.tkp.accessors.casaimage.CasaImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic CASA image access.</p>
+</dd></dl>
+
+<span class="target" id="module-tkp.accessors.kat7casaimage"></span><dl class="class">
+<dt id="tkp.accessors.kat7casaimage.tkp.accessors.kat7casaimage.Kat7CasaImage">
+<em class="property">class </em><tt class="descclassname">tkp.accessors.kat7casaimage.</tt><tt class="descname">Kat7CasaImage</tt><a class="headerlink" href="#tkp.accessors.kat7casaimage.tkp.accessors.kat7casaimage.Kat7CasaImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>KAT-7 specific CASA image access.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-tkp.accessors.lofaraccessor">
-<span id="tkp-accessors-lofaraccessor-lofar-specific-data-accessor-class"></span><h2><a class="reference internal" href="#module-tkp.accessors.lofaraccessor" title="tkp.accessors.lofaraccessor"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.accessors.lofaraccessor</span></tt></a> &#8211; LOFAR Specific data accessor class<a class="headerlink" href="#module-tkp.accessors.lofaraccessor" title="Permalink to this headline">¶</a></h2>
+<span id="lofar-specific-data-accessors"></span><h2>LOFAR-specific data accessors<a class="headerlink" href="#module-tkp.accessors.lofaraccessor" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="tkp.accessors.lofaraccessor.LofarAccessor">
 <em class="property">class </em><tt class="descclassname">tkp.accessors.lofaraccessor.</tt><tt class="descname">LofarAccessor</tt><a class="reference internal" href="../../../_modules/tkp/accessors/lofaraccessor.html#LofarAccessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.lofaraccessor.LofarAccessor" title="Permalink to this definition">¶</a></dt>
@@ -206,62 +235,17 @@ processing.</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-tkp.accessors.fitsimage">
-<span id="tkp-accessors-fitsimage-fits-image-access"></span><h2><a class="reference internal" href="#module-tkp.accessors.fitsimage" title="tkp.accessors.fitsimage"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.accessors.fitsimage</span></tt></a> &#8211; FITS Image Access<a class="headerlink" href="#module-tkp.accessors.fitsimage" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="tkp.accessors.fitsimage.FitsImage">
-<em class="property">class </em><tt class="descclassname">tkp.accessors.fitsimage.</tt><tt class="descname">FitsImage</tt><big>(</big><em>url</em>, <em>plane=None</em>, <em>beam=None</em>, <em>hdu=0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/accessors/fitsimage.html#FitsImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.fitsimage.FitsImage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use PyFITS to pull image data out of a FITS file.</p>
-<p>Provide standard attributes, as per <tt class="xref py py-class docutils literal"><span class="pre">DataAccessor</span></tt>. In addition, we
-provide a <tt class="docutils literal"><span class="pre">telescope</span></tt> attribute if the FITS file has a <tt class="docutils literal"><span class="pre">TELESCOP</span></tt>
-header.</p>
+<p>The following accessors are derived from the generic <a class="reference internal" href="#tkp.accessors.lofaraccessor.LofarAccessor" title="tkp.accessors.lofaraccessor.LofarAccessor"><tt class="xref py py-class docutils literal"><span class="pre">LofarAccessor</span></tt></a>:</p>
+<span class="target" id="module-tkp.accessors.lofarfitsimage"></span><dl class="class">
+<dt id="tkp.accessors.lofarfitsimage.tkp.accessors.lofarfitsimage.LofarFitsImage">
+<em class="property">class </em><tt class="descclassname">tkp.accessors.lofarfitsimage.</tt><tt class="descname">LofarFitsImage</tt><a class="headerlink" href="#tkp.accessors.lofarfitsimage.tkp.accessors.lofarfitsimage.LofarFitsImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>LOFAR FITS access.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="module-tkp.accessors.lofarfitsimage">
-<span id="tkp-accessors-lofarfitsimage-lofar-specific-fits-image-access"></span><h2><a class="reference internal" href="#module-tkp.accessors.lofarfitsimage" title="tkp.accessors.lofarfitsimage"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.accessors.lofarfitsimage</span></tt></a> &#8211; LOFAR Specific FITS Image Access<a class="headerlink" href="#module-tkp.accessors.lofarfitsimage" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="tkp.accessors.lofarfitsimage.LofarFitsImage">
-<em class="property">class </em><tt class="descclassname">tkp.accessors.lofarfitsimage.</tt><tt class="descname">LofarFitsImage</tt><big>(</big><em>url</em>, <em>plane=False</em>, <em>beam=False</em>, <em>hdu=0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/accessors/lofarfitsimage.html#LofarFitsImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.lofarfitsimage.LofarFitsImage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="module-tkp.accessors.casaimage">
-<span id="tkp-accessors-casaimage-casa-image-access"></span><h2><a class="reference internal" href="#module-tkp.accessors.casaimage" title="tkp.accessors.casaimage"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.accessors.casaimage</span></tt></a> &#8211; CASA Image Access<a class="headerlink" href="#module-tkp.accessors.casaimage" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="tkp.accessors.casaimage.CasaImage">
-<em class="property">class </em><tt class="descclassname">tkp.accessors.casaimage.</tt><tt class="descname">CasaImage</tt><big>(</big><em>url</em>, <em>plane=0</em>, <em>beam=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/accessors/casaimage.html#CasaImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.casaimage.CasaImage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="module-tkp.accessors.kat7casaimage">
-<span id="tkp-accessors-kat7casaimage-kat-7-casa-image-access"></span><h2><a class="reference internal" href="#module-tkp.accessors.kat7casaimage" title="tkp.accessors.kat7casaimage"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.accessors.kat7casaimage</span></tt></a> &#8211; KAT-7 CASA image access<a class="headerlink" href="#module-tkp.accessors.kat7casaimage" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="tkp.accessors.kat7casaimage.Kat7CasaImage">
-<em class="property">class </em><tt class="descclassname">tkp.accessors.kat7casaimage.</tt><tt class="descname">Kat7CasaImage</tt><big>(</big><em>url</em>, <em>plane=0</em>, <em>beam=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/accessors/kat7casaimage.html#Kat7CasaImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.kat7casaimage.Kat7CasaImage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use pyrap to pull image data out of a CASA table as produced by KAT-7.</p>
-<p>Note that KAT-7 does not currently include image duration in its headers,
-so we use a placeholder value of 1.</p>
-<p>Note also that the start time is taken from the CASA coords record, and
-may not be valid if the image is composed of multiple observations.</p>
-<blockquote>
-<div>(bmaj, bmin, bpa). Will attempt to read from header if
-not supplied.</div></blockquote>
-</dd></dl>
-
-</div>
-<div class="section" id="module-tkp.accessors.lofarcasaimage">
-<span id="tkp-accessors-lofarcasaimage-lofar-casa-image-access"></span><h2><a class="reference internal" href="#module-tkp.accessors.lofarcasaimage" title="tkp.accessors.lofarcasaimage"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.accessors.lofarcasaimage</span></tt></a> &#8211; LOFAR CASA image access<a class="headerlink" href="#module-tkp.accessors.lofarcasaimage" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="tkp.accessors.lofarcasaimage.LofarCasaImage">
-<em class="property">class </em><tt class="descclassname">tkp.accessors.lofarcasaimage.</tt><tt class="descname">LofarCasaImage</tt><big>(</big><em>url</em>, <em>plane=0</em>, <em>beam=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/accessors/lofarcasaimage.html#LofarCasaImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.accessors.lofarcasaimage.LofarCasaImage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use pyrap to pull image data out of an Casa table.</p>
-<p>This accessor assumes the casatable contains the values described in the
-CASA Image description for LOFAR. 0.03.00.</p>
-<blockquote>
-<div>(bmaj, bmin, bpa). Will attempt to read from header if
-not supplied.</div></blockquote>
+<span class="target" id="module-tkp.accessors.lofarcasaimage"></span><dl class="class">
+<dt id="tkp.accessors.lofarcasaimage.tkp.accessors.lofarcasaimage.LofarCasaImage">
+<em class="property">class </em><tt class="descclassname">tkp.accessors.lofarcasaimage.</tt><tt class="descname">LofarCasaImage</tt><a class="headerlink" href="#tkp.accessors.lofarcasaimage.tkp.accessors.lofarcasaimage.LofarCasaImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>LOFAR CASA image access.</p>
 </dd></dl>
 
 </div>
@@ -279,13 +263,8 @@ not supplied.</div></blockquote>
   <h3><a href="../../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Data Accessor Variants</a><ul>
-<li><a class="reference internal" href="#module-tkp.accessors.dataaccessor"><tt class="docutils literal"><span class="pre">tkp.accessors.dataaccessor</span></tt> &#8211; Base data accessor class</a></li>
-<li><a class="reference internal" href="#module-tkp.accessors.lofaraccessor"><tt class="docutils literal"><span class="pre">tkp.accessors.lofaraccessor</span></tt> &#8211; LOFAR Specific data accessor class</a></li>
-<li><a class="reference internal" href="#module-tkp.accessors.fitsimage"><tt class="docutils literal"><span class="pre">tkp.accessors.fitsimage</span></tt> &#8211; FITS Image Access</a></li>
-<li><a class="reference internal" href="#module-tkp.accessors.lofarfitsimage"><tt class="docutils literal"><span class="pre">tkp.accessors.lofarfitsimage</span></tt> &#8211; LOFAR Specific FITS Image Access</a></li>
-<li><a class="reference internal" href="#module-tkp.accessors.casaimage"><tt class="docutils literal"><span class="pre">tkp.accessors.casaimage</span></tt> &#8211; CASA Image Access</a></li>
-<li><a class="reference internal" href="#module-tkp.accessors.kat7casaimage"><tt class="docutils literal"><span class="pre">tkp.accessors.kat7casaimage</span></tt> &#8211; KAT-7 CASA image access</a></li>
-<li><a class="reference internal" href="#module-tkp.accessors.lofarcasaimage"><tt class="docutils literal"><span class="pre">tkp.accessors.lofarcasaimage</span></tt> &#8211; LOFAR CASA image access</a></li>
+<li><a class="reference internal" href="#module-tkp.accessors.dataaccessor">Basic data accessors</a></li>
+<li><a class="reference internal" href="#module-tkp.accessors.lofaraccessor">LOFAR-specific data accessors</a></li>
 </ul>
 </li>
 </ul>
