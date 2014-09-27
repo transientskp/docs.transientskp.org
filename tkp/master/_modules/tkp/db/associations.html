@@ -73,7 +73,7 @@
 <span class="sd">    &quot;De Ruiter radius&quot;, see Chapters 2 &amp; 3 of Scheers&#39; thesis.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using a De Ruiter radius of </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">deRuiter_r</span><span class="p">,))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Using a De Ruiter radius of </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">deRuiter_r</span><span class="p">,))</span>
     <span class="c">##This is used as a check that everything from the sourcefinder is sensible.</span>
     <span class="c">##Currently switched off as it&#39;s incompatible with sources about the meridian.</span>
 <span class="c">#    _delete_bad_blind_extractions(conn, image_id)</span>
@@ -130,8 +130,12 @@
     <span class="c"># _process_1_to_1()</span>
     <span class="n">_insert_1_to_1_assoc</span><span class="p">()</span>
     <span class="n">_update_1_to_1_runcat</span><span class="p">()</span>
-    <span class="n">_update_1_to_1_runcat_flux</span><span class="p">()</span>  <span class="c"># update flux in existing band</span>
-    <span class="n">_insert_1_to_1_runcat_flux</span><span class="p">()</span>  <span class="c"># insert flux for new band</span>
+    <span class="n">n_updated_rf</span> <span class="o">=</span> <span class="n">_update_1_to_1_runcat_flux</span><span class="p">()</span>  <span class="c"># update flux in existing band</span>
+    <span class="k">if</span> <span class="n">n_updated_rf</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Updated 1-to-1 fluxes for </span><span class="si">%s</span><span class="s"> sources&quot;</span> <span class="o">%</span> <span class="n">n_updated_rf</span><span class="p">)</span>
+    <span class="n">n_new_rf</span> <span class="o">=</span> <span class="n">_insert_1_to_1_runcat_flux</span><span class="p">()</span>  <span class="c"># insert flux for new band</span>
+    <span class="k">if</span> <span class="n">n_new_rf</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Inserted new fluxes for </span><span class="si">%s</span><span class="s"> sources&quot;</span> <span class="o">%</span> <span class="n">n_new_rf</span><span class="p">)</span>
     <span class="c">#+-------------------------------------------------------+</span>
     <span class="c">#| Here we take care of the extracted sources that could |</span>
     <span class="c">#| not be associated with any runningcatalog source      |</span>
@@ -819,7 +823,7 @@
 <span class="s">&quot;&quot;&quot;</span>
     <span class="c">#mw = _check_meridian_wrap(conn, image_id)</span>
     <span class="k">if</span> <span class="n">mw</span><span class="p">[</span><span class="s">&#39;q_across&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Search across 0/360 meridian: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">mw</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Search across 0/360 meridian: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">mw</span><span class="p">)</span>
         <span class="n">query</span> <span class="o">=</span> <span class="n">q_across_ra0</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">,</span> <span class="s">&#39;deRuiter&#39;</span><span class="p">:</span> <span class="n">deRuiter_r</span><span class="p">}</span>
@@ -1522,10 +1526,6 @@
 
 <span class="sd">    If the runcat, band, stokes entry does exist in runcat_flux,</span>
 <span class="sd">    it will be updated with the values from tempruncat.</span>
-
-<span class="sd">    NOTE: It is important to guarantee the sequence:</span>
-<span class="sd">          First update the existing entries,</span>
-<span class="sd">          then the insert the new entries (next function).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">UPDATE runningcatalog_flux</span>
@@ -1612,12 +1612,12 @@
 <span class="s">                  AND temprunningcatalog.band = runningcatalog_flux.band</span>
 <span class="s">                  AND temprunningcatalog.stokes = runningcatalog_flux.stokes</span>
 <span class="s">                  AND temprunningcatalog.inactive = FALSE</span>
+<span class="s">                  AND temprunningcatalog.f_datapoints &gt; 1</span>
 <span class="s">              )</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
-    <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Updated flux for </span><span class="si">%s</span><span class="s"> sources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+
 
 </div>
 <div class="viewcode-block" id="_insert_1_to_1_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_1_to_1_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_1_runcat_flux</span><span class="p">():</span>
@@ -1630,8 +1630,6 @@
 <span class="sd">    but not in the current band, so there does not exist an entry</span>
 <span class="sd">    for this band.</span>
 
-<span class="sd">    NOTE: It is important to guarantee the sequence:</span>
-<span class="sd">          First do the update (previous function), then the insert.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
@@ -1667,19 +1665,11 @@
 <span class="s">        ,avg_weighted_f_int_sq</span>
 <span class="s">    FROM temprunningcatalog</span>
 <span class="s">   WHERE inactive = FALSE</span>
-<span class="s">     AND NOT EXISTS (SELECT rf.runcat</span>
-<span class="s">                       FROM runningcatalog_flux rf</span>
-<span class="s">                           ,temprunningcatalog tr</span>
-<span class="s">                      WHERE rf.runcat = tr.runcat</span>
-<span class="s">                        AND rf.band = tr.band</span>
-<span class="s">                        AND rf.stokes = tr.stokes</span>
-<span class="s">                        AND tr.inactive = FALSE</span>
-<span class="s">                    )</span>
+<span class="s">     AND f_datapoints=1</span>
 <span class="s">&quot;&quot;&quot;</span>
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
-    <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted new fluxes for </span><span class="si">%s</span><span class="s"> sources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+
 
 </div>
 <div class="viewcode-block" id="_insert_new_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_runcat">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
@@ -1752,6 +1742,7 @@
 <span class="s">                ,image i0</span>
 <span class="s">           WHERE x0.image = i0.id</span>
 <span class="s">             AND x0.image = </span><span class="si">%s</span><span class="s"></span>
+<span class="s">             AND x0.extract_type = 0</span>
 <span class="s">         ) new_src</span>
 <span class="s">         LEFT OUTER JOIN temprunningcatalog tmprc</span>
 <span class="s">         ON new_src.xtrsrc = tmprc.xtrsrc</span>
@@ -1760,17 +1751,15 @@
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">image_id</span><span class="p">,),</span> <span class="bp">True</span><span class="p">)</span>
     <span class="n">ins</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
     <span class="k">if</span> <span class="n">ins</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to runningcatalog&quot;</span> <span class="o">%</span> <span class="n">ins</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to runningcatalog&quot;</span> <span class="o">%</span> <span class="n">ins</span><span class="p">)</span>
 
 
 </div>
 <div class="viewcode-block" id="_insert_new_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._insert_new_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat_flux</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Insert previously unknown sources into the ``runningcatalog_flux`` table.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Insert previously unknown sources into the ``runningcatalog_flux`` table.</span>
 
-<span class="sd">    Extractedsources for which not a counterpart was found in the</span>
-<span class="sd">    runningcatalog, will be added as a new source to the assocxtrsource,</span>
-<span class="sd">    runningcatalog and runningcatalog_flux tables.</span>
-
+<span class="sd">	(i.e. those without *any* previous runcat-counterpart)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO runningcatalog_flux</span>
@@ -1809,6 +1798,7 @@
 <span class="s">                 LEFT OUTER JOIN temprunningcatalog tmprc</span>
 <span class="s">                 ON x1.id = tmprc.xtrsrc</span>
 <span class="s">            WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">              AND x1.extract_type = 0</span>
 <span class="s">              AND tmprc.xtrsrc IS NULL</span>
 <span class="s">          ) new_src</span>
 <span class="s">        ,runningcatalog r0</span>
@@ -1941,6 +1931,7 @@
 <span class="s">                 LEFT OUTER JOIN temprunningcatalog tmprc</span>
 <span class="s">                 ON x1.id = tmprc.xtrsrc</span>
 <span class="s">            WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">              AND x1.extract_type = 0</span>
 <span class="s">              AND tmprc.xtrsrc IS NULL</span>
 <span class="s">          ) new_src</span>
 <span class="s">        ,runningcatalog r0</span>
@@ -2066,6 +2057,7 @@
 <span class="s">                      FROM extractedsource x1</span>
 <span class="s">                      WHERE x1.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
 <span class="s">                      AND x1.id NOT IN (SELECT xtrsrc FROM temprunningcatalog)</span>
+<span class="s">                      AND x1.extract_type = 0</span>
 <span class="s">                    ) unassoc_xtr</span>
 <span class="s">                   ,runningcatalog runcat1</span>
 <span class="s">                   ,assocskyrgn asky1</span>
@@ -2089,7 +2081,7 @@
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">ins</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
     <span class="k">if</span> <span class="n">ins</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to newsource table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ins</span><span class="p">,))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new sources to newsource table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ins</span><span class="p">,))</span>
 
 </div>
 <div class="viewcode-block" id="_update_ff_runcat_extractedsource"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._update_ff_runcat_extractedsource">[docs]</a><span class="k">def</span> <span class="nf">_update_ff_runcat_extractedsource</span><span class="p">():</span>
@@ -2109,7 +2101,7 @@
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
     <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Unset ff_runcat for </span><span class="si">%s</span><span class="s"> extractedsources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Unset ff_runcat for </span><span class="si">%s</span><span class="s"> extractedsources&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="_delete_inactive_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/association.html#tkp.db.associations._delete_inactive_runcat">[docs]</a><span class="k">def</span> <span class="nf">_delete_inactive_runcat</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Delete the one-to-many associations from temprunningcatalog,</span>

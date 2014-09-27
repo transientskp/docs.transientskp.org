@@ -72,7 +72,7 @@ that don&#8217;t fit into a more specific collection.</p>
 
 <dl class="function">
 <dt id="tkp.db.general.insert_extracted_sources">
-<tt class="descclassname">tkp.db.general.</tt><tt class="descname">insert_extracted_sources</tt><big>(</big><em>image_id</em>, <em>results</em>, <em>extract</em>, <em>ff_runcatids=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#insert_extracted_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.insert_extracted_sources" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">insert_extracted_sources</tt><big>(</big><em>image_id</em>, <em>results</em>, <em>extract_type</em>, <em>ff_runcat_ids=None</em>, <em>ff_monitor_ids=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#insert_extracted_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.insert_extracted_sources" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert all detections from sourcefinder into the extractedsource table.</p>
 <p>Besides the source properties from sourcefinder, we calculate additional
 attributes that are increase performance in other tasks.</p>
@@ -148,6 +148,25 @@ field centre, that will be used for source extraction.
 anything else!)
 Note centre_ra, centre_decl, extracion_radius should all be in degrees.</p>
 </div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.general.insert_monitor_positions">
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">insert_monitor_positions</tt><big>(</big><em>dataset_id</em>, <em>positions</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#insert_monitor_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.insert_monitor_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add entries to the <tt class="docutils literal"><span class="pre">monitor</span></tt> table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Positions will only be monitored when processing this
+dataset.</li>
+<li><strong>positions</strong> (<em>list of tuples</em>) &#8211; List of (RA, decl) tuples in decimal degrees.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

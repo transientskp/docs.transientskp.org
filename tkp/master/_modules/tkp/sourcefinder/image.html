@@ -54,11 +54,9 @@
 <span class="sd">calculating (specific) variances</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span>
 <span class="kn">from</span> <span class="nn">tkp.utility</span> <span class="kn">import</span> <span class="n">containers</span>
 <span class="kn">from</span> <span class="nn">tkp.utility.memoize</span> <span class="kn">import</span> <span class="n">Memoize</span>
 <span class="kn">from</span> <span class="nn">tkp.sourcefinder</span> <span class="kn">import</span> <span class="n">utils</span>
@@ -654,28 +652,50 @@
 
         <span class="k">return</span> <span class="n">extract</span><span class="o">.</span><span class="n">Detection</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="ImageData.fit_fixed_positions"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.fit_fixed_positions">[docs]</a>    <span class="k">def</span> <span class="nf">fit_fixed_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">boxsize</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                            <span class="n">fixed</span><span class="o">=</span><span class="s">&#39;position+shape&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convenience function to fit a list of sources at the given positions</span>
+<div class="viewcode-block" id="ImageData.fit_fixed_positions"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.fit_fixed_positions">[docs]</a>    <span class="k">def</span> <span class="nf">fit_fixed_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">boxsize</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                            <span class="n">fixed</span><span class="o">=</span><span class="s">&#39;position+shape&#39;</span><span class="p">,</span>
+                            <span class="n">ids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience function to fit a list of sources at the given positions</span>
 
 <span class="sd">        This function wraps around fit_to_point().</span>
 
-<span class="sd">        Sources is a list of (ra, dec) tuples (not pixel coordinates).</span>
+<span class="sd">        Args:</span>
+<span class="sd">            positions (list of (RA, Dec) tuples): Positions to be fit,</span>
+<span class="sd">                in decimal degrees.</span>
+<span class="sd">            boxsize: See :py:func:`fit_to_point`</span>
+<span class="sd">            threshold: as above.</span>
+<span class="sd">            fixed: as above.</span>
+<span class="sd">            ids (list): A list of identifiers. If not None, then must match</span>
+<span class="sd">                the length and order of the ``requested_fits``. Any</span>
+<span class="sd">                successfully fit positions will be returned in a tuple</span>
+<span class="sd">                along with the matching id. As these are simply passed back to</span>
+<span class="sd">                calling code they can be a string, tuple or whatever.</span>
 
-<span class="sd">        All other arguments are the same as in fit_to_point(). In</span>
-<span class="sd">        particular, boxsize is in pixel coordinates as in</span>
+<span class="sd">        In particular, boxsize is in pixel coordinates as in</span>
 <span class="sd">        fit_to_point, not in sky coordinates.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of successful fits.</span>
+<span class="sd">            If ``ids`` is None, returns a single list of</span>
+<span class="sd">            :class:`tkp.sourcefinder.extract.Detection` s.</span>
+<span class="sd">            Otherwise, returns a tuple of two matched lists:</span>
+<span class="sd">            ([detections], [matching_ids]).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+
+        <span class="n">successful_fits</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">successful_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">posn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">positions</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">s2p</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">s2p</span><span class="p">((</span><span class="n">posn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">posn</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;wcsp2s error: 8:&quot;</span><span class="p">)</span> <span class="ow">or</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;wcsp2s error: 9:&quot;</span><span class="p">)):</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Input coordinates (</span><span class="si">%.2f</span><span class="s">, </span><span class="si">%.2f</span><span class="s">) invalid: &quot;</span><span class="p">,</span>
-                                    <span class="n">source</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">source</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                                    <span class="n">posn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">posn</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span>
             <span class="k">else</span><span class="p">:</span>
@@ -691,13 +711,17 @@
                           <span class="n">fit_results</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)):</span>
                         <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;position errors extend outside image&quot;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit_results</span><span class="p">)</span>
+                        <span class="n">successful_fits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit_results</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">ids</span><span class="p">:</span>
+                            <span class="n">successful_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
                 <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Input pixel coordinates (</span><span class="si">%.2f</span><span class="s">, </span><span class="si">%.2f</span><span class="s">) &quot;</span>
                                     <span class="s">&quot;could not be fit because: &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
-                                    <span class="n">source</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">source</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-        <span class="k">return</span> <span class="n">detections</span>
+                                    <span class="n">posn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">posn</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">successful_fits</span><span class="p">,</span> <span class="n">successful_ids</span>
+        <span class="k">return</span> <span class="n">successful_fits</span>
 </div>
 <div class="viewcode-block" id="ImageData.label_islands"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/image.html#tkp.sourcefinder.image.ImageData.label_islands">[docs]</a>    <span class="k">def</span> <span class="nf">label_islands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detectionthresholdmap</span><span class="p">,</span> <span class="n">analysisthresholdmap</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

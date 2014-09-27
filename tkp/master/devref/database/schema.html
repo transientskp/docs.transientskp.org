@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Schema &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Schema reference &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
-    <link rel="up" title="Overview of the TKP Database" href="index.html" />
+    <link rel="up" title="The Pipeline Database" href="index.html" />
     <link rel="next" title="Source Association Logic" href="assoc.html" />
-    <link rel="prev" title="Database" href="intro.html" /> 
+    <link rel="prev" title="Configuration" href="intro.html" /> 
   </head>
   <body>
     <div class="related">
@@ -44,11 +44,11 @@
           <a href="assoc.html" title="Source Association Logic"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="intro.html" title="Database"
+          <a href="intro.html" title="Configuration"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Overview of the TKP Database</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">The Pipeline Database</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,8 +57,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="schema">
-<span id="database-schema"></span><h1>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="schema-reference">
+<span id="database-schema"></span><h1>Schema reference<a class="headerlink" href="#schema-reference" title="Permalink to this headline">¶</a></h1>
 <a class="reference internal image-reference" href="../../_images/schema.png"><img alt="../../_images/schema.png" src="../../_images/schema.png" style="width: 419.2px; height: 540.2px;" /></a>
 <p>Note that this diagram is periodically updated and may not reliably reflect
 the current status of the development version.</p>
@@ -71,18 +71,19 @@ runningcatalog counterpart source, where the relation might be of type 1-1, 1-n
 or n-1.</p>
 <dl class="docutils">
 <dt><strong>runcat</strong></dt>
-<dd>refers to the runcatid in runningcatalog.  It is considered as the &#8220;base&#8221; id
-of a lightcurve, whereas the lightcurve consist of multiple frequency bands
-and Stokes parameters.</dd>
+<dd>A reference to the <tt class="docutils literal"><span class="pre">runcatid</span></tt> in <tt class="docutils literal"><span class="pre">runningcatalog</span></tt>.  It may be regarded
+as the &#8220;base&#8221; identitfier of a lightcurve, whereas the lightcurve consist
+of multiple frequency bands and Stokes parameters.</dd>
 <dt><strong>xtrsrc</strong></dt>
-<dd>This is the id of the extracted source that could be associated to
-runningcatalog source.  Together, the runcat_id and the xtrsrc form a unique
-pair.</dd>
+<dd>This is the ID of the extracted source that could be associated to
+runningcatalog source.  Together, the <tt class="docutils literal"><span class="pre">runcat_id</span></tt> and the <tt class="docutils literal"><span class="pre">xtrsrc</span></tt> form
+a unique pair.</dd>
 <dt><strong>type</strong></dt>
 <dd><p class="first">Type of association, and its description.  n-m, where n is the number of
-runningcatalog sources, and m the number of extractedsources. (The
+<tt class="docutils literal"><span class="pre">runningcatalog</span></tt> sources, and m the number of extracted sources. (The
 assignment of numbers is to association types is arbitrary.)</p>
-<dl class="docutils">
+<blockquote>
+<div><dl class="docutils">
 <dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">2</span></tt></dt>
 <dd>Base point of a 1-n (one-to-many) association (relates to <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">6</span></tt>)</dd>
 <dt><tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">3</span></tt></dt>
@@ -101,6 +102,7 @@ pre-existing associations, due to the 1-n case (relates to <tt class="docutils l
 <dd>Subsequent forced fit to a monitoring list position (relates to
 <tt class="docutils literal"><span class="pre">type</span> <span class="pre">=</span> <span class="pre">8</span></tt>.</dd>
 </dl>
+</div></blockquote>
 <p class="last">Note that many-to-1 relations reduce to 1-to-1 and 1-to-many associations.
 Therefore, there is no type specifying such a case.</p>
 </dd>
@@ -114,14 +116,13 @@ errors, calculated by the association procedure inside the database
 (<a class="reference internal" href="../../bibliography.html#scheers-2011"><em>Scheers, 2011</em></a>, chapter 3).</dd>
 <dt><strong>loglr</strong></dt>
 <dd>The logarithm of the likelihood ratio of the associated sources, defaults to
-NULL if not calculated (<a class="reference internal" href="../../bibliography.html#scheers-2011"><em>Scheers, 2011</em></a>, chapter 3).</dd>
+<tt class="docutils literal"><span class="pre">NULL</span></tt> if not calculated (<a class="reference internal" href="../../bibliography.html#scheers-2011"><em>Scheers, 2011</em></a>, chapter 3).</dd>
 <dt><strong>v_int</strong></dt>
 <dd>The &#8216;normalised standard deviation&#8217; variability index, <span class="math">\(V_{\nu}\)</span>,
 based on the integrated flux values up to this datapoint.</dd>
 <dt><strong>eta_int</strong></dt>
-<dd>The &#8216;reduced chi-squared&#8217; variability index,
-<span class="math">\(\eta_{\nu}\)</span>,
-based on the integrated flux values up to this datapoint.</dd>
+<dd>The &#8216;reduced chi-squared&#8217; variability index, <span class="math">\(\eta_{\nu}\)</span>, based on
+the integrated flux values up to this datapoint.</dd>
 <dt><strong>f_datapoints</strong></dt>
 <dd>The number of flux datapoints (including the extractedsource
 referenced in this entry) used to calculate the variability indices.</dd>
@@ -150,12 +151,12 @@ skyregions
 </ul>
 <dl class="docutils">
 <dt><strong>runcat</strong></dt>
-<dd>References the associated runningcatalog ID.</dd>
+<dd>References the associated <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> ID.</dd>
 <dt><strong>skyrgn</strong></dt>
-<dd>References the associated skyregion ID.</dd>
+<dd>References the associated <tt class="docutils literal"><span class="pre">skyregion</span></tt> ID.</dd>
 <dt><strong>distance_deg</strong></dt>
-<dd>Records the angular separation between the runningcatalog source and the
-skyregion centre, at time of first association.</dd>
+<dd>Records the angular separation between the <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> source and the
+<tt class="docutils literal"><span class="pre">skyregion</span></tt> centre, at time of first association.</dd>
 </dl>
 </div>
 <div class="section" id="dataset">
@@ -164,17 +165,16 @@ skyregion centre, at time of first association.</dd>
 than a collection of images grouped together for processing. When the same
 group is reprocessed, and the dataset.inname is identical (e.g. when the
 processing runs with other TraP parameters), the rerun is incremented by 1, but
-the id is auto-incremented as well, treating it as an independent dataset.</p>
+the ID is auto-incremented as well, treating it as an independent dataset.</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>Every dataset gets a unique id. The id is generated by the database.</dd>
+<dd>Every dataset gets a unique ID. The ID is generated by the database.</dd>
 <dt><strong>rerun</strong></dt>
 <dd>The value indicates how many times a dataset with a given description was
 processed by the pipeline. Note that every dataset still has a unique id,
-even when it was reprocessed.
-At insertion time, by the insertDataset() SQL function, this is incremented
-by 1 when the description of the dataset is already present in the table,
-otherwise defaults to 0.</dd>
+even when it was reprocessed.  At insertion time this is incremented by 1
+when the description of the dataset is already present in the table;
+otherwise, it defaults to 0.</dd>
 <dt><strong>type</strong></dt>
 <dd>Not being used.</dd>
 <dt><strong>process_start_ts</strong></dt>
@@ -233,98 +233,104 @@ The TraP may add forced-fit entries to this table as well. Then
 <dd>Every inserted source/measurement gets a unique id, generated by the
 database.</dd>
 <dt><strong>image</strong></dt>
-<dd>The reference id to the image from which this sources was extracted.</dd>
+<dd>The reference ID to the image from which this sources was extracted.</dd>
 <dt><strong>zone</strong></dt>
-<dd>The zone id in which the source declination resides, calculated by the
+<dd>The zone ID in which the source declination resides, calculated by the
 database.  The sphere is devided into zones of equal width: currently fixed
 to 1 degree, and the zone is effectively the truncated declination.
 (decl=31.3 =&gt; zone=31, decl=31.9 =&gt; zone=31). This column is primarly for
 speeding up source look-up queries.</dd>
 <dt><strong>ra</strong></dt>
-<dd>Right ascension of the measurement [in J2000 degrees], calculated by the
+<dd>Right ascension of the measurement (J2000 degrees). Calculated by the
 sourcefinder procedures.</dd>
 <dt><strong>decl</strong></dt>
-<dd>Declination of the measurement [in J2000 degrees], calculated by the
+<dd>Declination of the measurement (J2000 degrees). Calculated by the
 sourcefinder procedures.</dd>
 <dt><strong>ra_err</strong></dt>
-<dd>The 1-sigma error on ra [in degrees], ie. the square root of the quadratic
-sum of the fitted error (<tt class="docutils literal"><span class="pre">ra_fit_err</span></tt>) and the systematic error
-(<tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>) after the latter has been corrected for ra inflation
-depending on declination.  It is calculated by the database at insertion
-time.  Note that this error is declination dependent and the source lies
-in the range [ra - ra_err, ra + ra_err].</dd>
+<dd>The 1-sigma error on <tt class="docutils literal"><span class="pre">ra</span></tt> (degrees), i.e. the square root of the
+quadratic sum of the fitted error (<tt class="docutils literal"><span class="pre">ra_fit_err</span></tt>) and the systematic
+error (<tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>) after the latter has been corrected for ra
+inflation depending on declination.  It is calculated by the database at
+insertion time.  Note that this error is declination dependent and the
+source lies in the range [ra - ra_err, ra + ra_err].</dd>
 <dt><strong>decl_err</strong></dt>
-<dd>The 1-sigma error on declination [in degrees], ie. the square root of the
+<dd>The 1-sigma error on declination (degrees), i.e. the square root of the
 quadratic sum of the fitted error (<tt class="docutils literal"><span class="pre">decl_fit_err</span></tt>) and the systematic
 error (<tt class="docutils literal"><span class="pre">ns_sys_err</span></tt>), calculated by the database at insertion time.
 Note that the source lies in the range [<tt class="docutils literal"><span class="pre">decl</span> <span class="pre">-</span> <span class="pre">decl_err</span></tt>, <tt class="docutils literal"><span class="pre">decl</span> <span class="pre">+</span>
 <span class="pre">decl_err</span></tt>]</dd>
 <dt><strong>uncertainty_ew</strong></dt>
-<dd>The 1-sigma on-sky error on <tt class="docutils literal"><span class="pre">ra</span></tt> (in the east-west direction) [in degrees],
+<dd>The 1-sigma on-sky error on <tt class="docutils literal"><span class="pre">ra</span></tt> (in the east-west direction) (degrees),
 ie. the square root of the quadratic sum of the error radius
 (<tt class="docutils literal"><span class="pre">error_radius</span></tt>) and the systematic error (<tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>).  It is
 calculated by the database at insertion time.  Note that this is a
 positional uncertainty and is declination independent.  This error is
 being used in the De Ruiter calculations.</dd>
 <dt><strong>uncertainty_ns</strong></dt>
-<dd>Analogous to uncertainty_ew.</dd>
+<dd>Analogous to <tt class="docutils literal"><span class="pre">uncertainty_ew</span></tt>.</dd>
 <dt><strong>ra_fit_err</strong></dt>
-<dd>The 1-sigma error on <tt class="docutils literal"><span class="pre">ra</span></tt> [degrees] from the source gaussian fitting,
+<dd>The 1-sigma error on <tt class="docutils literal"><span class="pre">ra</span></tt> (degrees) from the source gaussian fitting,
 calculated by the sourcefinder procedures. It is important to note that a
 source&#8217;s fitted ra error increases towards the poles, and is thus
-declination dependent (see also error_radius).</dd>
+declination dependent (see also <tt class="docutils literal"><span class="pre">error_radius</span></tt>).</dd>
 <dt><strong>decl_fit_err</strong></dt>
-<dd>The 1-sigma error from the source fitting for declination [in degrees],
-calculated by the sourcefinder procedures (see also error_radius).</dd>
+<dd>The 1-sigma error from the source fitting for declination (degrees),
+calculated by the sourcefinder procedures (see also <tt class="docutils literal"><span class="pre">error_radius</span></tt>).</dd>
 <dt><strong>ew_sys_err</strong></dt>
-<dd>The systematic error on RA [arcsec].  (As an on-sky angular uncertainty,
-independent of Declination.) It is a telescope dependent error and is
-provided by the user in the parset file.</dd>
+<dd>The systematic error on RA (arcsec).  (As an on-sky angular uncertainty,
+independent of declination.) It is a telescope dependent error and is
+provided by the user in the pipeline configuation.</dd>
 <dt><strong>ns_sys_err</strong></dt>
-<dd>Analogous to ew_sys_err.</dd>
+<dd>Analogous to <tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>.</dd>
 <dt><strong>error_radius</strong></dt>
 <dd>Estimate of the absolute angular error on a source&#8217;s central position
-[arcsec].  It is a pessimistic estimate, because it takes the sum of the
+(arcsec).  It is a pessimistic estimate, because it takes the sum of the
 error along the X and Y axes.</dd>
 <dt><strong>x, y, z</strong></dt>
-<dd>Cartesian coordinate representation of (ra,decl), calculated by the
-database at insertion time.</dd>
+<dd>Cartesian coordinate representation of RA and declination.</dd>
 <dt><strong>racosdecl</strong></dt>
-<dd>The product of ra and cosine of the declination. Helpful in source look-up
+<dd>The product of RA and cosine of the declination. Helpful in source look-up
 association queries where we use the De Ruiter radius as an association
 parameter.</dd>
 <dt><strong>margin</strong></dt>
-<dd>Used for association procedures to take into account sources that lie close
-to ra=0 &amp; ra=360 meridian.
-* True: source is close to ra=0 meridian
-* False: source is far away enough from the ra=0 meridian
-* NOTE &amp; TODO: This is not implemented yet.</dd>
-<dt><strong>det_sigma</strong></dt>
-<dd>The sigma level of the detection (Hanno&#8217;s thesis): 20*(f_peak/det_sigma)
-gives the rms of the detection. Calculated by the sourcefinder procedures.</dd>
+<dd><p class="first">Used for association procedures to take into account sources that lie close
+to ra=0 &amp; ra=360 meridian. <em>NOTE:</em> Not currently used.</p>
+<ul class="last simple">
+<li><tt class="docutils literal"><span class="pre">True</span></tt>: source is close to ra=0 meridian</li>
+<li><tt class="docutils literal"><span class="pre">False</span></tt>: source is far away enough from the ra=0 meridian</li>
+</ul>
+</dd>
+</dl>
+<p><strong>det_sigma</strong></p>
+<blockquote>
+<div>The significance level of the detection: <span class="math">\(20 \times f_\mathrm{peak}
+/ \mathrm{det_sigma}\)</span> provides the detection RMS. See <a class="reference internal" href="../../bibliography.html#spreeuw-2010"><em>Spreeuw (2010)</em></a>.</div></blockquote>
+<dl class="docutils">
 <dt><strong>semimajor</strong></dt>
-<dd>Semi-major axis that was used for gauss fitting [in arcsec], calculated by
+<dd>Semi-major axis that was used for gauss fitting (arcsec), calculated by
 the sourcefinder procedures.</dd>
 <dt><strong>semiminor</strong></dt>
-<dd>Semi-minor axis that was used for gauss fitting [in arcsec], calculated by
+<dd>Semi-minor axis that was used for gauss fitting (arcsec), calculated by
 the sourcefinder procedures.</dd>
 <dt><strong>pa</strong></dt>
-<dd>Position Angle that was used for gauss fitting [from north through local
-east, in degrees], calculated by the sourcefinder procedures.</dd>
+<dd>Position Angle that was used for gauss fitting (from north through local
+east, in degrees), calculated by the sourcefinder procedures.</dd>
 <dt><strong>f_peak</strong></dt>
-<dd>peak flux [Jy], calculated by the sourcefinder procedures.</dd>
+<dd>peak flux (Jy), calculated by the sourcefinder procedures.</dd>
 <dt><strong>f_peak_err</strong></dt>
-<dd>1-sigma error (in Jy) of <tt class="docutils literal"><span class="pre">f_peak</span></tt>, calculated by the sourcefinder
+<dd>1-sigma error (Jy) of <tt class="docutils literal"><span class="pre">f_peak</span></tt>, calculated by the sourcefinder
 procedures.</dd>
 <dt><strong>f_int</strong></dt>
-<dd>integrated flux [Jy], calculated by the sourcefinder procedures.</dd>
+<dd>integrated flux (Jy), calculated by the sourcefinder procedures.</dd>
 <dt><strong>f_int_err</strong></dt>
-<dd>1-sigma error (in Jy) of <tt class="docutils literal"><span class="pre">f_int</span></tt>, calculated by the sourcefinder
+<dd>1-sigma error (Jy) of <tt class="docutils literal"><span class="pre">f_int</span></tt>, calculated by the sourcefinder
 procedures.</dd>
+<dt><strong>chisq, reduced_chisq</strong></dt>
+<dd>Goodness of fit metrics for fitted Gaussian profiles.
+(NB. These are not yet implemented, but have been placed in the schema
+in advance, to avoid extra database migrations.)</dd>
 <dt><strong>extract_type</strong></dt>
-<dd><p class="first">Reports how the source was extracted by sourcefinder (Hanno&#8217;s thesis),
-generated by the sourcefinder procedures. Currently implemented values
-are:</p>
+<dd><p class="first">Reports how the source was extracted by sourcefinder (<a class="reference internal" href="../../bibliography.html#spreeuw-2010"><em>Spreeuw (2010)</em></a>), Currently implemented values are:</p>
 <blockquote class="last">
 <div><ul class="simple">
 <li><tt class="docutils literal"><span class="pre">0</span></tt>: blind fit</li>
@@ -333,10 +339,8 @@ are:</p>
 </ul>
 </div></blockquote>
 </dd>
-<dt><strong>fitting_type</strong></dt>
-<dd><dl class="first last docutils">
-<dt>Reports what fitting type was used by sourcefinder (Hanno&#8217;s thesis).</dt>
-<dd><p class="first">Currently implemented values are:</p>
+<dt><strong>fit_type</strong></dt>
+<dd><p class="first">Reports what fitting type was used by sourcefinder (<a class="reference internal" href="../../bibliography.html#spreeuw-2010"><em>Spreeuw (2010)</em></a>). Currently implemented values are:</p>
 <blockquote class="last">
 <div><ul class="simple">
 <li><tt class="docutils literal"><span class="pre">0</span></tt>: moments-based analysis</li>
@@ -344,8 +348,18 @@ are:</p>
 </ul>
 </div></blockquote>
 </dd>
-</dl>
-</dd>
+<dt><strong>ff_runcat</strong></dt>
+<dd>Null, except when the extractedsource is a forced fit
+requested due to a null-detection. In that case, it is used to link
+null-detection extractions to their appropriate runningcatalog entry
+via the <tt class="docutils literal"><span class="pre">assocxtrsource</span></tt> table. It will initially point to the
+runningcatalog id which was null-detected, but may change back to Null later
+on (after the initial association is recorded in assocxtrsource)
+if the runningcatalog entry forks due to a one-to-many association.</dd>
+<dt><strong>ff_monitor</strong></dt>
+<dd>Null, except when the extractedsource is a forced fit requested for a
+position in the <tt class="docutils literal"><span class="pre">monitor</span></tt> table. In that case, it identifies the
+relevant <tt class="docutils literal"><span class="pre">monitor</span></tt> entry, and is used in the association process.</dd>
 <dt><strong>node(s)</strong></dt>
 <dd>Determine the current and number of nodes in case of a sharded database
 set-up.</dd>
@@ -355,18 +369,18 @@ set-up.</dd>
 <h3>frequencyband<a class="headerlink" href="#frequencyband" title="Permalink to this headline">¶</a></h3>
 <p>This table contains the frequency bands that are being used inside the
 database.  Here we adopt the set of pre-defined Standard LOFAR Frequency Bands
-and their bandwidths as defined for <a class="reference external" href="http://www.lofar.org/wiki/doku.php?id=msss:documentation#standard_msss-lba_frequency_bands">MSSS</a>.
-Included are frequency bands outside the LOFAR bands, in order to match the
-external catalogue frequency bands.  When an image is taken at an unknown
-band, it is added to this table by the SQL function <tt class="docutils literal"><span class="pre">getBand()</span></tt>. To make it
-possible to easily compare images with slightly different effective
-frequencies, new bands are constructed by rounding the effective frequency to
-the nearest MHz, and assuming a band width of 1 MHz.</p>
+and their bandwidths as defined for <a class="reference external" href="http://www.lofar.org/wiki/doku.php?id=msss:documentation#standard_msss-lba_frequency_bands">MSSS</a>. Included are frequency bands
+outside the LOFAR bands, in order to match the external catalogue frequency
+bands.  When an image is taken at an unknown band, it is added to this table
+by the SQL function <tt class="docutils literal"><span class="pre">getBand()</span></tt>. To make it possible to easily compare
+images with slightly different effective frequencies, new bands are
+constructed by rounding the effective frequency to the nearest MHz, and
+assuming a band width of 1 MHz.</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>Every frequency band has its unique id, generated by the database.</dd>
+<dd>Every frequency band has its unique ID, generated by the database.</dd>
 <dt><strong>freq_central</strong></dt>
-<dd>The central frequency (in Hz) of the defined frequency band. (Note that this is not
+<dd>The central frequency (Hz) of the defined frequency band. (Note that this is not
 the effective frequency, which is stored as a property in the image table.)</dd>
 <dt><strong>freq_low</strong></dt>
 <dd>The low end of the frequency band (Hz).</dd>
@@ -380,44 +394,41 @@ the effective frequency, which is stored as a property in the image table.)</dd>
 Note that the format of the image is not stored as an image property.  An
 image might be a composite of multiple images, but it is not yet defined how
 the individual values for effective frequency, integration times, etc are
-propagated to the columns of the <tt class="docutils literal"><span class="pre">image</span></tt> table.  <a class="reference external" href="http://www.lofar.org/operations/lib/exe/fetch.php?media=public:documents:casa_image_for_lofar_0.03.00.pdf">The CASA Image description
-for LOFAR</a>
-describes the structure of a LOFAR CASA Image, from which most of the data of
-the <tt class="docutils literal"><span class="pre">image</span></tt> table originates from.</p>
+propagated to the columns of the <tt class="docutils literal"><span class="pre">image</span></tt> table.  The <a class="reference external" href="http://www.lofar.org/operations/lib/exe/fetch.php?media=public:documents:casa_image_for_lofar_0.03.00.pdf&gt;`_">CASA image description
+for LOFAR</a> describes the structure of a LOFAR CASA Image, from which most of
+the data of the <tt class="docutils literal"><span class="pre">image</span></tt> table originates.</p>
 <p>An image is characterised by</p>
 <ul class="simple">
-<li>observation timestamp (taustart_ts).</li>
-<li>integration time (tau)</li>
-<li>frequency band (band)</li>
-<li>Stokes parameter (stokes)</li>
+<li>observation timestamp (<tt class="docutils literal"><span class="pre">taustart_ts</span></tt>);</li>
+<li>integration time (<tt class="docutils literal"><span class="pre">tau</span></tt>);</li>
+<li>frequency band (<tt class="docutils literal"><span class="pre">band</span></tt>);</li>
+<li>Stokes parameter (<tt class="docutils literal"><span class="pre">stokes</span></tt>).</li>
 </ul>
 <p>A group of images that belong together (defined by user, but not specified any
 further) are in the same data set (i.e. they have the same reference to
 dataset).</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>Every image gets a unique id, generated by the database.</dd>
+<dd>Every image is assigned a unique ID by the database.</dd>
 <dt><strong>dataset</strong></dt>
 <dd>The dataset to which the image belongs.</dd>
 <dt><strong>tau</strong></dt>
-<dd>The integration time of the image. This is a quick reference number related
-to tau_time, similar as to which band is related to central frequency.
-Currently this is not used.</dd>
+<dd>The integration time of the image. This is a quick reference number
+related to tau_time. Currently this is not used.</dd>
 <dt><strong>band</strong></dt>
 <dd>The frequency band at which the observation was carried out. Its value
-refers to the id in frequencyband, where the frequency bands are
+refers to the ID in frequencyband, where the frequency bands are
 predefined. The image&#8217;s effective frequency falls within this band. If an
-image has observation frequency that is not in this table, a new entry will
-be created based an the effective</dd>
+image has observation frequency that is not in this table, a new entry
+will be created based an the effective</dd>
 <dt><strong>stokes</strong></dt>
 <dd>The Stokes parameter of the observation. 1 = I, 2 = Q, 3 = U and 4 = V.
 The Stokes parameter originates or is read from the CASA Main table in the
-coords subsection from the <tt class="docutils literal"><span class="pre">stokesX</span></tt> record.
-The char value is converted by the database to one of the four (tiny)
-integers.</dd>
+coords subsection from the <tt class="docutils literal"><span class="pre">stokesX</span></tt> record.  The char value is
+converted by the database to one of the four (tiny) integers.</dd>
 <dt><strong>tau_time</strong></dt>
 <dd>The integration time (in seconds) of the image.  The value originates or
-is read from the CASA LOFAR_OBSERVATION table by differencing the
+is read from the CASA <tt class="docutils literal"><span class="pre">LOFAR_OBSERVATION</span></tt> table by differencing the
 <tt class="docutils literal"><span class="pre">OBSERVATION_END</span></tt> and <tt class="docutils literal"><span class="pre">OBSERVATION_START</span></tt> data fields.</dd>
 <dt><strong>freq_eff</strong></dt>
 <dd>The effective frequency (or synonymously rest frequency) (in Hz) at which
@@ -427,7 +438,7 @@ the <tt class="docutils literal"><span class="pre">crval</span></tt> field.  Not
 keywords representing the effective frequency are not uniquely defined and
 may differ per FITS file.</dd>
 <dt><strong>freq_bw</strong></dt>
-<dd>The frequency bandwidth (in Hz) of the observation.  Value originates or
+<dd>The frequency bandwidth (Hz) of the observation.  Value originates or
 is read from the CASA Main table in the coords subsection from the
 <tt class="docutils literal"><span class="pre">spectralX</span></tt> record and the <tt class="docutils literal"><span class="pre">cdelt</span></tt> field. N This is a required value
 and when it is not available an error is thrown.</dd>
@@ -437,18 +448,22 @@ the CASA LOFAR_OBSERVATION table from the <tt class="docutils literal"><span cla
 <dt><strong>skyrgn</strong></dt>
 <dd>The sky region to which the image belongs.</dd>
 <dt><strong>rb_smaj</strong></dt>
-<dd>The semi-major axis of the restoring beam, in degrees.
-Full major axis value originates or is read from the CASA Main table in the imageinfor
-subsection from the <tt class="docutils literal"><span class="pre">restoringbeam</span></tt> record and is converted at db insertion time.</dd>
-<dt><strong>rb_smin</strong></dt>
-<dd>The semi-minor axis of the restoring beam, in degrees.
-Full minor axis value originates or is read from the CASA Main table in the imageinfor
-subsection from the <tt class="docutils literal"><span class="pre">restoringbeam</span></tt> record and is converted at db insertion time.</dd>
+<dd>The semi-major axis of the restoring beam, in degrees.  Full major axis
+value originates or is read from the CASA Main table in the imageinfor
+subsection from the <tt class="docutils literal"><span class="pre">restoringbeam</span></tt> record and is converted at db
+insertion time.</dd>
+</dl>
+<p><strong>rb_smin</strong></p>
+<blockquote>
+<div>The semi-minor axis of the restoring beam, in degrees.  Full minor axis
+value originates or is read from the CASA Main table in the imageinfor
+subsection from the <tt class="docutils literal"><span class="pre">restoringbeam</span></tt> record and is converted at db
+insertion time.</div></blockquote>
+<dl class="docutils">
 <dt><strong>rb_pa</strong></dt>
 <dd>The position angle of the restoring beam (from north to east to the major
-axis), in degrees.
-Value originates or is read from the CASA Main table in the imageinfor
-subsection from the <tt class="docutils literal"><span class="pre">restoringbeam</span></tt> record.</dd>
+axis), in degrees.  Value originates or is read from the CASA Main table
+in the imageinfor subsection from the <tt class="docutils literal"><span class="pre">restoringbeam</span></tt> record.</dd>
 <dt><strong>deltax, deltay</strong></dt>
 <dd>Pixel sizes along the X &amp; Y axes in degrees.</dd>
 <dt><strong>fwhm_arcsec</strong></dt>
@@ -481,7 +496,7 @@ nodes in a sharded database configuration. Every node in such a set-up will
 have this table, but with different content.</p>
 <dl class="docutils">
 <dt><strong>node</strong></dt>
-<dd>The id of the node</dd>
+<dd>The ID of the node</dd>
 <dt><strong>zone</strong></dt>
 <dd>The zone that is available on the node</dd>
 <dt><strong>zone_min</strong></dt>
@@ -504,6 +519,27 @@ have this table, but with different content.</p>
 notations developed in the <a class="reference internal" href="#mathematical-diversion"><em>Appendix</em></a>.</p>
 </div>
 </div>
+<div class="section" id="monitor">
+<span id="schema-monitor"></span><h3>monitor<a class="headerlink" href="#monitor" title="Permalink to this headline">¶</a></h3>
+<p>This table stores the user-requested monitoring positions for a dataset.</p>
+<dl class="docutils">
+<dt><strong>id</strong></dt>
+<dd>Every position in the monitor table gets a unique id.</dd>
+<dt><strong>dataset</strong></dt>
+<dd>The relevant dataset ID - monitoring positions are dataset-specific.</dd>
+<dt><strong>ra, decl</strong></dt>
+<dd>The position coordinates (J2000 degrees).</dd>
+<dt><strong>runcat</strong></dt>
+<dd>Initially <tt class="docutils literal"><span class="pre">NULL</span></tt>. When a forced-fit is first made to a monitoring position,
+this column is updated to point to the relevant entry in the runningcatalog.</dd>
+<dt><strong>name</strong></dt>
+<dd>A short descriptive name, e.g. GRB140101A or SNe150101, for more
+user-friendly display of results.
+This functionality is not currently implemented, but the presence of this
+column allows it to be trivially implemented in future without requiring
+a database migration.</dd>
+</dl>
+</div>
 <div class="section" id="runningcatalog">
 <span id="schema-runningcatalog"></span><h3>runningcatalog<a class="headerlink" href="#runningcatalog" title="Permalink to this headline">¶</a></h3>
 <p>(See <a class="reference internal" href="#mathematical-diversion"><em>On iteratively updated weighted means</em></a> for explanation of mathematical notation.)</p>
@@ -525,9 +561,9 @@ datapoint.</p>
 <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> as a &#8220;new&#8221; source (datapoint=1).</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>Every source in the running catalog gets a unique id.</dd>
+<dd>Every source in the running catalog gets a unique ID.</dd>
 <dt><strong>xtrsrc</strong></dt>
-<dd>The id of the extractedsource for which this runningcatalog source was
+<dd>The ID of the extractedsource for which this runningcatalog source was
 detected for the first time.</dd>
 <dt><strong>dataset</strong></dt>
 <dd>The dataset to which the runningcatalog source belongs to.</dd>
@@ -537,7 +573,7 @@ that is included in the calculation of the <em>position</em> averages.  It is
 assumed that a source&#8217;s position stays relatively constant across bands
 and therefore all bands are included in averaging the position.</dd>
 <dt><strong>zone</strong></dt>
-<dd>The zone id in which the source declination resides.  The sphere is divided
+<dd>The zone ID in which the source declination resides.  The sphere is divided
 into zones of equal width: here fixed to 1 degree, and the zone is
 effectively the truncated declination. (decl=31.3 =&gt; zone=31, decl=31.9 =&gt;
 zone=31)</dd>
@@ -546,27 +582,27 @@ zone=31)</dd>
 <dt><strong>wm_decl</strong> <span class="math">\(=\xi_{\delta}\)</span></dt>
 <dd>The weighted mean of Declination of the source [in J2000 degrees].</dd>
 <dt><strong>wm_uncertainty_ew</strong></dt>
-<dd>The positional on-sky uncertainty in the east-west direction of the weighted
-mean RA [in degrees].</dd>
+<dd>The positional on-sky uncertainty in the east-west direction of the
+weighted mean RA (degrees).</dd>
 <dt><strong>wm_uncertainty_ns</strong></dt>
 <dd>The positional on-sky uncertainty in the north-south direction of the
-weighted mean Dec [in degrees].</dd>
+weighted mean Dec (degrees).</dd>
 <dt><strong>avg_ra_err</strong></dt>
-<dd>The average of the ra_err of the source [in degrees]</dd>
+<dd>The average of the <tt class="docutils literal"><span class="pre">ra_err</span></tt> of the source (degrees).</dd>
 <dt><strong>avg_decl_err</strong></dt>
-<dd>The average of the decl_err of the source [in degrees]</dd>
+<dd>The average of the <tt class="docutils literal"><span class="pre">decl_err</span></tt> of the source (degrees).</dd>
 <dt><strong>avg_wra</strong> <span class="math">\(=\overline{w_{\alpha}\alpha}\)</span></dt>
-<dd>The average of ra/uncertainty_ew^2, used for calculating the weighted mean
-of the RA.</dd>
+<dd>The average of (the square of <tt class="docutils literal"><span class="pre">ra/uncertainty_ew</span></tt>). Used for calculating the
+weighted mean of the RA.</dd>
 <dt><strong>avg_wdecl</strong> <span class="math">\(=\overline{w_{\delta}\delta}\)</span></dt>
-<dd>Analogous to avg_wra.</dd>
+<dd>Analogous to <tt class="docutils literal"><span class="pre">avg_wra</span></tt>.</dd>
 <dt><strong>avg_weight_ra</strong> <span class="math">\(=\overline{w_{\alpha}}\)</span></dt>
-<dd>The average of 1/uncertainty_ew^2, used for calculating the weighted mean
-of the RA.</dd>
+<dd>The average of the reciprocal of the square of <tt class="docutils literal"><span class="pre">uncertainty_eq</span></tt>. Used
+for calculating the weighted mean of the RA.</dd>
 <dt><strong>avg_weight_decl</strong>   <span class="math">\(=\overline{w_{\delta}}\)</span></dt>
-<dd>Analogous to avg_weight_ra</dd>
+<dd>Analogous to <tt class="docutils literal"><span class="pre">avg_weight_ra</span></tt>.</dd>
 <dt><strong>x, y, z</strong></dt>
-<dd>The Cartesian coordinate representation of wm_ra and wm_decl</dd>
+<dd>The Cartesian coordinate representation of <tt class="docutils literal"><span class="pre">wm_ra</span></tt> and <tt class="docutils literal"><span class="pre">wm_decl</span></tt>.</dd>
 <dt><strong>inactive</strong></dt>
 <dd>Boolean to set an entry to inactive.  This is done during the <a class="reference internal" href="assoc.html#database-assoc"><em>source
 association</em></a> procedure, where e.g. the many-to-many cases
@@ -582,86 +618,84 @@ Default value is false.</dd>
 runningcatalog source, per band and stokes parameter. The combination runcat,
 band and stokes is the primary key.</p>
 <p>The flux squared and weights are used for calculations of the variability
-indices, V and eta.</p>
+indices, <span class="math">\(V_\nu\)</span> and <span class="math">\(\eta_\nu\)</span>.</p>
 <dl class="docutils">
 <dt><strong>runcat</strong></dt>
-<dd>Reference to the runningcatalog id to which this band/stokes/flux belongs
-to</dd>
+<dd>The <tt class="docutils literal"><span class="pre">id</span></tt> of the <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> entry to which this band/stokes/flux
+belongs.</dd>
 <dt><strong>band</strong></dt>
-<dd>Reference to the frequency band of this flux</dd>
+<dd>Reference to the frequency band of this flux.</dd>
 <dt><strong>stokes</strong></dt>
-<dd>Stokes parameter: 1 = I, 2 = Q, 3 = U, 4 = V</dd>
+<dd>Stokes parameter: 1 = I, 2 = Q, 3 = U, 4 = V.</dd>
 <dt><strong>f_datapoints</strong>   <span class="math">\(=N_I\)</span></dt>
-<dd>the number of <em>flux</em> datapoints for which the flux averages were calculated.</dd>
+<dd>The number of <em>flux</em> datapoints for which the flux averages were calculated.</dd>
 <dt><strong>avg_f_peak</strong>  <span class="math">\(=\overline{I}\)</span></dt>
-<dd>Average of peak flux</dd>
-<dt><strong>avg_f_peak_sq</strong> <span class="math">\(=\overline{{I}^2}\)</span></dt>
-<dd>Average of (peak flux)^2</dd>
-<dt><strong>avg_f_peak_weight</strong>    <span class="math">\(=\overline{w_{I}}\)</span></dt>
-<dd>Average of one over peak flux errors squared</dd>
+<dd>Average of peak flux.</dd>
+<dt><strong>avg_f_peak_sq</strong>  <span class="math">\(=\overline{{I}^2}\)</span></dt>
+<dd>Average of (peak flux squared).</dd>
+<dt><strong>avg_f_peak_weight</strong>  <span class="math">\(=\overline{w_{I}}\)</span></dt>
+<dd>Average of one over peak flux errors squared.</dd>
 <dt><strong>avg_weighted_f_peak</strong> <span class="math">\(=\overline{w_{I} I}\)</span></dt>
-<dd>Average of ratio of (peak flux) and (peak flux errors squared)</dd>
+<dd>Average of ratio of (peak flux) and (peak flux errors squared).</dd>
 <dt><strong>avg_weighted_f_peak_sq</strong> <span class="math">\(=\overline{w_{I} I^2}\)</span></dt>
-<dd>Average of (weighted peak flux squared)</dd>
+<dd>Average of (weighted peak flux squared).</dd>
 <dt><strong>avg_f_int, avg_f_int_sq, avg_f_int_weight, avg_weighted_f_int, avg_weighted_f_int_sq</strong></dt>
 <dd>Analogous to those above, except for the <em>integrated</em> flux.</dd>
 </dl>
 </div>
 <div class="section" id="skyregion">
 <span id="schema-skyregion"></span><h3>skyregion<a class="headerlink" href="#skyregion" title="Permalink to this headline">¶</a></h3>
-<p>Entries in this table represent regions of sky which have been, or will shortly
-be, processed via the usual extract-sources-and-associate procedures.
-By listing regions of sky in a dedicated table, we de-duplicate
-information that would otherwise be repeated for many images.</p>
+<p>Entries in this table represent regions of sky which have been, or will
+shortly be, processed via the usual extract-sources-and-associate procedures.
+By listing regions of sky in a dedicated table, we de-duplicate information
+that would otherwise be repeated for many images.</p>
 <p>When an image is first inserted into the database, the SQL function
-<tt class="docutils literal"><span class="pre">getSkyRgn</span></tt> is called. This first checks for the pre-existence of a
-matching skyregion entry. If none exists, then a new entry is created and
-the SQL function <tt class="docutils literal"><span class="pre">updateSkyRgnMembers</span></tt> is called to update the
-<a class="reference internal" href="#schema-assocskyrgn"><em>assocskyrgn</em></a> table as necessary.</p>
+<tt class="docutils literal"><span class="pre">getSkyRgn</span></tt> is called. This first checks for the pre-existence of a matching
+skyregion entry. If none exists, then a new entry is created and the SQL
+function <tt class="docutils literal"><span class="pre">updateSkyRgnMembers</span></tt> is called to update the <a class="reference internal" href="#schema-assocskyrgn"><em>assocskyrgn</em></a> table as necessary.</p>
 <p>See also <a class="reference internal" href="#schema-assocskyrgn"><em>assocskyrgn</em></a>.</p>
 <dl class="docutils">
 <dt><strong>dataset</strong></dt>
-<dd>Reference to the <tt class="docutils literal"><span class="pre">dataset</span></tt> id, for the dataset to which the skyregion
+<dd>Reference to the <tt class="docutils literal"><span class="pre">dataset</span></tt> <tt class="docutils literal"><span class="pre">id</span></tt>, for the dataset to which the skyregion
 belongs. This field is needed in order to restrict association to the
 current dataset.</dd>
 <dt><strong>centre_ra</strong> and <strong>centre_decl</strong></dt>
 <dd>The central coordinates (J2000) (or pointing centre) of the region, in
-degrees.
-RA and Dec values are read from <tt class="docutils literal"><span class="pre">DataAccessor</span></tt> metadata.</dd>
+degrees.  RA and Dec values are read from <tt class="docutils literal"><span class="pre">DataAccessor</span></tt> metadata.</dd>
 <dt><strong>xtr_radius</strong></dt>
 <dd>The radius of the circular mask used for source extraction, in degrees.
-This is calculated from the &#8216;extraction_radius_pix&#8217; parameter and the image
-metadata during the &#8216;persistence&#8217; image loading steps.</dd>
+This is calculated from the <tt class="docutils literal"><span class="pre">extraction_radius_pix</span></tt> parameter and the
+image metadata during the <a class="reference internal" href="../../userref/structure/stages/persistence.html#stage-persistence"><em>persistence pipeline stage</em></a>.</dd>
 <dt><strong>x</strong>, <strong>y</strong> and <strong>z</strong></dt>
-<dd>The Cartesian coordinates of centre_ra and centre_decl.
-Values are calculated by the database from centre_ra and centre_decl.</dd>
+<dd>The Cartesian coordinates of <tt class="docutils literal"><span class="pre">centre_ra</span></tt> and <tt class="docutils literal"><span class="pre">centre_decl</span></tt>.</dd>
 </dl>
 </div>
 <div class="section" id="temprunningcatalog">
 <span id="database-temprunningcatalog"></span><h3>temprunningcatalog<a class="headerlink" href="#temprunningcatalog" title="Permalink to this headline">¶</a></h3>
 <p>(See also <a class="reference internal" href="assoc.html#database-assoc-details"><em>source association detailed logic</em></a>.)</p>
-<p>Most of the entries in the <tt class="docutils literal"><span class="pre">temprunningcatalog</span></tt> are identical to those of the
-same name in <a class="reference internal" href="#schema-runningcatalog"><em>runningcatalog</em></a> and <a class="reference internal" href="#schema-runningcatalog-flux"><em>runningcatalog_flux</em></a>,
-except updated to include the information from a new <tt class="docutils literal"><span class="pre">extractedsource</span></tt>.
-Those without direct counterparts in those tables are listed below.</p>
+<p>Most of the entries in the <tt class="docutils literal"><span class="pre">temprunningcatalog</span></tt> are identical to those of
+the same name in <a class="reference internal" href="#schema-runningcatalog"><em>runningcatalog</em></a> and
+<a class="reference internal" href="#schema-runningcatalog-flux"><em>runningcatalog_flux</em></a>, except updated to include the information
+from a new <tt class="docutils literal"><span class="pre">extractedsource</span></tt>.  Those without direct counterparts in those
+tables are listed below.</p>
 <dl class="docutils">
 <dt><strong>runcat</strong></dt>
-<dd>Reference to the <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> id. runcat and xtrsrc together form a
-unique combination.</dd>
+<dd>Reference to the <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> <tt class="docutils literal"><span class="pre">id</span></tt>. <tt class="docutils literal"><span class="pre">runcat</span></tt> and <tt class="docutils literal"><span class="pre">xtrsrc</span></tt>
+together form a unique key.</dd>
 <dt><strong>xtrsrc</strong></dt>
-<dd>Reference to the <tt class="docutils literal"><span class="pre">extractedsource</span></tt> id. runcat and xtrsrc together form a
-unique combination.</dd>
+<dd>Reference to the <tt class="docutils literal"><span class="pre">extractedsource</span></tt> <tt class="docutils literal"><span class="pre">id</span></tt>. <tt class="docutils literal"><span class="pre">runcat</span></tt> and <tt class="docutils literal"><span class="pre">xtrsrc</span></tt>
+together form a unique combination.</dd>
 <dt><strong>distance_arcsec</strong></dt>
-<dd>The distance in arcsec on the sky of the runcat-xtrsrc association,
-calculated by the database.</dd>
+<dd>The distance in arcsec on the sky of the <tt class="docutils literal"><span class="pre">runcat</span></tt> - <tt class="docutils literal"><span class="pre">xtrsrc</span></tt>
+association, as calculated by the database.</dd>
 <dt><strong>r</strong></dt>
-<dd>The De Ruiter radius of the runcat-xtrsrc association, calculated by the
-database.</dd>
+<dd>The De Ruiter radius of the <tt class="docutils literal"><span class="pre">runcat</span></tt> - <tt class="docutils literal"><span class="pre">xtrsrc</span></tt> association,
+calculated by the database.</dd>
 <dt><strong>inactive</strong></dt>
 <dd>During evaluation of the association pairs, some pairs might be set to
-inactive (TRUE), defaults to FALSE.</dd>
+inactive (<tt class="docutils literal"><span class="pre">TRUE</span></tt>), defaults to <tt class="docutils literal"><span class="pre">FALSE</span></tt>.</dd>
 <dt><strong>beam_semimaj, beam_semimin, beam_pa</strong></dt>
-<dd>Not used (yet)</dd>
+<dd>Not currently used.</dd>
 </dl>
 </div>
 <div class="section" id="newsource">
@@ -676,23 +710,24 @@ sufficiently bright enough to be interesting may be flagged up immediately.</p>
 details on how these values are assigned.</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>Unique id, set by the database.</dd>
+<dd>Unique identifier, set by the database.</dd>
 <dt><strong>runcat</strong></dt>
-<dd>Reference to the associated runningcatalog entry.</dd>
+<dd>Reference to the associated <tt class="docutils literal"><span class="pre">runningcatalog</span></tt> entry.</dd>
 <dt><strong>trigger_xtrsrc</strong></dt>
-<dd>Reference to the extracted source id that caused insertion of this
+<dd>Reference to the extracted source that caused insertion of this
 newsource.</dd>
 <dt><strong>newsource_type</strong></dt>
-<dd>Refers to how certain we are that the newly discovered source is
+<dd><p class="first">Refers to how certain we are that the newly discovered source is
 really &#8220;physically new&#8221;, i.e. transient. Since we do not store fine-grained
 noise-maps in the database, we must be fairly conservative in our labelling
-here.
-Type 0 sources may be a steady source located in a high-RMS region,
+here.</p>
+<p>Type 0 sources may be a steady source located in a high-RMS region,
 newly detected due to noise fluctuations, or may be a real
-transient in a low-RMS region.
-Type 1 sources are bright enough that we can be fairly certain
+transient in a low-RMS region.</p>
+<p class="last">Type 1 sources are bright enough that we can be fairly certain
 they are really new - they are significantly brighter than the <tt class="docutils literal"><span class="pre">rms_max</span></tt>
-in the previous image with best detection limits.</dd>
+in the previous image with best detection limits.</p>
+</dd>
 <dt><strong>previous_limits_image</strong></dt>
 <dd>The ID of the previous image with the best upper limits on previous
 detections of this source. Can be used to calculate the significance
@@ -705,9 +740,9 @@ level of the new-source detection.</dd>
 upgrade will increment the value by 1.</p>
 <dl class="docutils">
 <dt><strong>name</strong></dt>
-<dd>The name of the version</dd>
+<dd>The name of the version.</dd>
 <dt><strong>value</strong></dt>
-<dd>The version number, which increments after every database change</dd>
+<dd>The version number, which increments after every database change.</dd>
 </dl>
 </div>
 <div class="section" id="rejectreason">
@@ -715,9 +750,9 @@ upgrade will increment the value by 1.</p>
 <p>This table contains all the possible reasons for rejecting an image.</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>The database ID of the rejectreason</dd>
+<dd>The database ID of the rejection reason.</dd>
 <dt><strong>description</strong></dt>
-<dd>An description of the rejection</dd>
+<dd>An description of the rejection.</dd>
 </dl>
 </div>
 <div class="section" id="rejection">
@@ -725,15 +760,16 @@ upgrade will increment the value by 1.</p>
 <p>This table contains all rejected images and a reference to the reason.</p>
 <dl class="docutils">
 <dt><strong>id</strong></dt>
-<dd>The database ID of the rejection</dd>
+<dd>The database ID of the rejection.</dd>
 <dt><strong>image</strong></dt>
-<dd>A foreign key relationship to the image ID of the rejected image</dd>
+<dd>A foreign key relationship to the image ID of the rejected image.</dd>
 <dt><strong>rejectreason</strong></dt>
-<dd>A foreign key relationship to the ID of the rejectreason</dd>
+<dd>A foreign key relationship to the ID of the rejection reason.</dd>
 <dt><strong>comment</strong></dt>
-<dd>A textfield with more details about the rejectedreason. For example in the
-case of a rejection because of RMS value to high, this field will contain
-the theoretical noise value and the calculated RMS value of the image.</dd>
+<dd>A textfield with more details about the reason for rejection. For example
+in the case of a rejection because of RMS value to high, this field will
+contain the theoretical noise value and the calculated RMS value of the
+image.</dd>
 </dl>
 </div>
 </div>
@@ -882,7 +918,7 @@ the reduced-<span class="math">\(\chi^2\)</span>:</p>
             </a></p>
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Schema</a><ul>
+<li><a class="reference internal" href="#">Schema reference</a><ul>
 <li><a class="reference internal" href="#table-listing">Table Listing</a><ul>
 <li><a class="reference internal" href="#assocxtrsource">assocxtrsource</a></li>
 <li><a class="reference internal" href="#assocskyrgn">assocskyrgn</a></li>
@@ -891,6 +927,7 @@ the reduced-<span class="math">\(\chi^2\)</span>:</p>
 <li><a class="reference internal" href="#frequencyband">frequencyband</a></li>
 <li><a class="reference internal" href="#image">image</a></li>
 <li><a class="reference internal" href="#node">node</a></li>
+<li><a class="reference internal" href="#monitor">monitor</a></li>
 <li><a class="reference internal" href="#runningcatalog">runningcatalog</a></li>
 <li><a class="reference internal" href="#runningcatalog-flux">runningcatalog_flux</a></li>
 <li><a class="reference internal" href="#skyregion">skyregion</a></li>
@@ -912,7 +949,7 @@ the reduced-<span class="math">\(\chi^2\)</span>:</p>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="intro.html"
-                        title="previous chapter">Database</a></p>
+                        title="previous chapter">Configuration</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="assoc.html"
                         title="next chapter">Source Association Logic</a></p>
@@ -951,11 +988,11 @@ the reduced-<span class="math">\(\chi^2\)</span>:</p>
           <a href="assoc.html" title="Source Association Logic"
              >next</a> |</li>
         <li class="right" >
-          <a href="intro.html" title="Database"
+          <a href="intro.html" title="Configuration"
              >previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" >Overview of the TKP Database</a> &raquo;</li> 
+          <li><a href="index.html" >The Pipeline Database</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

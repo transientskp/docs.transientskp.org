@@ -59,9 +59,9 @@
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 
 <span class="kn">import</span> <span class="nn">tkp.db</span>
-<span class="kn">from</span> <span class="nn">tkp.db.database</span> <span class="kn">import</span> <span class="n">sanitize_db_inputs</span>
 <span class="kn">from</span> <span class="nn">tkp.utility.coordinates</span> <span class="kn">import</span> <span class="n">eq_to_cart</span>
 <span class="kn">from</span> <span class="nn">tkp.utility.coordinates</span> <span class="kn">import</span> <span class="n">alpha_inflate</span>
 <span class="kn">from</span> <span class="nn">tkp.utility</span> <span class="kn">import</span> <span class="n">substitute_inf</span>
@@ -118,6 +118,39 @@
     <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">dataset_id</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">dataset_id</span>
+
+</div>
+<div class="viewcode-block" id="insert_monitor_positions"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_monitor_positions">[docs]</a><span class="k">def</span> <span class="nf">insert_monitor_positions</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">,</span> <span class="n">positions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add entries to the ``monitor`` table.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      dataset_id (int): Positions will only be monitored when processing this</span>
+<span class="sd">        dataset.</span>
+<span class="sd">      positions (list of tuples): List of (RA, decl) tuples in decimal degrees.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">monitor_entries</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dataset_id</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">]</span>
+
+    <span class="n">insertion_query</span> <span class="o">=</span>  <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO monitor</span>
+<span class="s">  (</span>
+<span class="s">  dataset</span>
+<span class="s">  ,ra</span>
+<span class="s">  ,decl</span>
+<span class="s">  )</span>
+<span class="s">VALUES {placeholder}</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">cols_per_row</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">placeholder_per_row</span> <span class="o">=</span> <span class="s">&#39;(&#39;</span><span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">cols_per_row</span><span class="p">)</span> <span class="o">+</span><span class="s">&#39;)&#39;</span>
+    <span class="n">placeholder_full</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">placeholder_per_row</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">))</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">insertion_query</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">placeholder</span><span class="o">=</span> <span class="n">placeholder_full</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="n">query</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">monitor_entries</span><span class="p">)),</span>
+        <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">insert_num</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> sources in monitor table for dataset </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">))</span>
 
 </div>
 <div class="viewcode-block" id="insert_image"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_image">[docs]</a><span class="k">def</span> <span class="nf">insert_image</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">freq_eff</span><span class="p">,</span> <span class="n">freq_bw</span><span class="p">,</span> <span class="n">taustart_ts</span><span class="p">,</span> <span class="n">tau_time</span><span class="p">,</span>
@@ -189,7 +222,8 @@
     <span class="k">return</span> <span class="n">image_id</span>
 
 </div>
-<div class="viewcode-block" id="insert_extracted_sources"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_extracted_sources">[docs]</a><span class="k">def</span> <span class="nf">insert_extracted_sources</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">extract</span><span class="p">,</span> <span class="n">ff_runcatids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="insert_extracted_sources"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.insert_extracted_sources">[docs]</a><span class="k">def</span> <span class="nf">insert_extracted_sources</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">extract_type</span><span class="p">,</span>
+                             <span class="n">ff_runcat_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ff_monitor_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Insert all detections from sourcefinder into the extractedsource table.</span>
 
@@ -253,12 +287,17 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;No extract_type=</span><span class="si">%s</span><span class="s"> sources added to extractedsource for&quot;</span>
-                    <span class="s">&quot; image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">extract</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+                    <span class="s">&quot; image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">extract_type</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
         <span class="k">return</span>
 
     <span class="n">xtrsrc</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
         <span class="n">r</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="c"># Drop any fits with infinite flux errors</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="ow">or</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">7</span><span class="p">]):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Dropped source fit with infinite flux errors &quot;</span>
+                        <span class="s">&quot;at position </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">continue</span>
         <span class="c"># Use 360 degree rather than infinite uncertainty for</span>
         <span class="c"># unconstrained positions.</span>
         <span class="n">r</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">=</span> <span class="n">substitute_inf</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">14</span><span class="p">],</span> <span class="mf">360.0</span><span class="p">)</span>
@@ -277,53 +316,30 @@
         <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span> <span class="c"># zone</span>
         <span class="n">r</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">eq_to_cart</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="c"># Cartesian x,y,z</span>
         <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span> <span class="c"># ra * cos(radians(decl))</span>
-        <span class="k">if</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;blind&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">extract_type</span> <span class="o">==</span> <span class="s">&#39;blind&#39;</span><span class="p">:</span>
             <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_nd&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">extract_type</span> <span class="o">==</span> <span class="s">&#39;ff_nd&#39;</span><span class="p">:</span>
             <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_ms&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">extract_type</span> <span class="o">==</span> <span class="s">&#39;ff_ms&#39;</span><span class="p">:</span>
             <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Not a valid extractedsource insert type: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">extract</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ff_runcatids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="c"># If not empty, we add the runcat id as well</span>
-            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ff_runcatids</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="n">xtrsrc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sanitize_db_inputs</span><span class="p">(</span><span class="n">xsrc</span><span class="p">)))</span> <span class="k">for</span> <span class="n">xsrc</span> <span class="ow">in</span> <span class="n">xtrsrc</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Not a valid extractedsource insert type: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span>
+                             <span class="o">%</span> <span class="n">extract_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ff_runcat_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">ff_runcat_ids</span><span class="p">)</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ff_runcat_ids</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 
-    <span class="n">q_basic</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
-<span class="s">INSERT INTO extractedsource</span>
-<span class="s">  (ra</span>
-<span class="s">  ,decl</span>
-<span class="s">  ,ra_fit_err</span>
-<span class="s">  ,decl_fit_err</span>
-<span class="s">  ,f_peak</span>
-<span class="s">  ,f_peak_err</span>
-<span class="s">  ,f_int</span>
-<span class="s">  ,f_int_err</span>
-<span class="s">  ,det_sigma</span>
-<span class="s">  ,semimajor</span>
-<span class="s">  ,semiminor</span>
-<span class="s">  ,pa</span>
-<span class="s">  ,ew_sys_err</span>
-<span class="s">  ,ns_sys_err</span>
-<span class="s">  ,error_radius</span>
-<span class="s">  ,fit_type</span>
-<span class="s">  ,ra_err</span>
-<span class="s">  ,decl_err</span>
-<span class="s">  ,uncertainty_ew</span>
-<span class="s">  ,uncertainty_ns</span>
-<span class="s">  ,image</span>
-<span class="s">  ,zone</span>
-<span class="s">  ,x</span>
-<span class="s">  ,y</span>
-<span class="s">  ,z</span>
-<span class="s">  ,racosdecl</span>
-<span class="s">  ,extract_type</span>
-<span class="s">  )</span>
-<span class="s">VALUES</span>
-<span class="s">&quot;&quot;&quot;</span>
-    <span class="n">q_ff</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+        <span class="k">if</span> <span class="n">ff_monitor_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">ff_monitor_ids</span><span class="p">)</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ff_monitor_ids</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+
+        <span class="n">xtrsrc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="n">insertion_query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
 <span class="s">INSERT INTO extractedsource</span>
 <span class="s">  (ra</span>
 <span class="s">  ,decl</span>
@@ -353,27 +369,32 @@
 <span class="s">  ,racosdecl</span>
 <span class="s">  ,extract_type</span>
 <span class="s">  ,ff_runcat</span>
+<span class="s">  ,ff_monitor</span>
 <span class="s">  )</span>
-<span class="s">VALUES</span>
+<span class="s">VALUES {placeholder}</span>
 <span class="s">&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">ff_runcatids</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="n">q_basic</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="n">q_ff</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">insert_num</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
-    <span class="c">#if insert_num == 0:</span>
-    <span class="c">#    logger.info(&quot;No forced-fit sources added to extractedsource for &quot;</span>
-    <span class="c">#                &quot;image %s&quot; % (image_id,))</span>
-    <span class="k">if</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;blind&#39;</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> sources in extractedsource for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
-                    <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
-    <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_nd&#39;</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> forced-fit null detections in extractedsource&quot;</span>
-                    <span class="s">&quot; for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
-    <span class="k">elif</span> <span class="n">extract</span> <span class="o">==</span> <span class="s">&#39;ff_ms&#39;</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> forced-fit for monitoring sourcs in extractedsource&quot;</span>
-                    <span class="s">&quot; for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">xtrsrc</span><span class="p">:</span>
+        <span class="n">cols_per_row</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xtrsrc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">placeholder_per_row</span> <span class="o">=</span> <span class="s">&#39;(&#39;</span><span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">cols_per_row</span><span class="p">)</span> <span class="o">+</span><span class="s">&#39;)&#39;</span>
+
+        <span class="n">placeholder_full</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">placeholder_per_row</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">xtrsrc</span><span class="p">))</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">insertion_query</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">placeholder</span><span class="o">=</span> <span class="n">placeholder_full</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">xtrsrc</span><span class="p">)),</span>
+                                <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">insert_num</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+        <span class="c">#if insert_num == 0:</span>
+        <span class="c">#    logger.info(&quot;No forced-fit sources added to extractedsource for &quot;</span>
+        <span class="c">#                &quot;image %s&quot; % (image_id,))</span>
+        <span class="k">if</span> <span class="n">extract_type</span> <span class="o">==</span> <span class="s">&#39;blind&#39;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> sources in extractedsource for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                        <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">extract_type</span> <span class="o">==</span> <span class="s">&#39;ff_nd&#39;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> forced-fit null detections in extractedsource&quot;</span>
+                        <span class="s">&quot; for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">extract_type</span> <span class="o">==</span> <span class="s">&#39;ff_ms&#39;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> forced-fit for monitoring in extractedsource&quot;</span>
+                        <span class="s">&quot; for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">insert_num</span><span class="p">,</span> <span class="n">image_id</span><span class="p">))</span>
 
 </div>
 <div class="viewcode-block" id="lightcurve"><a class="viewcode-back" href="../../../devref/tkp/database/general.html#tkp.db.general.lightcurve">[docs]</a><span class="k">def</span> <span class="nf">lightcurve</span><span class="p">(</span><span class="n">xtrsrcid</span><span class="p">):</span>

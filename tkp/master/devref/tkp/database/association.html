@@ -288,10 +288,6 @@ we need to insert the new values from tempruncat.
 This might be the case if a source has been observed at other frequencies,
 but not in the current band, so there does not exist an entry
 for this band.</p>
-<dl class="docutils">
-<dt>NOTE: It is important to guarantee the sequence:</dt>
-<dd>First do the update (previous function), then the insert.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -387,9 +383,7 @@ runningcatalog and runningcatalog_flux tables.</p>
 <dt id="tkp.db.associations._insert_new_runcat_flux">
 <tt class="descclassname">tkp.db.associations.</tt><tt class="descname">_insert_new_runcat_flux</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/associations.html#_insert_new_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.associations._insert_new_runcat_flux" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert previously unknown sources into the <tt class="docutils literal"><span class="pre">runningcatalog_flux</span></tt> table.</p>
-<p>Extractedsources for which not a counterpart was found in the
-runningcatalog, will be added as a new source to the assocxtrsource,
-runningcatalog and runningcatalog_flux tables.</p>
+<p>(i.e. those without <em>any</em> previous runcat-counterpart)</p>
 </dd></dl>
 
 <dl class="function">
@@ -455,11 +449,6 @@ preventing the query to grow exponentially in response time</p>
 for an existing runcat source.</p>
 <p>If the runcat, band, stokes entry does exist in runcat_flux,
 it will be updated with the values from tempruncat.</p>
-<dl class="docutils">
-<dt>NOTE: It is important to guarantee the sequence:</dt>
-<dd>First update the existing entries,
-then the insert the new entries (next function).</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">

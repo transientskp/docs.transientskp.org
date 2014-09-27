@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>“How-To” notes on common tasks &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Documentation &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
-    <link rel="up" title="The Pipeline Database" href="index.html" />
-    <link rel="next" title="TKP Package Reference" href="../tkp/index.html" />
-    <link rel="prev" title="Source Association Logic" href="assoc.html" /> 
+    <link rel="up" title="Development Procedure" href="index.html" />
+    <link rel="next" title="Code Review" href="review.html" />
+    <link rel="prev" title="Testing &amp; Continuous Integration" href="testing.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,14 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../tkp/index.html" title="TKP Package Reference"
+          <a href="review.html" title="Code Review"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="assoc.html" title="Source Association Logic"
+          <a href="testing.html" title="Testing &amp; Continuous Integration"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">The Pipeline Database</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Development Procedure</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,39 +57,38 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="how-to-notes-on-common-tasks">
-<h1>&#8220;How-To&#8221; notes on common tasks<a class="headerlink" href="#how-to-notes-on-common-tasks" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="recover-from-disappearing-clients">
-<h2>Recover from disappearing clients<a class="headerlink" href="#recover-from-disappearing-clients" title="Permalink to this headline">¶</a></h2>
-<p>Current (as of April 2014) versions of the MonetDB server do not check for
-clients timing out. That is, if a remote client connects to the server and
-opens a transaction, then dies without shutting down cleanly for some reason
-(power failure, network glitch, ...), the transaction will remain open
-indefinitely. MonetDB logs all incremental updates during the transaction.
-Eventually, this will both cripple performance and take a huge amount of
-space.</p>
-<p>Recover by stopping and restarting the database:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ monetdb stop ${database}
-stoping database &#39;${database}&#39;... done
+  <div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>All parts of the TraP should be documented <em>both</em> at a level that is suitable
+for end users using the pipeline and for developers who wish to understand,
+fix and extend the codebase. Broadly, that distinction reflects the structure
+of this manual. Note that we expect that developers will benefit both
+automatically generated API documentation, making use of appropriate
+docstrings in the code, and higher-level descriptions of system architecture
+and functionality: both should be provided.</p>
+<p>All new features or changes <em>must</em> be accompanied by appropriate
+documentation. Reviewers are required to check that pull requests are well
+documented before merging. See the material on <a class="reference internal" href="review.html#code-review"><em>Code Review</em></a> for details.</p>
+</div>
+<div class="section" id="technical-details">
+<h2>Technical details<a class="headerlink" href="#technical-details" title="Permalink to this headline">¶</a></h2>
+<p>Documentation is written using <a class="reference external" href="http://www.sphinx-doc.org/">Sphinx</a>. The documentation for the <tt class="docutils literal"><span class="pre">HEAD</span></tt> of
+the <tt class="docutils literal"><span class="pre">master</span></tt> branch of the <tt class="docutils literal"><span class="pre">transientskp/tkp</span></tt> repository is, together with
+the documentation for all released versions, is automatically build every night
+and put online at <a class="reference external" href="http://docs.transientskp.org/">http://docs.transientskp.org/</a>.</p>
+<p>Docstrings should make use of the &#8220;<a class="reference external" href="https://pypi.python.org/pypi/sphinxcontrib-napoleon">Napoleon</a>&#8221; syntax. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>Args:
+    path (str): The path of the file to wrap
+    field_storage (FileStorage): The :class:`FileStorage` instance to wrap
+    temporary (bool): Whether or not to delete the file when the File
+       instance is destructed
+
+Returns:
+    BufferedFileStorage: A buffered writable file descriptor
 </pre></div>
 </div>
-<p>Start it again and the logs will be replayed and then removed:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ monetdb start ${database}
-starting database &#39;${database}&#39;... done
-</pre></div>
-</div>
-<p>Note that this procedure may take a long time (several hours) to replay a
-large volume of logs.</p>
-<p>Future versions of MonetDB (unreleased as of April 2014) will include
-<a class="reference external" href="http://dev.monetdb.org/hg/MonetDB/rev/2efb07e174e3">a fix</a> for this issue
-by enabling <tt class="docutils literal"><span class="pre">SO_KEEPALIVE</span></tt> on the TCP socket.</p>
-</div>
-<div class="section" id="create-a-schema-diagram">
-<h2>Create a schema diagram<a class="headerlink" href="#create-a-schema-diagram" title="Permalink to this headline">¶</a></h2>
-<p>As shown in the <a class="reference internal" href="schema.html#database-schema"><em>schema documentation</em></a>.</p>
-<p><strong>documentation/devref/database/schema</strong> in the TKP tree contains a mini django
-projects that can be used to update the schema image. See the README file in
-the directory for instructions how to use and set up the django project.</p>
 </div>
 </div>
 
@@ -104,22 +103,22 @@ the directory for instructions how to use and set up the django project.</p>
             </a></p>
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">&#8220;How-To&#8221; notes on common tasks</a><ul>
-<li><a class="reference internal" href="#recover-from-disappearing-clients">Recover from disappearing clients</a></li>
-<li><a class="reference internal" href="#create-a-schema-diagram">Create a schema diagram</a></li>
+<li><a class="reference internal" href="#">Documentation</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#technical-details">Technical details</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="assoc.html"
-                        title="previous chapter">Source Association Logic</a></p>
+  <p class="topless"><a href="testing.html"
+                        title="previous chapter">Testing &amp; Continuous Integration</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../tkp/index.html"
-                        title="next chapter">TKP Package Reference</a></p>
+  <p class="topless"><a href="review.html"
+                        title="next chapter">Code Review</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../_sources/devref/database/howto.txt"
+    <li><a href="../../_sources/devref/procedures/doc.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -149,14 +148,14 @@ the directory for instructions how to use and set up the django project.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../tkp/index.html" title="TKP Package Reference"
+          <a href="review.html" title="Code Review"
              >next</a> |</li>
         <li class="right" >
-          <a href="assoc.html" title="Source Association Logic"
+          <a href="testing.html" title="Testing &amp; Continuous Integration"
              >previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" >The Pipeline Database</a> &raquo;</li> 
+          <li><a href="index.html" >Development Procedure</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

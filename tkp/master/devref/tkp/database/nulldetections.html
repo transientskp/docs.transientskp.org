@@ -72,13 +72,6 @@ differences might get too small to cause divisions by zero.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="tkp.db.nulldetections._insert_runcat_flux">
-<tt class="descclassname">tkp.db.nulldetections.</tt><tt class="descname">_insert_runcat_flux</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/nulldetections.html#_insert_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.nulldetections._insert_runcat_flux" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sources that were not yet detected in this frequency band before,
-will be appended to it. Those have their first f_datapoint.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="tkp.db.nulldetections._insert_tempruncat">
 <tt class="descclassname">tkp.db.nulldetections.</tt><tt class="descname">_insert_tempruncat</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/nulldetections.html#_insert_tempruncat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.nulldetections._insert_tempruncat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Here the associations of forced fits and their runningcatalog counterparts
@@ -91,13 +84,6 @@ were inserted at the same time as well.</p>
 still have to do a left outer join with the runcat_flux table (rf),
 because fluxes might not be detected in other bands.
 Before being inserted the additional properties are calculated.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tkp.db.nulldetections._update_runcat_flux">
-<tt class="descclassname">tkp.db.nulldetections.</tt><tt class="descname">_update_runcat_flux</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/nulldetections.html#_update_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.nulldetections._update_runcat_flux" title="Permalink to this definition">¶</a></dt>
-<dd><p>We only have to update those runcat sources that already had a detection,
-so their f_datapoints is larger than 1.</p>
 </dd></dl>
 
 <dl class="function">
@@ -119,6 +105,7 @@ After all this, the temporary table is emptied again.</p>
 <dd><p>Returns the runningcatalog sources which:</p>
 <blockquote>
 <div><ul class="simple">
+<li>Are associated with the skyregion of the current image.</li>
 <li>Do not have a counterpart in the extractedsources of the current
 image after source association has run.</li>
 <li>Have been seen (in any band) at a timestamp earlier than that of the

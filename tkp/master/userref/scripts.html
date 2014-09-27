@@ -132,9 +132,7 @@ optional arguments:
 <div class="section" id="run">
 <h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
 <p>Run will start a job. It needs a job name as argument.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py run [-h] [-m MONITOR_COORDS] [-l MONITOR_LIST]
-                         [-f {celery,multiproc,serial}]
-                         name
+<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py run [-h] [-m MONITOR_COORDS] [-l MONITOR_LIST] name
 
 Run a specific job.
 
@@ -157,15 +155,13 @@ optional arguments:
                         a list of RA,DEC coordinates to monitor in JSON format, example: [[5, 6], [7, 8]]
   -l MONITOR_LIST, --monitor-list MONITOR_LIST
                         Specify a file containing a list of RA,DEC
-  -f {celery,multiproc,serial}, --method {celery,multiproc,serial}
-                        what distribution method to use
 </pre></div>
 </div>
 </div>
 <div class="section" id="initdb">
 <h3>initdb<a class="headerlink" href="#initdb" title="Permalink to this headline">¶</a></h3>
 <p>Initialise a database with the TKP schema. The semantics of this command vary
-depending on the database system in use; see the <a class="reference internal" href="../devref/database/intro.html#database-section"><em>relevant section</em></a> for details.</p>
+depending on the database system in use; see the <a class="reference internal" href="../devref/database/intro.html#database-config"><em>relevant section</em></a> for details.</p>
 <div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py initdb [-h] [-y] [-d]
 
 optional arguments:

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Database &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Configuration &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
-    <link rel="up" title="Overview of the TKP Database" href="index.html" />
-    <link rel="next" title="Schema" href="schema.html" />
-    <link rel="prev" title="Overview of the TKP Database" href="index.html" /> 
+    <link rel="up" title="The Pipeline Database" href="index.html" />
+    <link rel="next" title="Schema reference" href="schema.html" />
+    <link rel="prev" title="The Pipeline Database" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,14 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="schema.html" title="Schema"
+          <a href="schema.html" title="Schema reference"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Overview of the TKP Database"
+          <a href="index.html" title="The Pipeline Database"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Overview of the TKP Database</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">The Pipeline Database</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,10 +57,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="database">
-<span id="database-section"></span><h1>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
-<p>This section concerns the (MonetDB or PostgreSQL) database that is used to
-store extracted sources and determine variable sources.</p>
+  <div class="section" id="configuration">
+<span id="database-config"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to configure the MonetDB or PostgreSQL database
+that the TraP uses to store extracted sources and determine variable sources.</p>
 <div class="section" id="creating-a-database">
 <h2>Creating a database<a class="headerlink" href="#creating-a-database" title="Permalink to this headline">¶</a></h2>
 <p>When <a class="reference internal" href="../../getstart/installation.html#installation"><em>installing the TraP</em></a> you will have installed and
@@ -77,14 +77,14 @@ to be populated with the TRAP database schema before it can be used.</p>
 <div class="section" id="monetdb">
 <h3>MonetDB<a class="headerlink" href="#monetdb" title="Permalink to this headline">¶</a></h3>
 <p>The instructions for creating MonetDB databases differ per operating system
-and environment. The <a class="reference external" href="https://www.monetdb.org/Documentation/monetdbd">MonetDB online documentation</a>
-explains how to create a database.</p>
+and environment. The <a class="reference external" href="https://www.monetdb.org/Documentation/monetdbd">MonetDB online documentation</a> explains how to create a
+database.</p>
 </div>
 <div class="section" id="postgresql">
 <h3>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h3>
 <p>The instructions for creating PostgreSQL databases differ per operating system
-and environment. The <a class="reference external" href="http://www.postgresql.org/docs/9.3/static/sql-createdatabase.html">PostreSQL online documentation</a>
-explains how to create a database.</p>
+and environment. The <a class="reference external" href="http://www.postgresql.org/docs/9.3/static/sql-createdatabase.html">PostgreSQL online documentation</a> explains how to create
+a database.</p>
 </div>
 </div>
 <div class="section" id="populating-the-database">
@@ -141,7 +141,7 @@ ALTER USER SET PASSWORD &#39;${passw}&#39; USING OLD PASSWORD &#39;monetdb&#39;;
             </a></p>
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Database</a><ul>
+<li><a class="reference internal" href="#">Configuration</a><ul>
 <li><a class="reference internal" href="#creating-a-database">Creating a database</a><ul>
 <li><a class="reference internal" href="#monetdb">MonetDB</a></li>
 <li><a class="reference internal" href="#postgresql">PostgreSQL</a></li>
@@ -159,10 +159,10 @@ ALTER USER SET PASSWORD &#39;${passw}&#39; USING OLD PASSWORD &#39;monetdb&#39;;
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Overview of the TKP Database</a></p>
+                        title="previous chapter">The Pipeline Database</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="schema.html"
-                        title="next chapter">Schema</a></p>
+                        title="next chapter">Schema reference</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/devref/database/intro.txt"
@@ -195,14 +195,14 @@ ALTER USER SET PASSWORD &#39;${passw}&#39; USING OLD PASSWORD &#39;monetdb&#39;;
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="schema.html" title="Schema"
+          <a href="schema.html" title="Schema reference"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Overview of the TKP Database"
+          <a href="index.html" title="The Pipeline Database"
              >previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" >Overview of the TKP Database</a> &raquo;</li> 
+          <li><a href="index.html" >The Pipeline Database</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

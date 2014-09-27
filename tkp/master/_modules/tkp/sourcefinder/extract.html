@@ -1025,25 +1025,22 @@
 
 <span class="sd">        returns: a list of tuples containing all relevant fields</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c"># MonetDB doesn&#39;t recognize numpy.float64 values, so</span>
-        <span class="c"># in order to let the database accept the values, we convert them</span>
-        <span class="c"># to float</span>
         <span class="k">return</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">error</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">error</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">error</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">error</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smaj_asec</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smin_asec</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_celes</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">ew_sys_err</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">ns_sys_err</span><span class="p">),</span>
-            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_radius</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smaj_asec</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smin_asec</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theta_celes</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">ew_sys_err</span><span class="p">,</span>
+            <span class="n">ns_sys_err</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_radius</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gaussian</span>
         <span class="p">]</span></div></div>
 </pre></div>

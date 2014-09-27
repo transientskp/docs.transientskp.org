@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>“How-To” notes on common tasks &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Planning &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
-    <link rel="up" title="The Pipeline Database" href="index.html" />
-    <link rel="next" title="TKP Package Reference" href="../tkp/index.html" />
-    <link rel="prev" title="Source Association Logic" href="assoc.html" /> 
+    <link rel="up" title="Development Procedure" href="index.html" />
+    <link rel="next" title="Issue Tracker" href="tracker.html" />
+    <link rel="prev" title="Accessing the Code" href="access.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,14 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../tkp/index.html" title="TKP Package Reference"
+          <a href="tracker.html" title="Issue Tracker"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="assoc.html" title="Source Association Logic"
+          <a href="access.html" title="Accessing the Code"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">The Pipeline Database</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Development Procedure</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,40 +57,25 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="how-to-notes-on-common-tasks">
-<h1>&#8220;How-To&#8221; notes on common tasks<a class="headerlink" href="#how-to-notes-on-common-tasks" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="recover-from-disappearing-clients">
-<h2>Recover from disappearing clients<a class="headerlink" href="#recover-from-disappearing-clients" title="Permalink to this headline">¶</a></h2>
-<p>Current (as of April 2014) versions of the MonetDB server do not check for
-clients timing out. That is, if a remote client connects to the server and
-opens a transaction, then dies without shutting down cleanly for some reason
-(power failure, network glitch, ...), the transaction will remain open
-indefinitely. MonetDB logs all incremental updates during the transaction.
-Eventually, this will both cripple performance and take a huge amount of
-space.</p>
-<p>Recover by stopping and restarting the database:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ monetdb stop ${database}
-stoping database &#39;${database}&#39;... done
-</pre></div>
-</div>
-<p>Start it again and the logs will be replayed and then removed:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ monetdb start ${database}
-starting database &#39;${database}&#39;... done
-</pre></div>
-</div>
-<p>Note that this procedure may take a long time (several hours) to replay a
-large volume of logs.</p>
-<p>Future versions of MonetDB (unreleased as of April 2014) will include
-<a class="reference external" href="http://dev.monetdb.org/hg/MonetDB/rev/2efb07e174e3">a fix</a> for this issue
-by enabling <tt class="docutils literal"><span class="pre">SO_KEEPALIVE</span></tt> on the TCP socket.</p>
-</div>
-<div class="section" id="create-a-schema-diagram">
-<h2>Create a schema diagram<a class="headerlink" href="#create-a-schema-diagram" title="Permalink to this headline">¶</a></h2>
-<p>As shown in the <a class="reference internal" href="schema.html#database-schema"><em>schema documentation</em></a>.</p>
-<p><strong>documentation/devref/database/schema</strong> in the TKP tree contains a mini django
-projects that can be used to update the schema image. See the README file in
-the directory for instructions how to use and set up the django project.</p>
-</div>
+  <div class="section" id="planning">
+<h1>Planning<a class="headerlink" href="#planning" title="Permalink to this headline">¶</a></h1>
+<p>We aim to make releases of the TraP at the cadence of a few per year. Broadly,
+the plan is to alternate technically focused releases, which clean up the
+codebase and make behind-the-scenes improvements, with science based releases,
+which provide new functionality to end users. Technical releases have odd
+numbers; science releases even. We will provide bugfixes, but no new
+development, for the most recent release; support for earlier releases is on a
+&#8220;best efforts&#8221; basis only.</p>
+<p>At the start of a release cycle, the developers and commissioners will meet to
+discuss the issues which will be addressed in the upcoming release. Having
+agreed upon a set of goals, a roadmap for the release will be created on the
+<a class="reference internal" href="tracker.html#issue-tracker"><em>Issue Tracker</em></a>.</p>
+<p>It is generally acceptable to submit minor changes and tweaks, as well as
+bugfixes, to the codebase at any time. However, if you are planning a major
+change which will have significant repercussions for other developers, or
+which causes end-user visible changes, it should be included in the goals for
+a particular release and there should be a broad consensus about the plan for
+implementation before you begin coding.</p>
 </div>
 
 
@@ -102,24 +87,15 @@ the directory for instructions how to use and set up the django project.</p>
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">&#8220;How-To&#8221; notes on common tasks</a><ul>
-<li><a class="reference internal" href="#recover-from-disappearing-clients">Recover from disappearing clients</a></li>
-<li><a class="reference internal" href="#create-a-schema-diagram">Create a schema diagram</a></li>
-</ul>
-</li>
-</ul>
-
   <h4>Previous topic</h4>
-  <p class="topless"><a href="assoc.html"
-                        title="previous chapter">Source Association Logic</a></p>
+  <p class="topless"><a href="access.html"
+                        title="previous chapter">Accessing the Code</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../tkp/index.html"
-                        title="next chapter">TKP Package Reference</a></p>
+  <p class="topless"><a href="tracker.html"
+                        title="next chapter">Issue Tracker</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../_sources/devref/database/howto.txt"
+    <li><a href="../../_sources/devref/procedures/planning.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -149,14 +125,14 @@ the directory for instructions how to use and set up the django project.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../tkp/index.html" title="TKP Package Reference"
+          <a href="tracker.html" title="Issue Tracker"
              >next</a> |</li>
         <li class="right" >
-          <a href="assoc.html" title="Source Association Logic"
+          <a href="access.html" title="Accessing the Code"
              >previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="index.html" >The Pipeline Database</a> &raquo;</li> 
+          <li><a href="index.html" >Development Procedure</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

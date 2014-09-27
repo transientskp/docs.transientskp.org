@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Code Review &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
+    <link rel="up" title="Development Procedure" href="index.html" />
+    <link rel="next" title="Release procedure" href="release.html" />
+    <link rel="prev" title="Documentation" href="doc.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release.html" title="Release procedure"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="doc.html" title="Documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Development Procedure</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="code-review">
+<span id="id1"></span><h1>Code Review<a class="headerlink" href="#code-review" title="Permalink to this headline">¶</a></h1>
+<p>Rather than pushing changes directly to <tt class="docutils literal"><span class="pre">transientskp/tkp</span></tt>, developers are
+asked to submit their changes for review before they are merged into the
+project. Ideally, this applies to all changes; however, it is recognized that
+in certain cases &#8211; e.g. recovering from a previous mistake, or making trivial
+formatting changes &#8211; pushing directly may be appropriate.</p>
+<p>Code reviews are carried out using GitHub&#8217;s <a class="reference external" href="https://help.github.com/articles/using-pull-requests">Pull Request</a> functionality.</p>
+<div class="section" id="submitting-code-for-review">
+<h2>Submitting code for review<a class="headerlink" href="#submitting-code-for-review" title="Permalink to this headline">¶</a></h2>
+<p>Using the GitHub web interface, &#8220;fork&#8221; a copy of the repository to your own
+account (note that even if you do not have a paid GitHub account, forks of
+private repositories remain private, so you are not exposing the code to the
+outside world).</p>
+<p>Clone a copy of your forked repository to your local system:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ git clone git@github.com:&lt;username&gt;/tkp.git
+</pre></div>
+</div>
+<p>Create a branch which you will use for working on your changes:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ git checkout -b my_new_branch
+</pre></div>
+</div>
+<p>Work on that branch, editing, adding, removing, etc as required. When you are
+finished, push your changes pack to GitHub:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ git push orign my_new_branch
+</pre></div>
+</div>
+<p>Return to the GitHub web interface, and issue a pull request to merge your
+<tt class="docutils literal"><span class="pre">&lt;username&gt;:my_new_branch</span></tt> into <tt class="docutils literal"><span class="pre">transientskp:master</span></tt>.</p>
+</div>
+<div class="section" id="reviewing-code">
+<h2>Reviewing code<a class="headerlink" href="#reviewing-code" title="Permalink to this headline">¶</a></h2>
+<p>Reviewing code is just as valuable an activity as creating it: <em>all</em>
+developers are expected to handle a share of code reviews. The procedure is
+simple: visit the GitHub web interface, and choose a pull request to review.
+Look through it carefully, ensuring that it adheres to the guidelines below.
+If you are happy with it, and it can be automatically merged, simply hit the
+big green &#8220;Merge Pull Request&#8221;. If an automatic merge isn&#8217;t possible, you will
+have to check out the code onto your system and merge it manually: this takes
+a little time, but GitHub document the process.</p>
+<p>If you <em>aren&#8217;t</em> happy with the code as submitted, you can use the GitHub web
+interface to add both general comments covering the whole PR and to comment on
+specific lines explaining what the problem is. You can even issue your own PR
+suggesting new commits that the submitter could merge with their own work.
+Please be as clear as possible and make constructive suggestions as to how the
+submitter can make improvements: remember, the aim is to get high quality code
+merged into the repository in a timely fashion, not to argue over obscure
+minutiae!</p>
+</div>
+<div class="section" id="requirements-for-pull-requests">
+<h2>Requirements for Pull Requests<a class="headerlink" href="#requirements-for-pull-requests" title="Permalink to this headline">¶</a></h2>
+<p>When submitting or reviewing a pull request, please bear the following
+guidelines in mind:</p>
+<ul class="simple">
+<li>PRs should be as concise and self-contained as possible. Sometimes, major
+functionality changes will require large amounts of code to be changed, but
+this should be the exception rather than the rule. Be considerate to the
+reviewer and keep changes minimal!</li>
+<li>It is not required that reviewers check every line for
+correctness, but they should read through the code and check that it is
+clearly structured and reasonably transparent in operation.</li>
+<li>Effectively all requests should be accompanied by appropriate additions to
+the test suite. If it is not possible to provide tests, the submitter should
+explain why, and the reviewer must check and agree with this justification.</li>
+<li>Any changes to user-visible functionality must be accompanied by appropriate
+updates to the Users&#8217; Guide.</li>
+<li>Any changes to APIs or the structure of code must be accompanied by
+appropriate updates to the Developers&#8217; Reference.</li>
+<li>Both submitter and reviewer should check that the PR does not introduce any
+regressions into the unit test results (ie, no tests which previously passed
+should fail after merging.)</li>
+<li>Make sure that the version control history is readable. This means both
+using descripive commit messages (future developers will not thank you for
+recording that you did &#8220;stuff&#8221;), and appropriate use of <tt class="docutils literal"><span class="pre">git</span> <span class="pre">rebase</span></tt> to
+eliminate dead-end and work-in-progress commits before submitting the code
+for review.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Code Review</a><ul>
+<li><a class="reference internal" href="#submitting-code-for-review">Submitting code for review</a></li>
+<li><a class="reference internal" href="#reviewing-code">Reviewing code</a></li>
+<li><a class="reference internal" href="#requirements-for-pull-requests">Requirements for Pull Requests</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="doc.html"
+                        title="previous chapter">Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="release.html"
+                        title="next chapter">Release procedure</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/procedures/review.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release.html" title="Release procedure"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="doc.html" title="Documentation"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Development Procedure</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>
