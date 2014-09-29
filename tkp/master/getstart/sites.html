@@ -110,7 +110,7 @@ Generally, the <tt class="docutils literal"><span class="pre">passphrase</span><
 files to process, and a set of &#8220;parset&#8221; (parameter set) files that can be used
 to define various properties used during processing. To initialise a job, from
 within your project directory run:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py initjob &lt;jobname&gt;
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initjob &lt;jobname&gt;
 </pre></div>
 </div>
 <p>This will create a subdirectory in your pipeline directory. This directory
@@ -178,7 +178,7 @@ now, no extra action is required.</p>
 <p>You may parallelize some pipeline operations by distributing them over a
 number of Celery &#8220;worker&#8221; nodes. You can start one or more Celery workers by
 running:</p>
-<div class="highlight-python"><div class="highlight"><pre>% ./manage.py celery worker
+<div class="highlight-python"><div class="highlight"><pre>% tkp-manage.py celery worker
 </pre></div>
 </div>
 <p>Distributing jobs over multiple workers in this way might increase
@@ -193,7 +193,7 @@ you have verified that everything works properly. In that case, edit
 <div class="section" id="run-the-pipeline">
 <h3>Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h3>
 <p>To start crunching your data, run (from your pipeline directory):</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py run &lt;jobname&gt;
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py run &lt;jobname&gt;
 </pre></div>
 </div>
 <p>Note that you need to supply the database (see <tt class="docutils literal"><span class="pre">-h</span></tt>) configuration if you

@@ -65,73 +65,97 @@ guides</em></a>.</p>
 <h2>Install the software<a class="headerlink" href="#install-the-software" title="Permalink to this headline">¶</a></h2>
 <p>First of all, the software should be installed on your system. See <a class="reference internal" href="installation.html#installation"><em>the
 installation manual</em></a>.</p>
-</div>
-<div class="section" id="configure-the-ephemeris">
-<h2>Configure the ephemeris<a class="headerlink" href="#configure-the-ephemeris" title="Permalink to this headline">¶</a></h2>
-<p>Note that as part of the installation you (or your system administrator) will
-have installed the casacore &#8220;measures data&#8221;. This includes information
-essential to carrying out astronomical calculations, such as a list of leap
-seconds and a set of solar system ephemerides (which specify the positions of
-the planets at any given time). Data for the ephemerides are ultimately
-supplied by <a class="reference external" href="http://iau-comm4.jpl.nasa.gov/README.html">NASA JPL</a>; they have been converted into a format that casacore
-can use. Any given ephemeris is only valid for a limited time (usually on the
-order of centuries), determined by the accuracy with which it was calculated.</p>
-<p>By default, casacore will use the <tt class="docutils literal"><span class="pre">DE</span> <span class="pre">200</span></tt> ephemeris. Although the version
-of <tt class="docutils literal"><span class="pre">DE</span> <span class="pre">200</span></tt> supplied by JPL is valid until 2169, <em>some versions converted
-for use with casacore are not</em>, and may not provide coverage of the dates of
-your observation. A simple Python script can be used to check:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cat check_ephemeris.py
-import sys
-from  pyrap.measures import measures
-dm = measures()
-dm.do_frame(dm.epoch(&#39;UTC&#39;, sys.argv[1]))
-dm.separation(dm.direction(&#39;SUN&#39;), dm.direction(&#39;SUN&#39;))
-$ python check_ephemeris.py 1990/01/01
-$ python check_ephemeris.py 2015/01/01
-WARN    MeasTable::Planetary(MeasTable::Types, Double)
-  (file /build/buildd/casacore-1.7.0/measures/Measures/MeasTable.cc, line 4056)
-  Cannot find the planetary data for MeasJPL object number 3 at UT day 57023 in
-  table DE200
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Issues with the <a class="reference external" href="https://code.google.com/p/casacore/">casacore</a>
+installation can occasionally require a per-user fix (placing a small
+config file in your home directory). If you see errors along the lines of:</p>
+<div class="highlight-python"><div class="highlight"><pre>WARN    MeasTable::Planetary(MeasTable::Types, Double)
+(file /build/buildd/casacore-1.7.0/measures/Measures/MeasTable.cc, line 4056)
+Cannot find the planetary data for MeasJPL object number 3 at UT day 57023 in
+table DE200
 </pre></div>
 </div>
-<p>If no warning is printed, there is no problem; otherwise, you should use a
-different ephemeris. For example, the <tt class="docutils literal"><span class="pre">DE</span> <span class="pre">405</span></tt> ephemeris should be valid
-until at least early 2015:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cat &gt; ~/.casarc
-measures.jpl.ephemeris: DE405
-$ python check_ephemeris.py 2015/01/01
-# No warnings
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>SEVERE  gaincal::MeasTable::dUTC(Double) ...
+Leap second table TAI_UTC seems out-of-date.
 </pre></div>
+</div>
+<p class="last">Then consult your sysadmin or see <a class="reference internal" href="casacore-measures-data.html#casacore-measures"><em>this note</em></a>.</p>
 </div>
 </div>
 <div class="section" id="create-a-pipeline-project-directory">
 <h2>Create a pipeline project directory<a class="headerlink" href="#create-a-pipeline-project-directory" title="Permalink to this headline">¶</a></h2>
-<p>Create a project directory which is a container of your pipeline settings and job
-files. Run these command to initialise a project directory in your home
-directory:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cd ~
-$ tkp-manage.py initproject &lt;projectname&gt;
+<p>First, create a project directory: this will contain your pipeline settings and
+job directories. To create a project folder in your current working directory,
+type:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initproject &lt;projectname&gt;
 </pre></div>
 </div>
+<p>(substituting <tt class="docutils literal"><span class="pre">&lt;projectname&gt;</span></tt> for your chosen directory name).</p>
+</div>
+<div class="section" id="create-a-database">
+<span id="getstart-initdb"></span><h2>Create a database<a class="headerlink" href="#create-a-database" title="Permalink to this headline">¶</a></h2>
+<p>The pipeline requires a database for storing data, which needs to be created
+manually. The database then needs to be initialised with the TRAP database
+schema before it can be used.</p>
+<p>Depending on your site configuration, creating a database may require sysadmin
+rights. Refer to the relevant documentation for your installed database engine
+on creating a database:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://www.monetdb.org/Documentation/monetdbd">MonetDB online documentation</a></li>
+<li><a class="reference external" href="http://www.postgresql.org/docs/9.1/static/app-createdb.html">PostgreSQL online documentation</a></li>
+</ul>
 </div>
 <div class="section" id="initialize-a-database">
-<span id="getstart-initdb"></span><h2>Initialize a database<a class="headerlink" href="#initialize-a-database" title="Permalink to this headline">¶</a></h2>
-<p>The pipeline requires a database for storing data. To initialise a database
-the TraP manage <tt class="docutils literal"><span class="pre">initdb</span></tt> subcommand can be used (from the project directory):</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py initdb
+<h2>Initialize a database<a class="headerlink" href="#initialize-a-database" title="Permalink to this headline">¶</a></h2>
+<p>To initialise a database the TraP manage <tt class="docutils literal"><span class="pre">initdb</span></tt> subcommand can be used.
+Set the details of the database you have created in the <tt class="docutils literal"><span class="pre">database</span></tt>
+section of your <a class="reference internal" href="../userref/config/pipeline_cfg.html#pipeline-cfg"><em>Project Configuration File</em></a>. These include the host and port number of
+the system running the database management system, the name of the database,
+and the username and password.
+Then, from the project directory, type:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initdb
 </pre></div>
 </div>
-<p>Use the <tt class="docutils literal"><span class="pre">-h</span></tt> flag to see an explanation about how to set the various
-properties. They can also be configured throught the <a class="reference internal" href="../userref/config/pipeline_cfg.html#pipeline-cfg"><em>Project Configuration File</em></a>. Note
-that the semantics vary slightly depending on the database system in use: see
-the <a class="reference internal" href="../devref/database/intro.html#database-config"><em>database documentation</em></a> for details.</p>
+</div>
+<div class="section" id="resetting-a-trap-database">
+<h2>Resetting a TraP database<a class="headerlink" href="#resetting-a-trap-database" title="Permalink to this headline">¶</a></h2>
+<p>You may wish to reset a previously used TraP database to an empty state.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">As you might expect, this may incur irreversible data loss. Be careful!</p>
+</div>
+<dl class="docutils">
+<dt><strong>PostgreSQL</strong></dt>
+<dd>For PostgreSQL there is the optional <strong>-d</strong> flag for the <tt class="docutils literal"><span class="pre">initdb</span></tt> subcommand,
+which removes all content before populating the database.</dd>
+<dt><strong>MonetDB</strong></dt>
+<dd><p class="first">In the case of MonetDB you need to do this manually. You can do this with the
+following commands, where <strong>${dbname}</strong> should be replaced with the database
+name:</p>
+<div class="highlight-python"><div class="highlight"><pre>monetdb stop ${dbname}
+monetdb destroy -f ${dbname}
+monetdb create ${dbname}
+monetdb start ${dbname}
+monetdb release ${dbname}
+</pre></div>
+</div>
+<p>For security reasons you should change the default password:</p>
+<div class="last highlight-python"><div class="highlight"><pre>mclient -d ${dbname} -s&quot;ALTER USER \&quot;monetdb\&quot; RENAME TO \&quot;${username}\&quot;;
+ALTER USER SET PASSWORD &#39;${password}&#39; USING OLD PASSWORD &#39;monetdb&#39;;&quot;
+</pre></div>
+</div>
+</dd>
+</dl>
 </div>
 <div class="section" id="create-and-configure-a-job">
 <h2>Create and configure a job<a class="headerlink" href="#create-and-configure-a-job" title="Permalink to this headline">¶</a></h2>
-<p>Your pipeline project directory can contain multiple jobs. Jobs are a list of
-files to process, and a set of &#8220;parset&#8221; (parameter set) files that can be used
-to define various properties used during processing. To initialise a job run:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py initjob &lt;jobname&gt;
+<p>Your pipeline project directory can contain multiple jobs, each represented by
+a subdirectory. Job directories contain a list of files to process, and config
+file that can be used to define various properties used during processing.
+To initialise a job directory run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initjob &lt;jobname&gt;
 </pre></div>
 </div>
 <p>This will create a job subdirectory within your pipeline directory. This
@@ -148,13 +172,10 @@ images. You will need to adjust this to point to your data files.</dd>
 </div>
 <div class="section" id="run-the-pipeline">
 <h2>Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h2>
-<p>To start crunshing your data run (from your pipeline directory):</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ./manage.py run &lt;jobname&gt;
+<p>To start processing your data run (from your pipeline directory):</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py run &lt;jobname&gt;
 </pre></div>
 </div>
-<p>Note that you need to supply the database (see <tt class="docutils literal"><span class="pre">-h</span></tt>) configuration if you
-didn&#8217;t add it it the <tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt> file (or if you are not happy with the
-defaults).</p>
 </div>
 </div>
 
@@ -171,9 +192,10 @@ defaults).</p>
   <ul>
 <li><a class="reference internal" href="#">Tutorial Overview</a><ul>
 <li><a class="reference internal" href="#install-the-software">Install the software</a></li>
-<li><a class="reference internal" href="#configure-the-ephemeris">Configure the ephemeris</a></li>
 <li><a class="reference internal" href="#create-a-pipeline-project-directory">Create a pipeline project directory</a></li>
+<li><a class="reference internal" href="#create-a-database">Create a database</a></li>
 <li><a class="reference internal" href="#initialize-a-database">Initialize a database</a></li>
+<li><a class="reference internal" href="#resetting-a-trap-database">Resetting a TraP database</a></li>
 <li><a class="reference internal" href="#create-and-configure-a-job">Create and configure a job</a></li>
 <li><a class="reference internal" href="#run-the-pipeline">Run the pipeline</a></li>
 </ul>
