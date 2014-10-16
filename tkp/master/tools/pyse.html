@@ -135,10 +135,12 @@ Options:
   --detection-image=DETECTION_IMAGE
                         Find islands on different image
   --fixed-posns=FIXED_POSNS
-                        List of coordinate pairs to force-fit (decimal
-                        degrees, JSON, e.g [[123.4,56.7],[359.9,89.9]])
-  --fixed-posn-file=FIXED_POSN_FILE
-                        Filename containing a list of positions to force-fit
+                        List of position coordinates to force-fit (decimal
+                        degrees, JSON, e.g [[123.4,56.7],[359.9,89.9]]) (Will
+                        not perform blind extraction in this mode)
+  --fixed-posns-file=FIXED_POSNS_FILE
+                        Path to file containing a list of positions to force-
+                        fit (Will not perform blind extraction in this mode)
   --ffbox=FFBOX         Forced fitting positional box size as a multiple of
                         beam width.
 </pre></div>
@@ -220,7 +222,7 @@ further that this <tt class="docutils literal"><span class="pre">--detection-ima
 in the image _rather_ than &#8220;blindly&#8221; locating sources and attempting to fit
 them. (Note that it is not possible to do both at once: that requires invoking
 PySE twice.) This mode may be invoked either by using either of the
-<tt class="docutils literal"><span class="pre">--fixed-posns</span></tt> or <tt class="docutils literal"><span class="pre">--fixed-posn-file</span></tt> options. The former directly reads a
+<tt class="docutils literal"><span class="pre">--fixed-posns</span></tt> or <tt class="docutils literal"><span class="pre">--fixed-posns-file</span></tt> options. The former directly reads a
 list of positions from the command line; the latter accepts a filename, and
 reads the positions to fit from that. In both cases, the positions themselves
 are provided in <a class="reference external" href="http://json.org/">JSON</a> format, and should consist of a
