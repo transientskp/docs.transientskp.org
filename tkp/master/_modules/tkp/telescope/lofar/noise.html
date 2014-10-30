@@ -77,7 +77,7 @@
 <span class="n">TILES_PER_INTL_STATION</span> <span class="o">=</span> <span class="mi">96</span>
 
 
-<div class="viewcode-block" id="noise_level"><a class="viewcode-back" href="../../../../devref/tkp/lofar/index.html#tkp.telescope.lofar.noise.noise_level">[docs]</a><span class="k">def</span> <span class="nf">noise_level</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">,</span> <span class="n">tau_time</span><span class="p">,</span> <span class="n">antenna_set</span><span class="p">,</span> <span class="n">Ncore</span><span class="p">,</span> <span class="n">Nremote</span><span class="p">,</span>
+<div class="viewcode-block" id="noise_level"><a class="viewcode-back" href="../../../../devref/tkp/telescope.html#tkp.telescope.lofar.noise.noise_level">[docs]</a><span class="k">def</span> <span class="nf">noise_level</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">,</span> <span class="n">tau_time</span><span class="p">,</span> <span class="n">antenna_set</span><span class="p">,</span> <span class="n">Ncore</span><span class="p">,</span> <span class="n">Nremote</span><span class="p">,</span>
                 <span class="n">Nintl</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns the theoretical noise level (in Jy) given the supplied array</span>
@@ -145,7 +145,7 @@
     <span class="k">return</span> <span class="n">image_sens</span>
 
 </div>
-<div class="viewcode-block" id="Aeff_dipole"><a class="viewcode-back" href="../../../../devref/tkp/lofar/index.html#tkp.telescope.lofar.noise.Aeff_dipole">[docs]</a><span class="k">def</span> <span class="nf">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Aeff_dipole"><a class="viewcode-back" href="../../../../devref/tkp/telescope.html#tkp.telescope.lofar.noise.Aeff_dipole">[docs]</a><span class="k">def</span> <span class="nf">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The effective area of each dipole in the array is determined by its</span>
 <span class="sd">    distance to the nearest dipole (d) within the full array.</span>
@@ -165,7 +165,7 @@
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="nb">pow</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">1.5625</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="system_sensitivity"><a class="viewcode-back" href="../../../../devref/tkp/lofar/index.html#tkp.telescope.lofar.noise.system_sensitivity">[docs]</a><span class="k">def</span> <span class="nf">system_sensitivity</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">Aeff</span><span class="p">):</span>
+<div class="viewcode-block" id="system_sensitivity"><a class="viewcode-back" href="../../../../devref/tkp/telescope.html#tkp.telescope.lofar.noise.system_sensitivity">[docs]</a><span class="k">def</span> <span class="nf">system_sensitivity</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">Aeff</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns the SEFD of a system, given the freq_eff and effective</span>
 <span class="sd">    collecting area. Returns SEFD in Jansky&#39;s.</span>

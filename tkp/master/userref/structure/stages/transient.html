@@ -28,7 +28,7 @@
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Pipeline Design" href="../index.html" />
     <link rel="next" title="Developer’s Reference Guide" href="../../../devref/index.html" />
-    <link rel="prev" title="Null detection handling" href="nulldet.html" /> 
+    <link rel="prev" title="Forced source-fitting" href="forcedfits.html" /> 
   </head>
   <body>
     <div class="related">
@@ -44,7 +44,7 @@
           <a href="../../../devref/index.html" title="Developer’s Reference Guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="nulldet.html" title="Null detection handling"
+          <a href="forcedfits.html" title="Forced source-fitting"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
@@ -67,8 +67,9 @@ indices are calculated for the most recent timestep, and stored as part of the
 association recorded in the <a class="reference internal" href="../../../devref/database/schema.html#schema-assocxtrsource"><em>assocxtrsource</em></a> table.</p>
 <p>Note that a single runningcatalog source may
 contain entries from multiple independent frequency bands. The
-variability indices are calculated independently for each frequency band, hence the
-<span class="math">\(\nu\)</span> suffix in the calculations below.</p>
+variability indices are calculated independently for each frequency band,
+hence the <span class="math">\(\nu\)</span> suffix in the calculations below denotes an index over
+the different bands.</p>
 <p>For a comprehensive discussion of the transient and variability detection
 algorithms currently being employed, see <a class="reference internal" href="../../../bibliography.html#scheers-2011"><em>Scheers (2011)</em></a>
 chapter 3. Here, we provide a brief outline.</p>
@@ -104,7 +105,7 @@ previously unobserved patch of sky). The algorithm for evaluating new
 sources is encoded by
 <a class="reference internal" href="../../../devref/tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits" title="tkp.db.associations._determine_newsource_previous_limits"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._determine_newsource_previous_limits()</span></tt></a>.
 Sources we deem to be intrinsically &#8216;new&#8217; are then recorded in the
-<a class="reference internal" href="../../../devref/database/schema.html#schema-newsource"><em>version</em></a> table.</p>
+<a class="reference internal" href="../../../devref/database/schema.html#schema-newsource"><em>newsource</em></a> table.</p>
 <div class="section" id="section-transient-search">
 <h3>Section <tt class="docutils literal"><span class="pre">transient_search</span></tt><a class="headerlink" href="#section-transient-search" title="Permalink to this headline">¶</a></h3>
 <p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
@@ -144,8 +145,8 @@ image.</dd>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="nulldet.html"
-                        title="previous chapter">Null detection handling</a></p>
+  <p class="topless"><a href="forcedfits.html"
+                        title="previous chapter">Forced source-fitting</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../../../devref/index.html"
                         title="next chapter">Developer&#8217;s Reference Guide</a></p>
@@ -184,7 +185,7 @@ image.</dd>
           <a href="../../../devref/index.html" title="Developer’s Reference Guide"
              >next</a> |</li>
         <li class="right" >
-          <a href="nulldet.html" title="Null detection handling"
+          <a href="forcedfits.html" title="Forced source-fitting"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>

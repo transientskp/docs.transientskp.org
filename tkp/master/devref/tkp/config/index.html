@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tkp.config – Configuration &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp.config – Pipeline Configuration &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
-    <link rel="up" title="TKP Package Reference" href="../index.html" />
-    <link rel="next" title="distribute" href="../distribute/index.html" />
-    <link rel="prev" title="tkp.utility.memoize – Memoization decorator" href="../utility/memoize.html" /> 
+    <link rel="up" title="TKP Package API Reference" href="../index.html" />
+    <link rel="next" title="tkp.db – Database routines" href="../database/index.html" />
+    <link rel="prev" title="Data Accessor Variants" href="../accessors/accessor_types.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,14 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../distribute/index.html" title="distribute"
+          <a href="../database/index.html" title="tkp.db – Database routines"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../utility/memoize.html" title="tkp.utility.memoize – Memoization decorator"
+          <a href="../accessors/accessor_types.html" title="Data Accessor Variants"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">TKP Package Reference</a> &raquo;</li> 
+          <li><a href="../index.html" accesskey="U">TKP Package API Reference</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,8 +57,15 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-tkp.config">
-<span id="tkp-config-configuration"></span><h1><a class="reference internal" href="#module-tkp.config" title="tkp.config: Configuration settings and project / job config file templates."><tt class="xref py py-mod docutils literal"><span class="pre">tkp.config</span></tt></a> &#8211; Configuration<a class="headerlink" href="#module-tkp.config" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="tkp-config-pipeline-configuration">
+<h1><a class="reference internal" href="#module-tkp.config" title="tkp.config: Configuration settings and project / job config file templates."><tt class="xref py py-mod docutils literal"><span class="pre">tkp.config</span></tt></a> &#8211; Pipeline Configuration<a class="headerlink" href="#tkp-config-pipeline-configuration" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="outline">
+<h2>Outline<a class="headerlink" href="#outline" title="Permalink to this headline">¶</a></h2>
+<p>The tkp.config folder contains the job configuration file templates, and
+code for handling config files.</p>
+</div>
+<div class="section" id="module-tkp.config">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-tkp.config" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="tkp.config.get_database_config">
 <tt class="descclassname">tkp.config.</tt><tt class="descname">get_database_config</tt><big>(</big><em>config_passed=None</em>, <em>apply=False</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/config.html#get_database_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.config.get_database_config" title="Permalink to this definition">¶</a></dt>
@@ -108,7 +115,7 @@ via variable substitution in other config values.</p>
 </dd></dl>
 
 <div class="section" id="module-tkp.config.parse">
-<span id="tkp-config-parse-magic-configparser-to-dict-functionality"></span><h2><a class="reference internal" href="#module-tkp.config.parse" title="tkp.config.parse"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.config.parse</span></tt></a> &#8211; Magic ConfigParser to dict functionality<a class="headerlink" href="#module-tkp.config.parse" title="Permalink to this headline">¶</a></h2>
+<span id="tkp-config-parse-magic-configparser-to-dict-functionality"></span><h3><a class="reference internal" href="#module-tkp.config.parse" title="tkp.config.parse"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.config.parse</span></tt></a> &#8211; Magic ConfigParser to dict functionality<a class="headerlink" href="#module-tkp.config.parse" title="Permalink to this headline">¶</a></h3>
 <p>Utilities for loading parameters from config files, with automatic type
 conversion.</p>
 <dl class="function">
@@ -129,11 +136,6 @@ Nested dict {sections -&gt; keys -&gt; values } representing parsed params.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="template-files-for-creating-a-new-project">
-<h2>Template files for creating a new project<a class="headerlink" href="#template-files-for-creating-a-new-project" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="template-files-for-creating-a-new-job">
-<h2>Template files for creating a new job<a class="headerlink" href="#template-files-for-creating-a-new-job" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -148,20 +150,22 @@ Nested dict {sections -&gt; keys -&gt; values } representing parsed params.</p>
             </a></p>
   <h3><a href="../../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tkp.config</span></tt> &#8211; Configuration</a><ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tkp.config</span></tt> &#8211; Pipeline Configuration</a><ul>
+<li><a class="reference internal" href="#outline">Outline</a></li>
+<li><a class="reference internal" href="#module-tkp.config">API</a><ul>
 <li><a class="reference internal" href="#module-tkp.config.parse"><tt class="docutils literal"><span class="pre">tkp.config.parse</span></tt> &#8211; Magic ConfigParser to dict functionality</a></li>
-<li><a class="reference internal" href="#template-files-for-creating-a-new-project">Template files for creating a new project</a></li>
-<li><a class="reference internal" href="#template-files-for-creating-a-new-job">Template files for creating a new job</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../utility/memoize.html"
-                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.utility.memoize</span></tt> &#8211; Memoization decorator</a></p>
+  <p class="topless"><a href="../accessors/accessor_types.html"
+                        title="previous chapter">Data Accessor Variants</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../distribute/index.html"
-                        title="next chapter">distribute</a></p>
+  <p class="topless"><a href="../database/index.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/devref/tkp/config/index.txt"
@@ -194,14 +198,14 @@ Nested dict {sections -&gt; keys -&gt; values } representing parsed params.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../distribute/index.html" title="distribute"
+          <a href="../database/index.html" title="tkp.db – Database routines"
              >next</a> |</li>
         <li class="right" >
-          <a href="../utility/memoize.html" title="tkp.utility.memoize – Memoization decorator"
+          <a href="../accessors/accessor_types.html" title="Data Accessor Variants"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li> 
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

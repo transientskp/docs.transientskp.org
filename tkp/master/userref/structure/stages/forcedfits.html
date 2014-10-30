@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Null detection handling &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Forced source-fitting &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -57,8 +57,13 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="null-detection-handling">
-<span id="stage-nulldet"></span><h1>Null detection handling<a class="headerlink" href="#null-detection-handling" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="forced-source-fitting">
+<h1>Forced source-fitting<a class="headerlink" href="#forced-source-fitting" title="Permalink to this headline">¶</a></h1>
+<p>When the <a class="reference internal" href="association.html#stage-association"><em>source association</em></a> stage is complete,
+the pipeline proceeds to handle forced-fits. These may be required either for
+measuring &#8216;null detections&#8217; or sources added to the monitoringlist.</p>
+<div class="section" id="null-detection-handling">
+<span id="stage-nulldet"></span><h2>Null detection handling<a class="headerlink" href="#null-detection-handling" title="Permalink to this headline">¶</a></h2>
 <p>A &#8220;null detection&#8221; is the term used to describe a source which was expected to
 be measured in a particular image (because it has been observed in previous
 images covering the same field of view) but was in fact not detected by the
@@ -67,7 +72,7 @@ images covering the same field of view) but was in fact not detected by the
 database and have been associated with the known sources in the running
 catalogue, the null detection stage starts.
 We retrieve from the database a list of sources that serve as the null detections.
-Sources on this list come from the running catalog and</p>
+Sources on this list come from the <a class="reference internal" href="../../../devref/database/schema.html#schema-runningcatalog"><em>runningcatalog</em></a> and</p>
 <ul class="simple">
 <li>Do not have a counterpart in the extractedsources of the current
 image after source association has run.</li>
@@ -98,20 +103,19 @@ The fluxes, however, are included into the statistical properties and the values
 every known source will have either a blind detection or a forced-fit
 measurement in every image from the moment it was detected for the
 first time.</p>
-<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
-<div class="section" id="section-source-extraction">
-<h2>Section <tt class="docutils literal"><span class="pre">source_extraction</span></tt><a class="headerlink" href="#section-source-extraction" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">back_size_x</span></tt>, <tt class="docutils literal"><span class="pre">back_size_y</span></tt>, <tt class="docutils literal"><span class="pre">margin</span></tt>, <tt class="docutils literal"><span class="pre">extraction_radius_pix</span></tt>, <tt class="docutils literal"><span class="pre">max_degredation</span></tt>, <tt class="docutils literal"><span class="pre">force_beam</span></tt></dt>
-<dd>Defined as for <a class="reference internal" href="extraction.html#stage-extraction"><em>blind extraction</em></a>.</dd>
-<dt><tt class="docutils literal"><span class="pre">box_in_beampix</span></tt></dt>
-<dd>When a forced fit is being applied to a particular point on the image, it
-is unnecessary and inefficient to include all of the image pixel data in
-the minimization procedure. Instead, we only include that within a square
-region of size <tt class="docutils literal"><span class="pre">box_in_beampix</span></tt> about the target position.
-<tt class="docutils literal"><span class="pre">box_in_beampix</span></tt> is specified in units of the size of the major axis of
-the restoring beam.</dd>
-</dl>
+<p>Null-detection depends upon the same
+<a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a> parameters as the
+<a class="reference internal" href="extraction.html#stage-extraction"><em>&#8220;blind&#8221; source-extraction stage</em></a>.</p>
+</div>
+<div class="section" id="monitoringlist">
+<span id="stage-monitoringlist"></span><h2>Monitoringlist<a class="headerlink" href="#monitoringlist" title="Permalink to this headline">¶</a></h2>
+<p>If monitoringlist positions have been specified when
+<a class="reference internal" href="../../tkp-manage.html#tkp-manage-run"><em>running a job</em></a>,
+then these are always force-fitted whenever an image&#8217;s source-extraction region
+contains the designated co-ordinates.
+These forced fits are used to build up a special
+<a class="reference internal" href="../../../devref/database/schema.html#schema-runningcatalog"><em>runningcatalog</em></a> entry which is excluded from association with
+regular extractions.</p>
 </div>
 </div>
 
@@ -126,8 +130,9 @@ the restoring beam.</dd>
             </a></p>
   <h3><a href="../../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Null detection handling</a><ul>
-<li><a class="reference internal" href="#section-source-extraction">Section <tt class="docutils literal"><span class="pre">source_extraction</span></tt></a></li>
+<li><a class="reference internal" href="#">Forced source-fitting</a><ul>
+<li><a class="reference internal" href="#null-detection-handling">Null detection handling</a></li>
+<li><a class="reference internal" href="#monitoringlist">Monitoringlist</a></li>
 </ul>
 </li>
 </ul>
@@ -140,7 +145,7 @@ the restoring beam.</dd>
                         title="next chapter">Variability and new-source detection</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../../_sources/userref/structure/stages/nulldet.txt"
+    <li><a href="../../../_sources/userref/structure/stages/forcedfits.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>TKP Package Reference &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>TKP Package API Reference &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -27,7 +27,7 @@
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
     <link rel="up" title="Developer’s Reference Guide" href="../index.html" />
-    <link rel="next" title="Design" href="design.html" />
+    <link rel="next" title="tkp.accessors – Image container classes" href="accessors/index.html" />
     <link rel="prev" title="“How-To” notes on common tasks" href="../database/howto.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="design.html" title="Design"
+          <a href="accessors/index.html" title="tkp.accessors – Image container classes"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../database/howto.html" title="“How-To” notes on common tasks"
@@ -56,91 +56,21 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="tkp-package-reference">
-<h1>TKP Package Reference<a class="headerlink" href="#tkp-package-reference" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
-<li class="toctree-l1"><a class="reference internal" href="steps.html">TraP logic flow overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="steps.html#main-logic-flow">Main logic flow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="steps.html#coming-soon">Coming soon</a></li>
-<li class="toctree-l2"><a class="reference internal" href="steps.html#steps-and-their-parameters">Steps and their parameters</a></li>
-</ul>
-</li>
-</ul>
-</div>
+  <div class="section" id="tkp-package-api-reference">
+<h1>TKP Package API Reference<a class="headerlink" href="#tkp-package-api-reference" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="accessors/index.html"><tt class="docutils literal"><span class="pre">tkp.accessors</span></tt> &#8211; Image container classes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="accessors/index.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="accessors/index.html#api-documentation">API Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="database/index.html">Database package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="database/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/root.html"><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; TKP database root package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/database.html"><tt class="docutils literal"><span class="pre">tkp.db.database</span></tt> &#8211; Database connection interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/association.html"><tt class="docutils literal"><span class="pre">tkp.db.associations</span></tt> &#8211; source association</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/general.html"><tt class="docutils literal"><span class="pre">tkp.db.general</span></tt> &#8211; general database functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/generic.html"><tt class="docutils literal"><span class="pre">tkp.db.generic</span></tt> &#8211; generic data-query generation functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/monitoringlist.html"><tt class="docutils literal"><span class="pre">tkp.db.monitoringlist</span></tt> &#8211; monitoringlist database functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/nulldetections.html"><tt class="docutils literal"><span class="pre">tkp.db.nulldetections</span></tt> &#8211; handling of null detections</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/orm.html"><tt class="docutils literal"><span class="pre">tkp.db.orm</span></tt> &#8211; Object Relational Model interface</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="sourcefinder/index.html">Sourcefinder package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sourcefinder/image.html"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.image</span></tt> &#8211; Image class &amp; routines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sourcefinder/extract.html"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.extract</span></tt> &#8211; Source extraction routines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sourcefinder/gaussian.html"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.gaussian</span></tt> &#8211; defines a two dimensional Gaussian function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sourcefinder/fitting.html"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.fitting</span></tt> &#8211; Source fitting routines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sourcefinder/stats.html"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.stats</span></tt> &#8211; Statistics specific to source finding for radio images.</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sourcefinder/utils.html"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.utils</span></tt> &#8211; Utility routines</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="utility/index.html">Utility package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utility/containers.html"><tt class="docutils literal"><span class="pre">tkp.utility.containers</span></tt> &#8211; Generic container classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utility/coordinates.html"><tt class="docutils literal"><span class="pre">tkp.utility.coordinates</span></tt> &#8211; Coordinate routines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utility/uncertain.html"><tt class="docutils literal"><span class="pre">tkp.utility.uncertain</span></tt> &#8211; Uncertainty class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utility/sigmaclip.html"><tt class="docutils literal"><span class="pre">tkp.utility.sigmaclip</span></tt> &#8211; Generic sigma clipping routine</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utility/fits.html"><tt class="docutils literal"><span class="pre">tkp.utility.fits</span></tt> &#8211; Some FITS routines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utility/memoize.html"><tt class="docutils literal"><span class="pre">tkp.utility.memoize</span></tt> &#8211; Memoization decorator</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="config/index.html"><tt class="docutils literal"><span class="pre">tkp.config</span></tt> &#8211; Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="config/index.html#module-tkp.config.parse"><tt class="docutils literal"><span class="pre">tkp.config.parse</span></tt> &#8211; Magic ConfigParser to dict functionality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config/index.html#template-files-for-creating-a-new-project">Template files for creating a new project</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config/index.html#template-files-for-creating-a-new-job">Template files for creating a new job</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="distribute/index.html">distribute</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lofar/index.html">Lofar</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="lofar/index.html#module-tkp.telescope.lofar.antennaarrays">Antenna arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lofar/index.html#module-tkp.telescope.lofar.beam">Beam</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lofar/index.html#module-tkp.telescope.lofar.noise">noise</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="quality/index.html">Quality</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quality/index.html#module-tkp.quality.restoringbeam"><tt class="docutils literal"><span class="pre">tkp.quality.restoringbeam</span></tt> &#8211; Restoring beam</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quality/index.html#module-tkp.quality.brightsource"><tt class="docutils literal"><span class="pre">tkp.quality.brightsource</span></tt> &#8211; Bright Source</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quality/index.html#module-tkp.quality.rms"><tt class="docutils literal"><span class="pre">tkp.quality.rms</span></tt> &#8211; RMS</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="alerts.html">Alerts recipe</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="alerts.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="alerts.html#usage">Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="alerts.html#parset">Parset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="alerts.html#configuration">Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="monitoringlist.html">Monitoring list</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="monitoringlist.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="monitoringlist.html#database-tables">Database tables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="monitoringlist.html#program-flow">Program flow</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="testutil.html">testutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accessors/index.html"><tt class="docutils literal"><span class="pre">tkp.accessors</span></tt> &#8211; Image container classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config/index.html"><tt class="docutils literal"><span class="pre">tkp.config</span></tt> &#8211; Pipeline Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database/index.html"><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="distribute/index.html"><tt class="docutils literal"><span class="pre">tkp.distribute</span></tt> &#8211; routines for running on distributed nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="telescope.html"><tt class="docutils literal"><span class="pre">tkp.telescope</span></tt> &#8211; Telescope specific functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quality/index.html"><tt class="docutils literal"><span class="pre">tkp.quality</span></tt> &#8211; Data-quality control</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcefinder/index.html"><tt class="docutils literal"><span class="pre">tkp.sourcefinder</span></tt> &#8211; source finding and fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testutil.html"><tt class="docutils literal"><span class="pre">tkp.testutil</span></tt> &#8211; helper functions for writing tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utility/index.html"><tt class="docutils literal"><span class="pre">tkp.utility</span></tt> &#8211; miscellaneous utility routines</a></li>
 </ul>
 </div>
 </div>
@@ -157,7 +87,7 @@
             </a></p>
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">TKP Package Reference</a><ul>
+<li><a class="reference internal" href="#">TKP Package API Reference</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 </ul>
 </li>
@@ -167,8 +97,8 @@
   <p class="topless"><a href="../database/howto.html"
                         title="previous chapter">&#8220;How-To&#8221; notes on common tasks</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="design.html"
-                        title="next chapter">Design</a></p>
+  <p class="topless"><a href="accessors/index.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.accessors</span></tt> &#8211; Image container classes</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/devref/tkp/index.txt"
@@ -201,7 +131,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="design.html" title="Design"
+          <a href="accessors/index.html" title="tkp.accessors – Image container classes"
              >next</a> |</li>
         <li class="right" >
           <a href="../database/howto.html" title="“How-To” notes on common tasks"

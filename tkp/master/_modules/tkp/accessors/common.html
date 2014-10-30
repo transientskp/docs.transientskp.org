@@ -57,7 +57,7 @@
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">cos</span>
 
 
-<div class="viewcode-block" id="parse_pixelsize"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.common.parse_pixelsize">[docs]</a><span class="k">def</span> <span class="nf">parse_pixelsize</span><span class="p">(</span><span class="n">wcs</span><span class="p">):</span>
+<div class="viewcode-block" id="parse_pixelsize"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.parse_pixelsize">[docs]</a><span class="k">def</span> <span class="nf">parse_pixelsize</span><span class="p">(</span><span class="n">wcs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Arguments:</span>
 <span class="sd">      - wcs: A tkp.coordinates.wcs.WCS object</span>
@@ -87,7 +87,7 @@
     <span class="k">return</span> <span class="n">deltax</span><span class="p">,</span> <span class="n">deltay</span>
 
 </div>
-<div class="viewcode-block" id="degrees2pixels"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.common.degrees2pixels">[docs]</a><span class="k">def</span> <span class="nf">degrees2pixels</span><span class="p">(</span><span class="n">bmaj</span><span class="p">,</span> <span class="n">bmin</span><span class="p">,</span> <span class="n">bpa</span><span class="p">,</span> <span class="n">deltax</span><span class="p">,</span> <span class="n">deltay</span><span class="p">):</span>
+<div class="viewcode-block" id="degrees2pixels"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.degrees2pixels">[docs]</a><span class="k">def</span> <span class="nf">degrees2pixels</span><span class="p">(</span><span class="n">bmaj</span><span class="p">,</span> <span class="n">bmin</span><span class="p">,</span> <span class="n">bpa</span><span class="p">,</span> <span class="n">deltax</span><span class="p">,</span> <span class="n">deltay</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert beam in degrees to beam in pixels and radians.</span>
 <span class="sd">    For example Fits beam parameters are in degrees.</span>
@@ -116,7 +116,7 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">semimaj</span><span class="p">,</span> <span class="n">semimin</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="arcsec2degrees"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.common.arcsec2degrees">[docs]</a><span class="k">def</span> <span class="nf">arcsec2degrees</span><span class="p">(</span><span class="n">bmaj</span><span class="p">,</span> <span class="n">bmin</span><span class="p">,</span> <span class="n">bpa</span><span class="p">):</span>
+<div class="viewcode-block" id="arcsec2degrees"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.arcsec2degrees">[docs]</a><span class="k">def</span> <span class="nf">arcsec2degrees</span><span class="p">(</span><span class="n">bmaj</span><span class="p">,</span> <span class="n">bmin</span><span class="p">,</span> <span class="n">bpa</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts beam parameters from arcsec to degrees.</span>
 <span class="sd">    For example CASAtable beam parameters are in arcsec.</span>
@@ -132,7 +132,7 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">bmaj</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">bmin</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">bpa</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="unique_column_values"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.common.unique_column_values">[docs]</a><span class="k">def</span> <span class="nf">unique_column_values</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
+<div class="viewcode-block" id="unique_column_values"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.unique_column_values">[docs]</a><span class="k">def</span> <span class="nf">unique_column_values</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find all the unique values in a particular column of a CASA table.</span>
 

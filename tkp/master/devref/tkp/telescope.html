@@ -6,49 +6,49 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Lofar &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp.telescope – Telescope specific functionality &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
+        URL_ROOT:    '../../',
         VERSION:     '2.0-pre',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
-    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
-    <link rel="up" title="TKP Package Reference" href="../index.html" />
-    <link rel="next" title="Quality" href="../quality/index.html" />
-    <link rel="prev" title="distribute" href="../distribute/index.html" /> 
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
+    <link rel="up" title="TKP Package API Reference" href="index.html" />
+    <link rel="next" title="tkp.quality – Data-quality control" href="quality/index.html" />
+    <link rel="prev" title="tkp.distribute – routines for running on distributed nodes" href="distribute/index.html" /> 
   </head>
   <body>
     <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
+          <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
+          <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../quality/index.html" title="Quality"
+          <a href="quality/index.html" title="tkp.quality – Data-quality control"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../distribute/index.html" title="distribute"
+          <a href="distribute/index.html" title="tkp.distribute – routines for running on distributed nodes"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">TKP Package Reference</a> &raquo;</li> 
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">TKP Package API Reference</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,12 +57,12 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-tkp.telescope.lofar">
-<span id="lofar"></span><h1>Lofar<a class="headerlink" href="#module-tkp.telescope.lofar" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="tkp-telescope-telescope-specific-functionality">
+<h1><tt class="docutils literal"><span class="pre">tkp.telescope</span></tt> &#8211; Telescope specific functionality<a class="headerlink" href="#tkp-telescope-telescope-specific-functionality" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-tkp.telescope.lofar">
+<span id="tkp-telescope-lofar"></span><h2><a class="reference internal" href="#module-tkp.telescope.lofar" title="tkp.telescope.lofar"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.telescope.lofar</span></tt></a><a class="headerlink" href="#module-tkp.telescope.lofar" title="Permalink to this headline">¶</a></h2>
 <p>Functions for calculating LOFAR hardware specific properties.</p>
-<div class="section" id="module-tkp.telescope.lofar.antennaarrays">
-<span id="antenna-arrays"></span><h2>Antenna arrays<a class="headerlink" href="#module-tkp.telescope.lofar.antennaarrays" title="Permalink to this headline">¶</a></h2>
-<p>This module contains numbers of phsysicial properties of the LOFAR array.</p>
+<span class="target" id="module-tkp.telescope.lofar.antennaarrays"></span><p>This module contains numbers of phsysicial properties of the LOFAR array.</p>
 <p>For performance reasons these distances are precomputed. One can recompute
 them using <a class="reference internal" href="#tkp.telescope.lofar.antennaarrays.parse_antennafile" title="tkp.telescope.lofar.antennaarrays.parse_antennafile"><tt class="xref py py-func docutils literal"><span class="pre">parse_antennafile()</span></tt></a>, <a class="reference internal" href="#tkp.telescope.lofar.antennaarrays.shortest_distances" title="tkp.telescope.lofar.antennaarrays.shortest_distances"><tt class="xref py py-func docutils literal"><span class="pre">shortest_distances()</span></tt></a> and a
 <tt class="docutils literal"><span class="pre">AntennaArrays.conf</span></tt> file from
@@ -70,7 +70,7 @@ them using <a class="reference internal" href="#tkp.telescope.lofar.antennaarray
 software source tree.</p>
 <dl class="function">
 <dt id="tkp.telescope.lofar.antennaarrays.parse_antennafile">
-<tt class="descclassname">tkp.telescope.lofar.antennaarrays.</tt><tt class="descname">parse_antennafile</tt><big>(</big><em>positions_file</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/antennaarrays.html#parse_antennafile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.antennaarrays.parse_antennafile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.antennaarrays.</tt><tt class="descname">parse_antennafile</tt><big>(</big><em>positions_file</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/antennaarrays.html#parse_antennafile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.antennaarrays.parse_antennafile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses an antenna file from the LOFAR system software repository.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -86,7 +86,7 @@ software source tree.</p>
 
 <dl class="function">
 <dt id="tkp.telescope.lofar.antennaarrays.pretty_print">
-<tt class="descclassname">tkp.telescope.lofar.antennaarrays.</tt><tt class="descname">pretty_print</tt><big>(</big><em>file_</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/antennaarrays.html#pretty_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.antennaarrays.pretty_print" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.antennaarrays.</tt><tt class="descname">pretty_print</tt><big>(</big><em>file_</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/antennaarrays.html#pretty_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.antennaarrays.pretty_print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pretty prints a parsed antenna file. Use this function to generate copy
 paste code to be used in the top of this file.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -101,7 +101,7 @@ paste code to be used in the top of this file.</p>
 
 <dl class="function">
 <dt id="tkp.telescope.lofar.antennaarrays.shortest_distances">
-<tt class="descclassname">tkp.telescope.lofar.antennaarrays.</tt><tt class="descname">shortest_distances</tt><big>(</big><em>coordinates</em>, <em>full_array</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/antennaarrays.html#shortest_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.antennaarrays.shortest_distances" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.antennaarrays.</tt><tt class="descname">shortest_distances</tt><big>(</big><em>coordinates</em>, <em>full_array</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/antennaarrays.html#shortest_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.antennaarrays.shortest_distances" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a list of distances for each antenna relative to its closest
 neighbour.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -122,15 +122,12 @@ coordinates of a subset of the array</li>
 </table>
 </dd></dl>
 
-</div>
-<div class="section" id="module-tkp.telescope.lofar.beam">
-<span id="beam"></span><h2>Beam<a class="headerlink" href="#module-tkp.telescope.lofar.beam" title="Permalink to this headline">¶</a></h2>
-<p>Beam characterization calculations.</p>
+<span class="target" id="module-tkp.telescope.lofar.beam"></span><p>Beam characterization calculations.</p>
 <p>For more information and the math behind this code go to the <a class="reference external" href="http://www.astron.nl/radio-observatory/astronomers/lofar-imaging-capabilities-sensitivity/lofar-imaging-capabilities/lofa">LOFAR imaging
 capabilities page</a>.</p>
 <dl class="function">
 <dt id="tkp.telescope.lofar.beam.fov">
-<tt class="descclassname">tkp.telescope.lofar.beam.</tt><tt class="descname">fov</tt><big>(</big><em>fwhm</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/beam.html#fov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.beam.fov" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.beam.</tt><tt class="descname">fov</tt><big>(</big><em>fwhm</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/beam.html#fov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.beam.fov" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Field of View (FoV) of a LOFAR station</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -144,7 +141,7 @@ capabilities page</a>.</p>
 
 <dl class="function">
 <dt id="tkp.telescope.lofar.beam.fwhm">
-<tt class="descclassname">tkp.telescope.lofar.beam.</tt><tt class="descname">fwhm</tt><big>(</big><em>lambda_</em>, <em>d</em>, <em>alpha1=1.3</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/beam.html#fwhm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.beam.fwhm" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.beam.</tt><tt class="descname">fwhm</tt><big>(</big><em>lambda_</em>, <em>d</em>, <em>alpha1=1.3</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/beam.html#fwhm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.beam.fwhm" title="Permalink to this definition">¶</a></dt>
 <dd><p>The nominal Full Width Half Maximum (FWHM) of a LOFAR Station beam.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -169,17 +166,14 @@ with tapering (Napier 1999).</li>
 </table>
 </dd></dl>
 
-</div>
-<div class="section" id="module-tkp.telescope.lofar.noise">
-<span id="noise"></span><h2>noise<a class="headerlink" href="#module-tkp.telescope.lofar.noise" title="Permalink to this headline">¶</a></h2>
-<p>functions for calculating theoretical noise levels of LOFAR equipment.</p>
+<span class="target" id="module-tkp.telescope.lofar.noise"></span><p>functions for calculating theoretical noise levels of LOFAR equipment.</p>
 <p>For more information about the math used here read the <a class="reference external" href="http://www.astron.nl/radio-observatory/astronomers/lofar-imaging-capabilities-sensitivity/sensitivity-lofar-array/sensiti">sensitivity of the
 LOFAR array page</a>.</p>
 <p>To check the values calculated here one can use this <a class="reference external" href="http://www.astron.nl/~heald/test/sens.php">LOFAR image noise
 calculator</a>.</p>
 <dl class="function">
 <dt id="tkp.telescope.lofar.noise.Aeff_dipole">
-<tt class="descclassname">tkp.telescope.lofar.noise.</tt><tt class="descname">Aeff_dipole</tt><big>(</big><em>freq_eff</em>, <em>distance=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/noise.html#Aeff_dipole"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.noise.Aeff_dipole" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.noise.</tt><tt class="descname">Aeff_dipole</tt><big>(</big><em>freq_eff</em>, <em>distance=None</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/noise.html#Aeff_dipole"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.noise.Aeff_dipole" title="Permalink to this definition">¶</a></dt>
 <dd><p>The effective area of each dipole in the array is determined by its
 distance to the nearest dipole (d) within the full array.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -198,7 +192,7 @@ distance to the nearest dipole (d) within the full array.</p>
 
 <dl class="function">
 <dt id="tkp.telescope.lofar.noise.noise_level">
-<tt class="descclassname">tkp.telescope.lofar.noise.</tt><tt class="descname">noise_level</tt><big>(</big><em>freq_eff</em>, <em>bandwidth</em>, <em>tau_time</em>, <em>antenna_set</em>, <em>Ncore</em>, <em>Nremote</em>, <em>Nintl</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/noise.html#noise_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.noise.noise_level" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.noise.</tt><tt class="descname">noise_level</tt><big>(</big><em>freq_eff</em>, <em>bandwidth</em>, <em>tau_time</em>, <em>antenna_set</em>, <em>Ncore</em>, <em>Nremote</em>, <em>Nintl</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/noise.html#noise_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.noise.noise_level" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the theoretical noise level (in Jy) given the supplied array
 antenna_set.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -219,7 +213,7 @@ antenna_set.</p>
 
 <dl class="function">
 <dt id="tkp.telescope.lofar.noise.system_sensitivity">
-<tt class="descclassname">tkp.telescope.lofar.noise.</tt><tt class="descname">system_sensitivity</tt><big>(</big><em>freq_eff</em>, <em>Aeff</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/telescope/lofar/noise.html#system_sensitivity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.noise.system_sensitivity" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.telescope.lofar.noise.</tt><tt class="descname">system_sensitivity</tt><big>(</big><em>freq_eff</em>, <em>Aeff</em><big>)</big><a class="reference internal" href="../../_modules/tkp/telescope/lofar/noise.html#system_sensitivity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.telescope.lofar.noise.system_sensitivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SEFD of a system, given the freq_eff and effective
 collecting area. Returns SEFD in Jansky&#8217;s.</p>
 </dd></dl>
@@ -233,33 +227,31 @@ collecting area. Returns SEFD in Jansky&#8217;s.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../../../index.html">
-              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Lofar</a><ul>
-<li><a class="reference internal" href="#module-tkp.telescope.lofar.antennaarrays">Antenna arrays</a></li>
-<li><a class="reference internal" href="#module-tkp.telescope.lofar.beam">Beam</a></li>
-<li><a class="reference internal" href="#module-tkp.telescope.lofar.noise">noise</a></li>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tkp.telescope</span></tt> &#8211; Telescope specific functionality</a><ul>
+<li><a class="reference internal" href="#module-tkp.telescope.lofar"><tt class="docutils literal"><span class="pre">tkp.telescope.lofar</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../distribute/index.html"
-                        title="previous chapter">distribute</a></p>
+  <p class="topless"><a href="distribute/index.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.distribute</span></tt> &#8211; routines for running on distributed nodes</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../quality/index.html"
-                        title="next chapter">Quality</a></p>
+  <p class="topless"><a href="quality/index.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.quality</span></tt> &#8211; Data-quality control</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../../_sources/devref/tkp/lofar/index.txt"
+    <li><a href="../../_sources/devref/tkp/telescope.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
+    <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
@@ -278,20 +270,20 @@ collecting area. Returns SEFD in Jansky&#8217;s.</p>
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
+          <a href="../../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
+          <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../quality/index.html" title="Quality"
+          <a href="quality/index.html" title="tkp.quality – Data-quality control"
              >next</a> |</li>
         <li class="right" >
-          <a href="../distribute/index.html" title="distribute"
+          <a href="distribute/index.html" title="tkp.distribute – routines for running on distributed nodes"
              >previous</a> |</li>
-        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >TKP Package Reference</a> &raquo;</li> 
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >TKP Package API Reference</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

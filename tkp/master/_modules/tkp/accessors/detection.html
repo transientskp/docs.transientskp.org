@@ -85,7 +85,7 @@
 <span class="p">}</span>
 
 
-<div class="viewcode-block" id="isfits"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.detection.isfits">[docs]</a><span class="k">def</span> <span class="nf">isfits</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="isfits"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.isfits">[docs]</a><span class="k">def</span> <span class="nf">isfits</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;returns True if filename is a fits file&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">False</span>
@@ -98,7 +98,7 @@
     <span class="k">return</span> <span class="bp">True</span>
 
 </div>
-<div class="viewcode-block" id="iscasa"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.detection.iscasa">[docs]</a><span class="k">def</span> <span class="nf">iscasa</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="iscasa"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.iscasa">[docs]</a><span class="k">def</span> <span class="nf">iscasa</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;returns True if filename is a lofar casa directory&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">False</span>
@@ -116,7 +116,7 @@
     <span class="k">return</span> <span class="bp">True</span>
 
 </div>
-<div class="viewcode-block" id="islofarhdf5"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.detection.islofarhdf5">[docs]</a><span class="k">def</span> <span class="nf">islofarhdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="islofarhdf5"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.islofarhdf5">[docs]</a><span class="k">def</span> <span class="nf">islofarhdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;returns True if filename is a hdf5 container&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">False</span>
@@ -129,7 +129,7 @@
     <span class="k">return</span> <span class="bp">True</span>
 
 </div>
-<div class="viewcode-block" id="fits_detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.detection.fits_detect">[docs]</a><span class="k">def</span> <span class="nf">fits_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="fits_detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.fits_detect">[docs]</a><span class="k">def</span> <span class="nf">fits_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Detect which telescope produced FITS data, return corresponding accessor.</span>
 
@@ -144,7 +144,7 @@
     <span class="k">return</span> <span class="n">FitsImage</span>
 
 </div>
-<div class="viewcode-block" id="casa_detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.detection.casa_detect">[docs]</a><span class="k">def</span> <span class="nf">casa_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="casa_detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.casa_detect">[docs]</a><span class="k">def</span> <span class="nf">casa_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Detect which telescope produced CASA data, return corresponding accessor.</span>
 
@@ -156,7 +156,7 @@
     <span class="k">return</span> <span class="n">casa_telescope_keyword_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">telescope</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/utility.html#tkp.accessors.detection.detect">[docs]</a><span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.detect">[docs]</a><span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;returns the accessor class that should be used to process filename&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">isfits</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">fits_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>

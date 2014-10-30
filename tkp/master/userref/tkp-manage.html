@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Scripts &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp-manage.py &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -56,14 +56,11 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="scripts">
-<span id="id1"></span><h1>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="tkp-manage-py">
-<span id="tkp-manage"></span><h2>tkp-manage.py<a class="headerlink" href="#tkp-manage-py" title="Permalink to this headline">¶</a></h2>
-<p>the <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> script is designed to be the new method for using the
-TraP pipeline. It can setup a local pipeline working environment filled with
-templates, create new jobs in this environment, start a job, clean a job and
-probably more actions will be added in the future.</p>
+  <div class="section" id="tkp-manage-py">
+<span id="tkp-manage"></span><h1>tkp-manage.py<a class="headerlink" href="#tkp-manage-py" title="Permalink to this headline">¶</a></h1>
+<p><tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> is the command-line tool for initialising and running the
+TraP pipeline. Different tasks are handled via the use of &#8216;subcommands&#8217;
+as detailed below.</p>
 <p>When the TraP is correctly installed on the system you can issue the
 <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> command. Documentation of subcommands is also available
 on the command line. You can use the <tt class="docutils literal"><span class="pre">--help</span></tt> flag (also per subcommand) to
@@ -92,6 +89,8 @@ specific `tkp-manage.py` subcommand, run:
 Have a nice day!
 </pre></div>
 </div>
+<div class="section" id="subcommands">
+<h2>Subcommands<a class="headerlink" href="#subcommands" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="initproject">
 <h3>initproject<a class="headerlink" href="#initproject" title="Permalink to this headline">¶</a></h3>
 <p>Initialise a pipeline environment. As an end user this is the first thing you
@@ -127,7 +126,7 @@ optional arguments:
 </div>
 </div>
 <div class="section" id="run">
-<h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
+<span id="tkp-manage-run"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
 <p>Run will start a job. It needs a job name as argument.</p>
 <div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py run [-h] [-m MONITOR_COORDS] [-l MONITOR_LIST] name
 
@@ -197,8 +196,8 @@ optional arguments:
             </a></p>
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Scripts</a><ul>
-<li><a class="reference internal" href="#tkp-manage-py">tkp-manage.py</a><ul>
+<li><a class="reference internal" href="#">tkp-manage.py</a><ul>
+<li><a class="reference internal" href="#subcommands">Subcommands</a><ul>
 <li><a class="reference internal" href="#initproject">initproject</a></li>
 <li><a class="reference internal" href="#initjob">initjob</a></li>
 <li><a class="reference internal" href="#run">run</a></li>
@@ -218,7 +217,7 @@ optional arguments:
                         title="next chapter">Pipeline Configuration</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/userref/scripts.txt"
+    <li><a href="../_sources/userref/tkp-manage.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">

@@ -27,7 +27,7 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Pipeline Design" href="../index.html" />
-    <link rel="next" title="Null detection handling" href="nulldet.html" />
+    <link rel="next" title="Forced source-fitting" href="forcedfits.html" />
     <link rel="prev" title="“Blind” source extraction" href="extraction.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="nulldet.html" title="Null detection handling"
+          <a href="forcedfits.html" title="Forced source-fitting"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="extraction.html" title="“Blind” source extraction"
@@ -59,7 +59,7 @@
             
   <div class="section" id="source-association">
 <span id="stage-association"></span><h1>Source association<a class="headerlink" href="#source-association" title="Permalink to this headline">¶</a></h1>
-<p>After all <a class="reference internal" href="extraction.html#stage-extraction"><em>blind</em></a> and <a class="reference internal" href="nulldet.html#stage-nulldet"><em>forced</em></a>
+<p>After all <a class="reference internal" href="extraction.html#stage-extraction"><em>blind</em></a>
 source measurements have been inserted into the database, they are
 &#8220;associated&#8221; with existing sources to form lightcurves. A word on the database
 nomenclature may be helpful: we store source measurements (the result of a fit
@@ -80,7 +80,7 @@ describes the code pathways in detail; see also <a class="reference internal" hr
 <h2>Section <tt class="docutils literal"><span class="pre">association</span></tt><a class="headerlink" href="#section-association" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt><tt class="docutils literal"><span class="pre">deruiter_radius</span></tt></dt>
-<dd>Float. Defined as per <a class="reference internal" href="nulldet.html#stage-nulldet"><em>Null detection handling</em></a>.</dd>
+<dd>Float. Defined as per <a class="reference internal" href="forcedfits.html#stage-nulldet"><em>Null detection handling</em></a>.</dd>
 </dl>
 </div>
 <div class="section" id="section-source-extraction">
@@ -117,8 +117,8 @@ east-west and north-south axis respectively.</dd>
   <p class="topless"><a href="extraction.html"
                         title="previous chapter">&#8220;Blind&#8221; source extraction</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="nulldet.html"
-                        title="next chapter">Null detection handling</a></p>
+  <p class="topless"><a href="forcedfits.html"
+                        title="next chapter">Forced source-fitting</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/userref/structure/stages/association.txt"
@@ -151,7 +151,7 @@ east-west and north-south axis respectively.</dd>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="nulldet.html" title="Null detection handling"
+          <a href="forcedfits.html" title="Forced source-fitting"
              >next</a> |</li>
         <li class="right" >
           <a href="extraction.html" title="“Blind” source extraction"

@@ -162,12 +162,12 @@ skyregions
 <div class="section" id="config">
 <span id="schema-config"></span><h3>config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h3>
 <p>A simple table of <tt class="docutils literal"><span class="pre">(dataset,</span> <span class="pre">section,</span> <span class="pre">key,</span> <span class="pre">value,</span> <span class="pre">type)</span></tt> tuples, providing a
-means of recording the contents of the <a class="reference internal" href="../../userref/config/job_params_cfg.html#job-params-cfg"><em>Job Parameters Configuration</em></a> file used to
+means of recording the contents of the <a class="reference internal" href="../../userref/config/job_params_cfg.html#job-params-cfg"><em>job_params.cfg - Job Parameters Configuration</em></a> file used to
 initiate a particular TraP processing run.
 This provides provenance and reproducibility for any given dataset.</p>
 </div>
 <div class="section" id="dataset">
-<span id="id1"></span><h3>dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h3>
+<span id="schema-dataset"></span><h3>dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h3>
 <p>The dataset table provides an id for grouping together results,
 usually from a single run of the TraP.
 As such, it represents a collection of images processed with a particular
@@ -521,7 +521,7 @@ a database migration.</dd>
 </dl>
 </div>
 <div class="section" id="newsource">
-<h3>newsource<a class="headerlink" href="#newsource" title="Permalink to this headline">¶</a></h3>
+<span id="schema-newsource"></span><h3>newsource<a class="headerlink" href="#newsource" title="Permalink to this headline">¶</a></h3>
 <p>For discovering transient or variable sources, our primary tools are variability
 statistics. However, a bright single-epoch source cannot sensibly be assigned
 variability statistics until at least a second measurement
@@ -744,7 +744,7 @@ image metadata during the <a class="reference internal" href="../../userref/stru
 </dl>
 </div>
 <div class="section" id="temprunningcatalog">
-<span id="database-temprunningcatalog"></span><h3>temprunningcatalog<a class="headerlink" href="#temprunningcatalog" title="Permalink to this headline">¶</a></h3>
+<span id="schema-temprunningcatalog"></span><h3>temprunningcatalog<a class="headerlink" href="#temprunningcatalog" title="Permalink to this headline">¶</a></h3>
 <p>(See also <a class="reference internal" href="assoc.html#database-assoc-details"><em>source association detailed logic</em></a>.)</p>
 <p>Most of the entries in the <tt class="docutils literal"><span class="pre">temprunningcatalog</span></tt> are identical to those of
 the same name in <a class="reference internal" href="#schema-runningcatalog"><em>runningcatalog</em></a> and
@@ -772,7 +772,7 @@ inactive (<tt class="docutils literal"><span class="pre">TRUE</span></tt>), defa
 </dl>
 </div>
 <div class="section" id="version">
-<span id="schema-newsource"></span><h3>version<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h3>
+<h3>version<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h3>
 <p>This table contains the current schema version of the database. Every schema
 upgrade will increment the value by 1.</p>
 <dl class="docutils">

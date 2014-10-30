@@ -27,7 +27,7 @@
     <link rel="shortcut icon" href="../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../index.html" />
     <link rel="up" title="Getting Started" href="index.html" />
-    <link rel="next" title="Site-specific setup guides" href="sites.html" />
+    <link rel="next" title="User’s Reference Guide" href="../userref/index.html" />
     <link rel="prev" title="MongoDB" href="concepts/mongodb.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sites.html" title="Site-specific setup guides"
+          <a href="../userref/index.html" title="User’s Reference Guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="concepts/mongodb.html" title="MongoDB"
@@ -59,8 +59,7 @@
   <div class="section" id="tutorial-overview">
 <h1>Tutorial Overview<a class="headerlink" href="#tutorial-overview" title="Permalink to this headline">¶</a></h1>
 <p>This page walks you through setting up a complete, stand-alone TraP
-environment running on your own system. See also our <a class="reference internal" href="sites.html#sites"><em>site-specific
-guides</em></a>.</p>
+environment running on your own system.</p>
 <div class="section" id="install-the-software">
 <h2>Install the software<a class="headerlink" href="#install-the-software" title="Permalink to this headline">¶</a></h2>
 <p>First of all, the software should be installed on your system. See <a class="reference internal" href="installation.html#installation"><em>the
@@ -84,10 +83,23 @@ Leap second table TAI_UTC seems out-of-date.
 <p class="last">Then consult your sysadmin or see <a class="reference internal" href="casacore-measures-data.html#casacore-measures"><em>this note</em></a>.</p>
 </div>
 </div>
+<div class="section" id="tkp-manage-py">
+<h2><tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt><a class="headerlink" href="#tkp-manage-py" title="Permalink to this headline">¶</a></h2>
+<p>The main tool for configuring and running TraP is <a class="reference internal" href="../userref/tkp-manage.html#tkp-manage"><em>tkp-manage.py</em></a>, which
+should be available to you as a command-line utility after installing the TraP.
+You may need to consult your sysadmin for details of how to access
+your local TraP installation. You can remind yourself of the options available
+to you by running:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py -h
+</pre></div>
+</div>
+<p>Or you can consult the <a class="reference internal" href="../userref/tkp-manage.html#tkp-manage"><em>documentation</em></a> for details.</p>
+</div>
 <div class="section" id="create-a-pipeline-project-directory">
 <h2>Create a pipeline project directory<a class="headerlink" href="#create-a-pipeline-project-directory" title="Permalink to this headline">¶</a></h2>
-<p>First, create a project directory: this will contain your pipeline settings and
-job directories. To create a project folder in your current working directory,
+<p>To get started using TraP, you should first create a project directory:
+this will contain your pipeline settings and job directories.
+To create a project folder in your current working directory,
 type:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initproject &lt;projectname&gt;
 </pre></div>
@@ -111,7 +123,8 @@ on creating a database:</p>
 <h2>Initialize a database<a class="headerlink" href="#initialize-a-database" title="Permalink to this headline">¶</a></h2>
 <p>To initialise a database the TraP manage <tt class="docutils literal"><span class="pre">initdb</span></tt> subcommand can be used.
 Set the details of the database you have created in the <tt class="docutils literal"><span class="pre">database</span></tt>
-section of your <a class="reference internal" href="../userref/config/pipeline_cfg.html#pipeline-cfg"><em>Project Configuration File</em></a>. These include the host and port number of
+section of your <a class="reference internal" href="../userref/config/pipeline_cfg.html#pipeline-cfg"><em>pipeline config file</em></a>.
+These include the host and port number of
 the system running the database management system, the name of the database,
 and the username and password.
 Then, from the project directory, type:</p>
@@ -192,6 +205,7 @@ images. You will need to adjust this to point to your data files.</dd>
   <ul>
 <li><a class="reference internal" href="#">Tutorial Overview</a><ul>
 <li><a class="reference internal" href="#install-the-software">Install the software</a></li>
+<li><a class="reference internal" href="#tkp-manage-py"><tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt></a></li>
 <li><a class="reference internal" href="#create-a-pipeline-project-directory">Create a pipeline project directory</a></li>
 <li><a class="reference internal" href="#create-a-database">Create a database</a></li>
 <li><a class="reference internal" href="#initialize-a-database">Initialize a database</a></li>
@@ -206,8 +220,8 @@ images. You will need to adjust this to point to your data files.</dd>
   <p class="topless"><a href="concepts/mongodb.html"
                         title="previous chapter">MongoDB</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="sites.html"
-                        title="next chapter">Site-specific setup guides</a></p>
+  <p class="topless"><a href="../userref/index.html"
+                        title="next chapter">User&#8217;s Reference Guide</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/getstart/tutorial.txt"
@@ -240,7 +254,7 @@ images. You will need to adjust this to point to your data files.</dd>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sites.html" title="Site-specific setup guides"
+          <a href="../userref/index.html" title="User’s Reference Guide"
              >next</a> |</li>
         <li class="right" >
           <a href="concepts/mongodb.html" title="MongoDB"

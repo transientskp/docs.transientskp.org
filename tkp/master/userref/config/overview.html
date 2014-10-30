@@ -27,7 +27,7 @@
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
     <link rel="up" title="Pipeline Configuration" href="index.html" />
-    <link rel="next" title="Project Configuration File" href="pipeline_cfg.html" />
+    <link rel="next" title="pipeline.cfg - Project Configuration File" href="pipeline_cfg.html" />
     <link rel="prev" title="Pipeline Configuration" href="index.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pipeline_cfg.html" title="Project Configuration File"
+          <a href="pipeline_cfg.html" title="pipeline.cfg - Project Configuration File"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Pipeline Configuration"
@@ -61,11 +61,12 @@
 <span id="config-overview"></span><h1>Configuration System Overview<a class="headerlink" href="#configuration-system-overview" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="preamble">
 <h2>Preamble<a class="headerlink" href="#preamble" title="Permalink to this headline">¶</a></h2>
-<p>Users organize their TraP runs into <em>projects</em>, which contain high-level
-descriptions of common TraP parameters. For example, a project specifies which
-<a class="reference internal" href="../../getstart/concepts/database.html#database-intro"><em>database</em></a> to use. All the configuration and log files
+<p>Users organize their TraP runs into <em>projects</em>, which define the basic
+operational TraP parameters, for example which
+<a class="reference internal" href="../../getstart/concepts/database.html#database-intro"><em>database</em></a> to use.
+All the configuration and log files
 relating to a particular project are stored in the same directory hierarchy.</p>
-<p>Within a project, the user is able to start multiple pipeline runs, which are
+<p>Within a project, the user is able to configure multiple pipeline runs, which are
 referred to as <em>jobs</em>. For example, the user could use a single project to
 repeatedly re-analyse a particular set of images with a range of different
 sourcefinder settings, with each analysis constituting a particular job.
@@ -77,32 +78,25 @@ work as they please.</p>
 </div>
 <div class="section" id="creating-a-project-directory">
 <h2>Creating a Project Directory<a class="headerlink" href="#creating-a-project-directory" title="Permalink to this headline">¶</a></h2>
-<p>Use the <a class="reference internal" href="../scripts.html#tkp-manage"><em>tkp-manage.py</em></a> to create a project directory:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initproject &lt;projectname&gt;
+<p>Use <a class="reference internal" href="../tkp-manage.html#tkp-manage"><em>tkp-manage.py</em></a> to create a project directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initproject &lt;directory-name&gt;
 </pre></div>
 </div>
-<p>This will create a skeleton directory structure named according to the project
-name. Within that directory, there are four files:</p>
+<p>The created directory will contain the following configuration files:</p>
 <dl class="docutils">
 <dt><tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt></dt>
-<dd>The overall pipeline configuration file. This configures the database which
-will be used for this project, as well as specifying where and how to store
-log files. <a class="reference internal" href="pipeline_cfg.html#pipeline-cfg"><em>See here</em></a> for a full description.</dd>
+<dd>The overall <a class="reference internal" href="pipeline_cfg.html#pipeline-cfg"><em>pipeline configuration file</em></a>.
+This configures the database which will be used for this project,
+as well as specifying where and how to store log files.
+<a class="reference internal" href="pipeline_cfg.html#pipeline-cfg"><em>See here</em></a> for a full description.</dd>
 <dt><tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt></dt>
 <dd>Configuration of the <a class="reference internal" href="celeryconfig_py.html#celery-intro"><em>Celery</em></a> task distribution system.
 <a class="reference internal" href="celeryconfig_py.html#celeryconfig-py"><em>See here</em></a> for a full description.</dd>
-<dt><tt class="docutils literal"><span class="pre">manage.py</span></tt></dt>
-<dd>An interface to the TKP management system. By default, invoking this is
-functionally equivalent to invoking <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt>, but it may be
-customized by an end user who requires some pipeline management facility
-that is not provided by default.</dd>
-<dt><tt class="docutils literal"><span class="pre">README.md</span></tt></dt>
-<dd>A basic guide to the project directory text format.</dd>
 </dl>
 </div>
 <div class="section" id="creating-a-job">
 <span id="config-job"></span><h2>Creating a Job<a class="headerlink" href="#creating-a-job" title="Permalink to this headline">¶</a></h2>
-<p>Use the <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> script to create a job:</p>
+<p>From within a project directory, use the <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> script to create a job:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ cd ./&lt;projectname&gt;
 $ tkp-manage.py initjob &lt;jobname&gt;
 </pre></div>
@@ -187,7 +181,7 @@ for that file.</p>
                         title="previous chapter">Pipeline Configuration</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="pipeline_cfg.html"
-                        title="next chapter">Project Configuration File</a></p>
+                        title="next chapter"><tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt> - Project Configuration File</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/userref/config/overview.txt"
@@ -220,7 +214,7 @@ for that file.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pipeline_cfg.html" title="Project Configuration File"
+          <a href="pipeline_cfg.html" title="pipeline.cfg - Project Configuration File"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Pipeline Configuration"

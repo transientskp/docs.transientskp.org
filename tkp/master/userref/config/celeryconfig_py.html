@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Task distribution via Celery &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>celeryconfig.py - Task distribution via Celery &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
     <link rel="up" title="Pipeline Configuration" href="index.html" />
-    <link rel="next" title="Job Parameters Configuration" href="job_params_cfg.html" />
-    <link rel="prev" title="Project Configuration File" href="pipeline_cfg.html" /> 
+    <link rel="next" title="Pipeline Design" href="../structure/index.html" />
+    <link rel="prev" title="job_params.cfg - Job Parameters Configuration" href="job_params_cfg.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,10 +41,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="job_params_cfg.html" title="Job Parameters Configuration"
+          <a href="../structure/index.html" title="Pipeline Design"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="pipeline_cfg.html" title="Project Configuration File"
+          <a href="job_params_cfg.html" title="job_params.cfg - Job Parameters Configuration"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
@@ -57,8 +57,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="task-distribution-via-celery">
-<span id="celery-intro"></span><h1>Task distribution via Celery<a class="headerlink" href="#task-distribution-via-celery" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="celeryconfig-py-task-distribution-via-celery">
+<span id="celery-intro"></span><h1><tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> - Task distribution via Celery<a class="headerlink" href="#celeryconfig-py-task-distribution-via-celery" title="Permalink to this headline">¶</a></h1>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">TRAP runs in parallel by default now, no extra action like running celery
@@ -80,7 +80,7 @@ it. There are a number of <a class="reference external" href="http://docs.celery
 with their own pros and cons: <a class="reference external" href="http://www.rabbitmq.com/">RabbitMQ</a> is a fine
 default choice.</p>
 <p>Workers can be started by using the <tt class="docutils literal"><span class="pre">celery</span> <span class="pre">worker</span></tt> option to the
-<a class="reference internal" href="../scripts.html#tkp-manage"><em>tkp-manage.py</em></a> script. Indeed, <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> provides a
+<a class="reference internal" href="../tkp-manage.html#tkp-manage"><em>tkp-manage.py</em></a> script. Indeed, <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> provides a
 convenient way of interfacing with a variety of Celery subcommands: try
 <tt class="docutils literal"><span class="pre">tkp-manage.py</span> <span class="pre">celery</span> <span class="pre">-h</span></tt> for information.</p>
 <p>When you start a worker, you will need to configure it to connect to an
@@ -129,7 +129,7 @@ your pipline directory:</p>
 </div>
 <div class="section" id="celery-configuration-file">
 <span id="celeryconfig-py"></span><h2>Celery Configuration File<a class="headerlink" href="#celery-configuration-file" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference internal" href="../scripts.html#tkp-manage"><em>management script</em></a> may be used to start a <a class="reference internal" href="#celery-intro"><em>Celery</em></a> worker. The worker is configured using the file
+<p>The <a class="reference internal" href="../tkp-manage.html#tkp-manage"><em>management script</em></a> may be used to start a <a class="reference internal" href="#celery-intro"><em>Celery</em></a> worker. The worker is configured using the file
 <tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> in the <a class="reference internal" href="overview.html#config-overview"><em>project directory</em></a>. The
 default contents of this file are:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># TraP Celery Configuration</span>
@@ -195,7 +195,7 @@ configuration chosen for your local system.</p>
             </a></p>
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Task distribution via Celery</a><ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> - Task distribution via Celery</a><ul>
 <li><a class="reference internal" href="#run-celery-workers">Run Celery workers</a></li>
 <li><a class="reference internal" href="#celery-configuration-file">Celery Configuration File</a></li>
 </ul>
@@ -203,11 +203,11 @@ configuration chosen for your local system.</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="pipeline_cfg.html"
-                        title="previous chapter">Project Configuration File</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="job_params_cfg.html"
-                        title="next chapter">Job Parameters Configuration</a></p>
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">job_params.cfg</span></tt> - Job Parameters Configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../structure/index.html"
+                        title="next chapter">Pipeline Design</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/userref/config/celeryconfig_py.txt"
@@ -240,10 +240,10 @@ configuration chosen for your local system.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="job_params_cfg.html" title="Job Parameters Configuration"
+          <a href="../structure/index.html" title="Pipeline Design"
              >next</a> |</li>
         <li class="right" >
-          <a href="pipeline_cfg.html" title="Project Configuration File"
+          <a href="job_params_cfg.html" title="job_params.cfg - Job Parameters Configuration"
              >previous</a> |</li>
         <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
