@@ -61,9 +61,10 @@
 <span id="celery-intro"></span><h1><tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> - Task distribution via Celery<a class="headerlink" href="#celeryconfig-py-task-distribution-via-celery" title="Permalink to this headline">¶</a></h1>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">TRAP runs in parallel by default now, no extra action like running celery
-workers is required. You should only try to use celery if you want to
-distribute work over multiple machines.</p>
+<p class="last">TRAP runs in parallel on a single multi-core machine by default now,
+using the standard multiprocessing functionality.
+As such, you should only try to use celery if you want to
+distribute a single job over multiple machines.</p>
 </div>
 <p><a class="reference external" href="http://celeryproject.org/">Celery</a> provides a mechanism for distributing
 tasks over a cluster of compute machines by means of an &#8220;asynchronous task

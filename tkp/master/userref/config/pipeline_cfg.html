@@ -79,19 +79,14 @@ engine = ;(monetdb or postgresql)
 database = &quot;&quot; ; e.g. &#39;{% user_name %}&#39;
 user =  &quot;&quot; ; e.g. &#39;{% user_name %}&#39;, or &#39;postgres&#39;
 password = &quot;&quot; ; e.g. &#39;{% user_name %}&#39;
-host = localhost
+host = &quot;localhost&quot;
 port =
 passphrase =
 dump_backup_copy = True
 
 [image_cache]
 copy_images = True
-## for development:
 mongo_host = &quot;localhost&quot;
-## for heastro1:
-#mongo_host = &quot;pc-swinbank.science.uva.nl&quot;
-## for Soton:
-#mongo_host = &quot;lofar4&quot;
 mongo_port = 27017
 mongo_db = &quot;tkp&quot;
 

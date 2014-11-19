@@ -63,7 +63,6 @@
 <li>Install and configure a suitable back-end database;</li>
 <li>Optionally, install and configure <a class="reference external" href="http://www.mongodb.org/">MongoDB</a>
 as a <a class="reference internal" href="concepts/mongodb.html#mongodb-intro"><em>pixel store</em></a>;</li>
-<li>Optionally, install a <a class="reference internal" href="../userref/config/celeryconfig_py.html#celery-intro"><em>Celery</em></a> broker;</li>
 <li>Install the core pipeline dependencies;</li>
 <li>Build and install the TraP itself.</li>
 </ol>
@@ -111,13 +110,6 @@ reference (e.g. via the <a class="reference external" href="https://github.com/t
 interface). This naturally requires that a MongoDB daemon is installed and
 configured to accept requests from TraP clients.</p>
 </div>
-<div class="section" id="celery-broker">
-<h2>Celery Broker<a class="headerlink" href="#celery-broker" title="Permalink to this headline">¶</a></h2>
-<p>It is possible to run the TraP without a <a class="reference internal" href="../userref/config/celeryconfig_py.html#celery-intro"><em>Celery</em></a> broker,
-but it can only run in a serial, non-distributed fashion. Multiple different
-options for Celery brokers are available; refer to the Celery documentation
-for details. We have had success with <a class="reference external" href="http://www.rabbitmq.com/">RabbitMQ</a>.</p>
-</div>
 <div class="section" id="core-dependencies">
 <h2>Core Dependencies<a class="headerlink" href="#core-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>To build the TraP, you will need:</p>
@@ -133,7 +125,6 @@ for details. We have had success with <a class="reference external" href="http:/
 <p>In addition to the above, to run the TraP you will need:</p>
 <ul class="simple">
 <li><a class="reference external" href="http://www.scipy.org/">SciPy</a> (at least version 0.7.0)</li>
-<li><a class="reference external" href="http://www.celeryproject.org/">Celery</a> (at least version 3.0)</li>
 <li><a class="reference external" href="http://labix.org/python-dateutil">python-dateutil</a> (at least version 1.4.1)</li>
 <li><a class="reference external" href="https://code.google.com/p/pyrap/">pyrap</a> and
 <a class="reference external" href="https://code.google.com/p/casacore/">casacore</a> (including measures data)</li>
@@ -173,6 +164,18 @@ $ python setup.py install
 follow the <a class="reference internal" href="../devref/procedures/testing.html#testing"><em>test procedure</em></a> to ensure that everything is
 working and ready for use.</p>
 </div>
+<div class="section" id="distributed-processing-via-celery">
+<h2>Distributed processing via Celery<a class="headerlink" href="#distributed-processing-via-celery" title="Permalink to this headline">¶</a></h2>
+<p>If you wish to run a TraP job across multiple machines, you may optionally
+also install a <a class="reference internal" href="../userref/config/celeryconfig_py.html#celery-intro"><em>Celery</em></a> broker (at least version 3.0);
+see the <a class="reference external" href="http://www.celeryproject.org/">Celery website</a> for further details
+of the Celery package.</p>
+<p>Multiple different options for Celery brokers are available;
+refer to the Celery documentation for details.
+We have had success with <a class="reference external" href="http://www.rabbitmq.com/">RabbitMQ</a>.</p>
+<p>This functionality is currently not well supported
+and should be considered experimental.</p>
+</div>
 </div>
 
 
@@ -193,9 +196,9 @@ working and ready for use.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#pixel-store">Pixel Store</a></li>
-<li><a class="reference internal" href="#celery-broker">Celery Broker</a></li>
 <li><a class="reference internal" href="#core-dependencies">Core Dependencies</a></li>
 <li><a class="reference internal" href="#build-and-install">Build and Install</a></li>
+<li><a class="reference internal" href="#distributed-processing-via-celery">Distributed processing via Celery</a></li>
 </ul>
 </li>
 </ul>
