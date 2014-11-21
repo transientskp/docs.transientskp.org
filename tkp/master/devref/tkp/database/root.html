@@ -61,6 +61,26 @@
   <div class="section" id="module-tkp.db">
 <span id="tkp-db-tkp-database-root-package"></span><h1><a class="reference internal" href="#module-tkp.db" title="tkp.db: database stuff"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db</span></tt></a> &#8211; TKP database root package<a class="headerlink" href="#module-tkp.db" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="tkp.db.commit">
+<tt class="descclassname">tkp.db.</tt><tt class="descname">commit</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db.html#commit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generic wrapper to commit a query transaction</p>
+<p>It saves the changes involved by a transaction</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.connect">
+<tt class="descclassname">tkp.db.</tt><tt class="descname">connect</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db.html#connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generic wrapper to connect to the configured database</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.connection">
+<tt class="descclassname">tkp.db.</tt><tt class="descname">connection</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db.html#connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generic wrapper to create a connection to the database if
+it does not exist</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="tkp.db.execute">
 <tt class="descclassname">tkp.db.</tt><tt class="descname">execute</tt><big>(</big><em>query</em>, <em>parameters={}</em>, <em>commit=False</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db.html#execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>A generic wrapper for doing any query to the database</p>
@@ -80,6 +100,13 @@
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.rollback">
+<tt class="descclassname">tkp.db.</tt><tt class="descname">rollback</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db.html#rollback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generic wrapper to rollback a query transaction</p>
+<p>Undo changes involved by a transaction that have not been saved</p>
 </dd></dl>
 
 </div>

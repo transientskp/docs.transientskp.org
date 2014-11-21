@@ -60,12 +60,11 @@
             
   <div class="section" id="introduction">
 <span id="database-introduction"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>The database subpackage consists of three modules. There are a few extra
-modules (and a number of old modules that are not really used anymore), but the
-main three modules are:</p>
+<p>The database subpackage consists of several modules dedicated to their tasks.
+The main modules are:</p>
 <ul class="simple">
 <li>database</li>
-<li>utils</li>
+<li>general</li>
 </ul>
 <div class="section" id="database">
 <h2>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h2>
@@ -75,22 +74,18 @@ the database. It provides a <cite>connection</cite> and a <cite>cursor</cite> ob
 database, as well as a few shortcut utility functions for executing SQL
 queries.</p>
 <p>The most typical use for the <a class="reference internal" href="database.html#tkp.db.database.Database" title="tkp.db.database.Database"><tt class="xref py py-class docutils literal"><span class="pre">tkp.db.database.Database</span></tt></a> class is
-something as follows, assuming the default login settings (taking from the tkp
+something as follows, assuming the default login settings (taken from the tkp
 configuration file) are appropriate:</p>
-<div class="highlight-python"><div class="highlight"><pre>from contextlib import closing
+<div class="highlight-python"><div class="highlight"><pre>from tkp.db import execute as execute
 
-with closing(Database()) as database:
-    database.execute(&lt;sql query&gt;, &lt;args&gt;)
-    results = database.fetchall()
-    # or, more explicity:
-    database.cursor.execute(&lt;sql query&gt;, &lt;args&gt;)
-    results = database.cursor.fetchall()
+cursor = execute(&lt;sql query&gt;, &lt;args&gt;)
+results = cursor.fetchall()
 </pre></div>
 </div>
 <p>For more details, see the <a class="reference internal" href="database.html#database-database"><em>database</em></a> section.</p>
 </div>
-<div class="section" id="dataset">
-<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="general-dataset-image-extracted-sources">
+<h2>General: dataset, image, extracted sources<a class="headerlink" href="#general-dataset-image-extracted-sources" title="Permalink to this headline">¶</a></h2>
 <p>The dataset module provides a miniature object relation mapper (ORM) interface
 to the database. This interface is not fully complete, but it does allow one to
 treat several database tables and their data as Python classes and instances.
@@ -101,9 +96,8 @@ The mapped tables and their classes are:</p>
 <li>extractedsource: ExtractedSource</li>
 </ul>
 <p>Each of these classes inherits from the DBOject class. This class provides
-a few general methods to interface with the underlying database. Details are
-provided in the corresponding <a class="reference internal" href="database.html#database-database"><em>database</em></a> documentation;
-a typical usage example could look like this:</p>
+a few general methods to interface with the underlying database.
+A typical usage example could look like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">db_image</span> <span class="o">=</span> <span class="n">DBImage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">image_id</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
 <span class="n">db_image</span><span class="o">.</span><span class="n">insert_extracted_sources</span><span class="p">(</span><span class="n">results</span><span class="p">,</span><span class="s">&#39;blind&#39;</span><span class="p">)</span>
 </pre></div>
@@ -114,24 +108,32 @@ and are stored in the database per image into extractedsource. In case of
 a new image, one would leave out the <cite>id</cite> keyword in the first line, and
 instead supply a <cite>data</cite> keyword argument that is a dictionary with the
 necessary information (again, see the <a class="reference internal" href="database.html#database-database"><em>database documentation</em></a>).</p>
+<p>Currently, the usage described above is sometimes used in the unittest code. In the pipeline
+code we try to restrict the usage of the orm, since it can get quite complex.
+Inserting the extracted sources for a particular image looks like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">general</span> <span class="k">as</span> <span class="n">dbgen</span>
+<span class="n">dbgen</span><span class="o">.</span><span class="n">insert_extracted_sources</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">sources</span><span class="p">,</span> <span class="s">&#39;blind&#39;</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="utils">
-<h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
-<p>note: this probably has been depricated.</p>
-<p>The utils module contains the actual SQL queries used for the various database
+<p>where image.id is the id of the image to which the sources belong to.</p>
+</div>
+<div class="section" id="other">
+<h2>Other<a class="headerlink" href="#other" title="Permalink to this headline">¶</a></h2>
+<p>The remaining modules contain the actual SQL queries used for the various database
 routines, such as source insertion, source association, keeping track of the
-monitoring list, etcetera. All functions and queries within each function
-follow a fixed pattern: functions accept a connection object (e.g.
-Database().connection), and each query is executed within a try-except block in
-case the database raises an error. There is some overhead in the sense that
-a cursor is created within each function (instead of using the
-Database().cursor object), but other than that, the routines in utils provide
+monitoring sources and null detections, etc.
+All functions and queries within each function call follow a fixed pattern:
+functions inherit the connection object, and each query is executed
+within a try-except block in case the database raises an error.
+There is some overhead in the sense that a cursor is created
+for each function call, but other than that, the routines provide
 the fastest and most direct interaction with the database.</p>
 <p>Several functions are called from methods of the classes in the dataset module,
 to provide a hopefully clearer interface, but can of course be called directly
 as well. Finally, a number of functions are private to the module, and their
 name is therefore preceded with an underscore. These functions tend to be
-called from another funtion within utils, and should only be used as such.</p>
+called from another funtion within the same module, but may be called from
+another module as well.</p>
 </div>
 </div>
 
@@ -148,8 +150,8 @@ called from another funtion within utils, and should only be used as such.</p>
   <ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
 <li><a class="reference internal" href="#database">Database</a></li>
-<li><a class="reference internal" href="#dataset">Dataset</a></li>
-<li><a class="reference internal" href="#utils">Utils</a></li>
+<li><a class="reference internal" href="#general-dataset-image-extracted-sources">General: dataset, image, extracted sources</a></li>
+<li><a class="reference internal" href="#other">Other</a></li>
 </ul>
 </li>
 </ul>

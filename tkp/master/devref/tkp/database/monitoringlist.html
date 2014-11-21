@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tkp.db.monitoringlist – monitoringlist database functions &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp.db.monitoringlist – handling of monitoring sources &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="tkp.db – Database routines" href="index.html" />
-    <link rel="next" title="tkp.db.nulldetections – handling of null detections" href="nulldetections.html" />
-    <link rel="prev" title="tkp.db.generic – generic data-query generation functions" href="generic.html" /> 
+    <link rel="next" title="tkp.distribute – routines for running on distributed nodes" href="../distribute/index.html" />
+    <link rel="prev" title="tkp.db.nulldetections – handling of null detections" href="nulldetections.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,10 +41,10 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
+          <a href="../distribute/index.html" title="tkp.distribute – routines for running on distributed nodes"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="generic.html" title="tkp.db.generic – generic data-query generation functions"
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
@@ -59,10 +59,67 @@
           <div class="body">
             
   <div class="section" id="module-tkp.db.monitoringlist">
-<span id="tkp-db-monitoringlist-monitoringlist-database-functions"></span><span id="database-monitoringlist"></span><h1><a class="reference internal" href="#module-tkp.db.monitoringlist" title="tkp.db.monitoringlist: monitoringlist database stuff"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.monitoringlist</span></tt></a> &#8211; monitoringlist database functions<a class="headerlink" href="#module-tkp.db.monitoringlist" title="Permalink to this headline">¶</a></h1>
+<span id="tkp-db-monitoringlist-handling-of-monitoring-sources"></span><span id="database-monitoringlist"></span><h1><a class="reference internal" href="#module-tkp.db.monitoringlist" title="tkp.db.monitoringlist: Database handling monitoring source"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.monitoringlist</span></tt></a> &#8211; handling of monitoring sources<a class="headerlink" href="#module-tkp.db.monitoringlist" title="Permalink to this headline">¶</a></h1>
 <p>A collection of back end subroutines (mostly SQL queries).</p>
 <p>This module contains the routines to deal with the monitoring
 sources, provided by the user via the command line.</p>
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_1_to_1_assoc">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_1_to_1_assoc</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_1_to_1_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_1_to_1_assoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>The runcat-monitoring pairs are appended to the assocxtrsource
+(light-curve) table as a type = 9 datapoint.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_new_1_to_1_assoc">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_new_1_to_1_assoc</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_new_1_to_1_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_new_1_to_1_assoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>The forced fits of the monitoring sources which are new
+are appended to the assocxtrsource (light-curve) table
+as a type = 8 datapoint.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_new_runcat">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_new_runcat</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_new_runcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_new_runcat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert the fits of the monitoring sources as new sources
+into the runningcatalog</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_new_runcat_flux">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_new_runcat_flux</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_new_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_new_runcat_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert the fitted fluxes of the monitoring sources as new datapoints
+into the runningcatalog_flux.</p>
+<p>Extractedsources for which not a counterpart was found in the
+runningcatalog, i.e., those that do not have an entry in the
+tempruncat table (t0) will be added as a new source in the
+runningcatalog_flux table.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_runcat_flux">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_runcat_flux</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_runcat_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Monitoring sources that were not yet fitted in this frequency band before,
+will be appended to it. Those have their first f_datapoint.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_tempruncat">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_tempruncat</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_tempruncat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_tempruncat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Here the associations of forced fits of the monitoring sources
+and their runningcatalog counterparts are inserted into the
+temporary table.</p>
+<p>We follow the implementation of the normal association procedure,
+except that we don&#8217;t need to match with a De Ruiter radius, since
+the counterpart pairs are from the same runningcatalog source.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._update_monitor_runcats">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_update_monitor_runcats</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_update_monitor_runcats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._update_monitor_runcats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update <tt class="docutils literal"><span class="pre">runcat</span></tt> col of <tt class="docutils literal"><span class="pre">monitor</span></tt> table for newly extracted positions.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="tkp.db.monitoringlist.associate_ms">
 <tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">associate_ms</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#associate_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist.associate_ms" title="Permalink to this definition">¶</a></dt>
@@ -107,11 +164,11 @@ After all this, the temporary table is emptied again.</p>
               <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
             </a></p>
   <h4>Previous topic</h4>
-  <p class="topless"><a href="generic.html"
-                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.generic</span></tt> &#8211; generic data-query generation functions</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="nulldetections.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.nulldetections</span></tt> &#8211; handling of null detections</a></p>
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.nulldetections</span></tt> &#8211; handling of null detections</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../distribute/index.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.distribute</span></tt> &#8211; routines for running on distributed nodes</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/devref/tkp/database/monitoringlist.txt"
@@ -144,10 +201,10 @@ After all this, the temporary table is emptied again.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
+          <a href="../distribute/index.html" title="tkp.distribute – routines for running on distributed nodes"
              >next</a> |</li>
         <li class="right" >
-          <a href="generic.html" title="tkp.db.generic – generic data-query generation functions"
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
