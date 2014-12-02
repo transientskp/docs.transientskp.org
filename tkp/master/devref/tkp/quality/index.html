@@ -238,6 +238,42 @@ tkp.lofar.noise.noise_level</li>
 </dd></dl>
 
 </div>
+<div class="section" id="module-tkp.quality.statistics">
+<span id="tkp-quality-statistics"></span><h2><a class="reference internal" href="#module-tkp.quality.statistics" title="tkp.quality.statistics"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.quality.statistics</span></tt></a><a class="headerlink" href="#module-tkp.quality.statistics" title="Permalink to this headline">¶</a></h2>
+<p>functions for calculating statistical properties of LOFAR images</p>
+<dl class="function">
+<dt id="tkp.quality.statistics.clip">
+<tt class="descclassname">tkp.quality.statistics.</tt><tt class="descname">clip</tt><big>(</big><em>data</em>, <em>sigma=3</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/quality/statistics.html#clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.quality.statistics.clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all values above a threshold from the array.
+Uses iterative clipping at sigma value until nothing more is getting clipped.
+:param data: a numpy array</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.quality.statistics.rms">
+<tt class="descclassname">tkp.quality.statistics.</tt><tt class="descname">rms</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/quality/statistics.html#rms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.quality.statistics.rms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the RMS of the data about the median.
+:param data: a numpy array</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.quality.statistics.rms_with_clipped_subregion">
+<tt class="descclassname">tkp.quality.statistics.</tt><tt class="descname">rms_with_clipped_subregion</tt><big>(</big><em>data</em>, <em>sigma=3</em>, <em>f=4</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/quality/statistics.html#rms_with_clipped_subregion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.quality.statistics.rms_with_clipped_subregion" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the rms value of a iterative sigma clipped subsection of an image
+:param data: A numpy array
+:param sigma: sigma value used for clipping
+:param f: determines size of subsection, result will be 1/fth of the image size</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.quality.statistics.subregion">
+<tt class="descclassname">tkp.quality.statistics.</tt><tt class="descname">subregion</tt><big>(</big><em>data</em>, <em>f=4</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/quality/statistics.html#subregion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.quality.statistics.subregion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the inner region of a image, according to f.</p>
+<p>Resulting area is 4/(f*f) of the original.
+:param data: a numpy array</p>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -255,6 +291,7 @@ tkp.lofar.noise.noise_level</li>
 <li><a class="reference internal" href="#module-tkp.quality.restoringbeam"><tt class="docutils literal"><span class="pre">tkp.quality.restoringbeam</span></tt></a></li>
 <li><a class="reference internal" href="#module-tkp.quality.brightsource"><tt class="docutils literal"><span class="pre">tkp.quality.brightsource</span></tt></a></li>
 <li><a class="reference internal" href="#module-tkp.quality.rms"><tt class="docutils literal"><span class="pre">tkp.quality.rms</span></tt></a></li>
+<li><a class="reference internal" href="#module-tkp.quality.statistics"><tt class="docutils literal"><span class="pre">tkp.quality.statistics</span></tt></a></li>
 </ul>
 </li>
 </ul>

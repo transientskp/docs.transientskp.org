@@ -65,9 +65,10 @@
 <span class="n">dt_w_microsecond_format</span> <span class="o">=</span> <span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S.</span><span class="si">%f</span><span class="s">&#39;</span>
 
 
-<span class="k">def</span> <span class="nf">loads_timestamp_w_microseconds</span><span class="p">(</span><span class="n">dt_str</span><span class="p">):</span>
+<div class="viewcode-block" id="loads_timestamp_w_microseconds"><a class="viewcode-back" href="../../../devref/tkp/config/index.html#tkp.config.parse.loads_timestamp_w_microseconds">[docs]</a><span class="k">def</span> <span class="nf">loads_timestamp_w_microseconds</span><span class="p">(</span><span class="n">dt_str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Loads and returns timestamp with microsecond precission&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">dt_str</span><span class="p">,</span> <span class="n">dt_w_microsecond_format</span><span class="p">)</span>
-
+</div>
 <span class="n">loads_methods</span> <span class="o">=</span> <span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">,</span>
                   <span class="n">loads_timestamp_w_microseconds</span><span class="p">)</span>
 
