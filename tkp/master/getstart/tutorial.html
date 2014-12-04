@@ -83,17 +83,17 @@ Leap second table TAI_UTC seems out-of-date.
 <p class="last">Then consult your sysadmin or see <a class="reference internal" href="casacore-measures-data.html#casacore-measures"><em>this note</em></a>.</p>
 </div>
 </div>
-<div class="section" id="tkp-manage-py">
-<h2><tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt><a class="headerlink" href="#tkp-manage-py" title="Permalink to this headline">¶</a></h2>
-<p>The main tool for configuring and running TraP is <a class="reference internal" href="../userref/tkp-manage.html#tkp-manage"><em>tkp-manage.py</em></a>, which
+<div class="section" id="trap-manage-py">
+<h2><tt class="docutils literal"><span class="pre">trap-manage.py</span></tt><a class="headerlink" href="#trap-manage-py" title="Permalink to this headline">¶</a></h2>
+<p>The main tool for configuring and running TraP is <a class="reference internal" href="../userref/trap-manage.html#trap-manage"><em>trap-manage.py</em></a>, which
 should be available to you as a command-line utility after installing the TraP.
 You may need to consult your sysadmin for details of how to access
 your local TraP installation. You can remind yourself of the options available
 to you by running:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py -h
+<div class="highlight-python"><div class="highlight"><pre>$ trap-manage.py -h
 </pre></div>
 </div>
-<p>Or you can consult the <a class="reference internal" href="../userref/tkp-manage.html#tkp-manage"><em>documentation</em></a> for details.</p>
+<p>Or you can consult the <a class="reference internal" href="../userref/trap-manage.html#trap-manage"><em>documentation</em></a> for details.</p>
 </div>
 <div class="section" id="create-a-pipeline-project-directory">
 <h2>Create a pipeline project directory<a class="headerlink" href="#create-a-pipeline-project-directory" title="Permalink to this headline">¶</a></h2>
@@ -101,7 +101,7 @@ to you by running:</p>
 this will contain your pipeline settings and job directories.
 To create a project folder in your current working directory,
 type:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initproject &lt;projectname&gt;
+<div class="highlight-python"><div class="highlight"><pre>$ trap-manage.py initproject &lt;projectname&gt;
 </pre></div>
 </div>
 <p>(substituting <tt class="docutils literal"><span class="pre">&lt;projectname&gt;</span></tt> for your chosen directory name).</p>
@@ -128,7 +128,7 @@ These include the host and port number of
 the system running the database management system, the name of the database,
 and the username and password.
 Then, from the project directory, type:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initdb
+<div class="highlight-python"><div class="highlight"><pre>$ trap-manage.py initdb
 </pre></div>
 </div>
 </div>
@@ -168,7 +168,7 @@ ALTER USER SET PASSWORD &#39;${password}&#39; USING OLD PASSWORD &#39;monetdb&#3
 a subdirectory. Job directories contain a list of files to process, and config
 file that can be used to define various properties used during processing.
 To initialise a job directory run:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py initjob &lt;jobname&gt;
+<div class="highlight-python"><div class="highlight"><pre>$ trap-manage.py initjob &lt;jobname&gt;
 </pre></div>
 </div>
 <p>This will create a job subdirectory within your pipeline directory. This
@@ -186,7 +186,7 @@ images. You will need to adjust this to point to your data files.</dd>
 <div class="section" id="run-the-pipeline">
 <h2>Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h2>
 <p>To start processing your data run (from your pipeline directory):</p>
-<div class="highlight-python"><div class="highlight"><pre>$ tkp-manage.py run &lt;jobname&gt;
+<div class="highlight-python"><div class="highlight"><pre>$ trap-manage.py run &lt;jobname&gt;
 </pre></div>
 </div>
 </div>
@@ -205,7 +205,7 @@ images. You will need to adjust this to point to your data files.</dd>
   <ul>
 <li><a class="reference internal" href="#">Tutorial Overview</a><ul>
 <li><a class="reference internal" href="#install-the-software">Install the software</a></li>
-<li><a class="reference internal" href="#tkp-manage-py"><tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt></a></li>
+<li><a class="reference internal" href="#trap-manage-py"><tt class="docutils literal"><span class="pre">trap-manage.py</span></tt></a></li>
 <li><a class="reference internal" href="#create-a-pipeline-project-directory">Create a pipeline project directory</a></li>
 <li><a class="reference internal" href="#create-a-database">Create a database</a></li>
 <li><a class="reference internal" href="#initialize-a-database">Initialize a database</a></li>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tkp-manage.py &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>trap-manage.py &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -56,16 +56,16 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="tkp-manage-py">
-<span id="tkp-manage"></span><h1>tkp-manage.py<a class="headerlink" href="#tkp-manage-py" title="Permalink to this headline">¶</a></h1>
-<p><tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> is the command-line tool for initialising and running the
+  <div class="section" id="trap-manage-py">
+<span id="trap-manage"></span><h1>trap-manage.py<a class="headerlink" href="#trap-manage-py" title="Permalink to this headline">¶</a></h1>
+<p><tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> is the command-line tool for initialising and running the
 TraP pipeline. Different tasks are handled via the use of &#8216;subcommands&#8217;
 as detailed below.</p>
 <p>When the TraP is correctly installed on the system you can issue the
-<tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> command. Documentation of subcommands is also available
+<tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> command. Documentation of subcommands is also available
 on the command line. You can use the <tt class="docutils literal"><span class="pre">--help</span></tt> flag (also per subcommand) to
 explore all possible options.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py [-h] {initproject,initjob,run,initdb,celery} ...
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py [-h] {initproject,initjob,run,initdb,celery} ...
 
 A tool for managing TKP projects
 
@@ -79,12 +79,12 @@ This is a tool for managing a TKP project. It can be used to initialize a TKP
 project and the jobs inside a project. To start using this tool you first
 create a TraP project by running:
 
-  $ tkp-manage.py initproject &lt;projectname&gt;
+  $ trap-manage.py initproject &lt;projectname&gt;
 
 In the folder where you want to put the TraP project. To learn more about a
-specific `tkp-manage.py` subcommand, run:
+specific `trap-manage.py` subcommand, run:
 
-  $ tkp-manage.py &lt;subcommand&gt; -h
+  $ trap-manage.py &lt;subcommand&gt; -h
 
 Have a nice day!
 </pre></div>
@@ -99,7 +99,7 @@ your pipeline and for creating jobs. A project can be seen as a set of
 configured jobs. When a project is initialised it is populated with a generic
 setup that hopefully works for your setup, but probably the modification of
 some of the configuration files is required.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py initproject [-h] [-t TARGET] name
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py initproject [-h] [-t TARGET] name
 
 positional arguments:
   name                  project folder name
@@ -115,7 +115,7 @@ optional arguments:
 <h3>initjob<a class="headerlink" href="#initjob" title="Permalink to this headline">¶</a></h3>
 <p>This command will initaliase a new job. It will setup a subfolder which is
 populated with a set of templates you need to modify.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py initjob [-h] name
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py initjob [-h] name
 
 positional arguments:
   name        Name of new job
@@ -126,9 +126,9 @@ optional arguments:
 </div>
 </div>
 <div class="section" id="run">
-<span id="tkp-manage-run"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
+<span id="trap-manage-run"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
 <p>Run will start a job. It needs a job name as argument.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py run [-h] [-m MONITOR_COORDS] [-l MONITOR_LIST] name
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py run [-h] [-m MONITOR_COORDS] [-l MONITOR_LIST] name
 
 Run a specific job.
 
@@ -158,7 +158,7 @@ optional arguments:
 <h3>initdb<a class="headerlink" href="#initdb" title="Permalink to this headline">¶</a></h3>
 <p>Initialise a database with the TKP schema. The semantics of this command vary
 depending on the database system in use; see the <a class="reference internal" href="../getstart/tutorial.html#getstart-initdb"><em>relevant section</em></a> for details.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py initdb [-h] [-y] [-d]
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py initdb [-h] [-y] [-d]
 
 optional arguments:
   -h, --help     show this help message and exit
@@ -170,7 +170,7 @@ optional arguments:
 <div class="section" id="celery">
 <h3>celery<a class="headerlink" href="#celery" title="Permalink to this headline">¶</a></h3>
 <p>Shortcut access to celery subcommands.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: tkp-manage.py celery [-h] ...
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py celery [-h] ...
 
 shortcut for access to celery sub commands
 
@@ -196,7 +196,7 @@ optional arguments:
             </a></p>
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">tkp-manage.py</a><ul>
+<li><a class="reference internal" href="#">trap-manage.py</a><ul>
 <li><a class="reference internal" href="#subcommands">Subcommands</a><ul>
 <li><a class="reference internal" href="#initproject">initproject</a></li>
 <li><a class="reference internal" href="#initjob">initjob</a></li>
@@ -217,7 +217,7 @@ optional arguments:
                         title="next chapter">Pipeline Configuration</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/userref/tkp-manage.txt"
+    <li><a href="../_sources/userref/trap-manage.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">

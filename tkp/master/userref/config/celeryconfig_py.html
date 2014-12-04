@@ -81,11 +81,11 @@ it. There are a number of <a class="reference external" href="http://docs.celery
 with their own pros and cons: <a class="reference external" href="http://www.rabbitmq.com/">RabbitMQ</a> is a fine
 default choice.</p>
 <p>Workers can be started by using the <tt class="docutils literal"><span class="pre">celery</span> <span class="pre">worker</span></tt> option to the
-<a class="reference internal" href="../tkp-manage.html#tkp-manage"><em>tkp-manage.py</em></a> script. Indeed, <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> provides a
+<a class="reference internal" href="../trap-manage.html#trap-manage"><em>trap-manage.py</em></a> script. Indeed, <tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> provides a
 convenient way of interfacing with a variety of Celery subcommands: try
-<tt class="docutils literal"><span class="pre">tkp-manage.py</span> <span class="pre">celery</span> <span class="pre">-h</span></tt> for information.</p>
+<tt class="docutils literal"><span class="pre">trap-manage.py</span> <span class="pre">celery</span> <span class="pre">-h</span></tt> for information.</p>
 <p>When you start a worker, you will need to configure it to connect to an
-appropriate broker. If you are using the <tt class="docutils literal"><span class="pre">tkp-manage.py</span></tt> script, you can
+appropriate broker. If you are using the <tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> script, you can
 configure the worker through the file <a class="reference internal" href="#celeryconfig-py"><em>celeryconfig.py</em></a>
 in your <a class="reference internal" href="overview.html#config-overview"><em>project folder</em></a>: set the <tt class="docutils literal"><span class="pre">BROKER_URL</span></tt>
 variable appropriately. Note that if you are running the broker and a worker
@@ -116,7 +116,7 @@ your <tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> 
 separate Celery worker. This worker will receive jobs from a broker, so it is
 assumed you installed and started a broker in the installation step. Start a
 Celery worker by running:</p>
-<div class="highlight-python"><div class="highlight"><pre>% tkp-manage.py celery worker
+<div class="highlight-python"><div class="highlight"><pre>% trap-manage.py celery worker
 </pre></div>
 </div>
 <p>If you want to increase the log level add <tt class="docutils literal"><span class="pre">--loglevel=info</span></tt> or maybe even
@@ -130,7 +130,7 @@ your pipline directory:</p>
 </div>
 <div class="section" id="celery-configuration-file">
 <span id="celeryconfig-py"></span><h2>Celery Configuration File<a class="headerlink" href="#celery-configuration-file" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference internal" href="../tkp-manage.html#tkp-manage"><em>management script</em></a> may be used to start a <a class="reference internal" href="#celery-intro"><em>Celery</em></a> worker. The worker is configured using the file
+<p>The <a class="reference internal" href="../trap-manage.html#trap-manage"><em>management script</em></a> may be used to start a <a class="reference internal" href="#celery-intro"><em>Celery</em></a> worker. The worker is configured using the file
 <tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> in the <a class="reference internal" href="overview.html#config-overview"><em>project directory</em></a>. The
 default contents of this file are:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># TraP Celery Configuration</span>
