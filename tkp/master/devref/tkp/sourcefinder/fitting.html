@@ -63,14 +63,14 @@
 <p>Source fitting routines.</p>
 <dl class="function">
 <dt id="tkp.sourcefinder.fitting.fitgaussian">
-<tt class="descclassname">tkp.sourcefinder.fitting.</tt><tt class="descname">fitgaussian</tt><big>(</big><em>data</em>, <em>params</em>, <em>fixed=None</em>, <em>maxfev=0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/fitting.html#fitgaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.fitting.fitgaussian" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">tkp.sourcefinder.fitting.</tt><tt class="descname">fitgaussian</tt><big>(</big><em>pixels</em>, <em>params</em>, <em>fixed=None</em>, <em>maxfev=0</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/fitting.html#fitgaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.fitting.fitgaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate source positional values by fitting a 2D Gaussian</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>numpy.ndarray</em>) &#8211; Pixel values</li>
+<li><strong>pixels</strong> (<em>numpy.ma.MaskedArray</em>) &#8211; Pixel values (with bad pixels masked)</li>
 <li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; initial fit parameters (possibly estimated
 using the moments() function, above)</li>
 </ul>

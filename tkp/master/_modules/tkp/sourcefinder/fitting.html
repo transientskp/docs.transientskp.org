@@ -162,12 +162,12 @@
         <span class="p">}</span>
 
 </div>
-<div class="viewcode-block" id="fitgaussian"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/fitting.html#tkp.sourcefinder.fitting.fitgaussian">[docs]</a><span class="k">def</span> <span class="nf">fitgaussian</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">maxfev</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="fitgaussian"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/fitting.html#tkp.sourcefinder.fitting.fitgaussian">[docs]</a><span class="k">def</span> <span class="nf">fitgaussian</span><span class="p">(</span><span class="n">pixels</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">maxfev</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Calculate source positional values by fitting a 2D Gaussian</span>
 
 <span class="sd">    Args:</span>
 
-<span class="sd">        data (numpy.ndarray): Pixel values</span>
+<span class="sd">        pixels (numpy.ma.MaskedArray): Pixel values (with bad pixels masked)</span>
 
 <span class="sd">        params (dict): initial fit parameters (possibly estimated</span>
 <span class="sd">            using the moments() function, above)</span>
@@ -215,7 +215,7 @@
 <span class="sd">        :type fixed: dict</span>
 
 <span class="sd">        :returns: 2d-array of difference between estimated Gaussian function</span>
-<span class="sd">            and the actual data</span>
+<span class="sd">            and the actual pixels</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">paramlist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">paramlist</span><span class="p">)</span>
         <span class="n">gaussian_args</span> <span class="o">=</span> <span class="p">[]</span>
@@ -231,8 +231,11 @@
 
         <span class="c"># The .compressed() below is essential so the Gaussian fit will not</span>
         <span class="c"># take account of the masked values (=below threshold) at the edges</span>
-        <span class="c"># and corners of data (=(masked) array, so rectangular in shape).</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fromfunction</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
+        <span class="c"># and corners of pixels (=(masked) array, so rectangular in shape).</span>
+        <span class="n">pixel_resids</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromfunction</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">pixels</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">pixels</span><span class="p">,</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">pixels</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pixel_resids</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
 
     <span class="c"># maxfev=0, the default, corresponds to 200*(N+1) (NB, not 100*(N+1) as</span>
     <span class="c"># the scipy docs state!) function evaluations, where N is the number of</span>

@@ -322,7 +322,7 @@
 
 <span class="sd">        Args:</span>
 
-<span class="sd">            grid (numpy.ma.array)</span>
+<span class="sd">            grid (numpy.ma.MaskedArray)</span>
 
 <span class="sd">        Kwargs:</span>
 
@@ -330,7 +330,7 @@
 
 <span class="sd">        Returns:</span>
 
-<span class="sd">            (numpy.ndarray)</span>
+<span class="sd">            (numpy.ma.MaskedArray)</span>
 
 <span class="sd">        Used to transform the RMS, background or FDR grids produced by</span>
 <span class="sd">        L{_grids()} to a map we can compare with the image data.</span>
@@ -378,10 +378,11 @@
             <span class="c"># lower than the minimum value in the map. If required, these</span>
             <span class="c"># can be trimmed off. No point doing this if the map is already</span>
             <span class="c"># fully masked, though.</span>
-            <span class="n">my_map</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                <span class="n">my_map</span> <span class="o">&gt;=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">my_map</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+            <span class="n">my_map</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">my_map</span> <span class="o">&gt;=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">my_map</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">grid</span><span class="p">)),</span>
+                    <span class="n">mask</span> <span class="o">=</span> <span class="n">my_map</span><span class="o">.</span><span class="n">mask</span>
             <span class="p">)</span>
-
         <span class="k">return</span> <span class="n">my_map</span>
 
     <span class="c">###########################################################################</span>
