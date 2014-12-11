@@ -61,7 +61,7 @@
 
 <div class="viewcode-block" id="generate_subthresholds"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/utils.html#tkp.sourcefinder.utils.generate_subthresholds">[docs]</a><span class="k">def</span> <span class="nf">generate_subthresholds</span><span class="p">(</span><span class="n">min_value</span><span class="p">,</span> <span class="n">max_value</span><span class="p">,</span> <span class="n">num_thresholds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generate a series of @num_thresholds@ logarithmically spaced values</span>
+<span class="sd">    Generate a series of ``num_thresholds`` logarithmically spaced values</span>
 <span class="sd">    in the range (min_value, max_value) (both exclusive).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># First, we calculate a logarithmically spaced sequence between exp(0.0)</span>
@@ -80,13 +80,16 @@
     <span class="k">return</span> <span class="n">subthrrange</span>
 
 </div>
-<span class="k">def</span> <span class="nf">get_error_radius</span><span class="p">(</span><span class="n">wcs</span><span class="p">,</span> <span class="n">x_value</span><span class="p">,</span> <span class="n">x_error</span><span class="p">,</span> <span class="n">y_value</span><span class="p">,</span> <span class="n">y_error</span><span class="p">):</span>
-    <span class="c"># Estimate an absolute angular error on the position (x_value, y_value)</span>
-    <span class="c"># with the given errors.</span>
-    <span class="c"># This is a pessimistic estimate, because we take sum of the error</span>
-    <span class="c"># along the X and Y axes. Better might be to project them both back on</span>
-    <span class="c"># to the major/minor axes of the elliptical fit, but this should do for</span>
-    <span class="c"># now.</span>
+<div class="viewcode-block" id="get_error_radius"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/utils.html#tkp.sourcefinder.utils.get_error_radius">[docs]</a><span class="k">def</span> <span class="nf">get_error_radius</span><span class="p">(</span><span class="n">wcs</span><span class="p">,</span> <span class="n">x_value</span><span class="p">,</span> <span class="n">x_error</span><span class="p">,</span> <span class="n">y_value</span><span class="p">,</span> <span class="n">y_error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate an absolute angular error on the position (x_value, y_value)</span>
+<span class="sd">    with the given errors.</span>
+
+<span class="sd">    This is a pessimistic estimate, because we take sum of the error</span>
+<span class="sd">    along the X and Y axes. Better might be to project them both back on</span>
+<span class="sd">    to the major/minor axes of the elliptical fit, but this should do for</span>
+<span class="sd">    now.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">error_radius</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">centre_ra</span><span class="p">,</span> <span class="n">centre_dec</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">p2s</span><span class="p">([</span><span class="n">x_value</span><span class="p">,</span> <span class="n">y_value</span><span class="p">])</span>
@@ -110,7 +113,7 @@
         <span class="n">error_radius</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">error_radius</span>
 
-
+</div>
 <div class="viewcode-block" id="circular_mask"><a class="viewcode-back" href="../../../devref/tkp/sourcefinder/utils.html#tkp.sourcefinder.utils.circular_mask">[docs]</a><span class="k">def</span> <span class="nf">circular_mask</span><span class="p">(</span><span class="n">xdim</span><span class="p">,</span> <span class="n">ydim</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a numpy array of shape (xdim, ydim). All points with radius of</span>

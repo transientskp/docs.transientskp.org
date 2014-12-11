@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Variability and new-source detection &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Variability and new-source detection stage &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -28,7 +28,7 @@
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Pipeline Design" href="../index.html" />
     <link rel="next" title="Developer’s Reference Guide" href="../../../devref/index.html" />
-    <link rel="prev" title="Forced source-fitting" href="forcedfits.html" /> 
+    <link rel="prev" title="Forced source-fitting stage" href="forcedfits.html" /> 
   </head>
   <body>
     <div class="related">
@@ -44,7 +44,7 @@
           <a href="../../../devref/index.html" title="Developer’s Reference Guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="forcedfits.html" title="Forced source-fitting"
+          <a href="forcedfits.html" title="Forced source-fitting stage"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
@@ -57,8 +57,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="variability-and-new-source-detection">
-<span id="stage-transient"></span><h1>Variability and new-source detection<a class="headerlink" href="#variability-and-new-source-detection" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="variability-and-new-source-detection-stage">
+<span id="stage-transient"></span><h1>Variability and new-source detection stage<a class="headerlink" href="#variability-and-new-source-detection-stage" title="Permalink to this headline">¶</a></h1>
+<p>(See also the
+<a class="reference internal" href="../../config/job_params_cfg.html#job-params-transient-search"><em>relevant configuration parameters</em></a>.)</p>
 <div class="section" id="variability-index-calculation">
 <h2>Variability index calculation<a class="headerlink" href="#variability-index-calculation" title="Permalink to this headline">¶</a></h2>
 <p>After all images for a given timestep have been processed and the resulting
@@ -106,20 +108,6 @@ sources is encoded by
 <a class="reference internal" href="../../../devref/tkp/database/association.html#tkp.db.associations._determine_newsource_previous_limits" title="tkp.db.associations._determine_newsource_previous_limits"><tt class="xref py py-func docutils literal"><span class="pre">tkp.db.associations._determine_newsource_previous_limits()</span></tt></a>.
 Sources we deem to be intrinsically &#8216;new&#8217; are then recorded in the
 <a class="reference internal" href="../../../devref/database/schema.html#schema-newsource"><em>newsource</em></a> table.</p>
-<div class="section" id="section-transient-search">
-<h3>Section <tt class="docutils literal"><span class="pre">transient_search</span></tt><a class="headerlink" href="#section-transient-search" title="Permalink to this headline">¶</a></h3>
-<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">new_source_sigma_margin</span></tt></dt>
-<dd>Float. A newly detected source is considered transient if it is
-significantly above the best (lowest) previous detection limit for that
-point on-sky. &#8216;Significantly above&#8217; is defined by a &#8216;margin of error,&#8217;
-intended to screen out steady sources that just happen to be fluctuating
-around the detection threshold due to measurement noise.
-This value sets that margin as a multiple of the RMS of the previous-best
-image.</dd>
-</dl>
-</div>
 </div>
 </div>
 
@@ -134,19 +122,16 @@ image.</dd>
             </a></p>
   <h3><a href="../../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Variability and new-source detection</a><ul>
+<li><a class="reference internal" href="#">Variability and new-source detection stage</a><ul>
 <li><a class="reference internal" href="#variability-index-calculation">Variability index calculation</a></li>
-<li><a class="reference internal" href="#new-source-detection">&#8216;New source&#8217; detection</a><ul>
-<li><a class="reference internal" href="#section-transient-search">Section <tt class="docutils literal"><span class="pre">transient_search</span></tt></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#new-source-detection">&#8216;New source&#8217; detection</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="forcedfits.html"
-                        title="previous chapter">Forced source-fitting</a></p>
+                        title="previous chapter">Forced source-fitting stage</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../../../devref/index.html"
                         title="next chapter">Developer&#8217;s Reference Guide</a></p>
@@ -185,7 +170,7 @@ image.</dd>
           <a href="../../../devref/index.html" title="Developer’s Reference Guide"
              >next</a> |</li>
         <li class="right" >
-          <a href="forcedfits.html" title="Forced source-fitting"
+          <a href="forcedfits.html" title="Forced source-fitting stage"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>

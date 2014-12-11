@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Quality check &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Quality check stage &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Pipeline Design" href="../index.html" />
-    <link rel="next" title="“Blind” source extraction" href="extraction.html" />
-    <link rel="prev" title="Persistence" href="persistence.html" /> 
+    <link rel="next" title="“Blind” source extraction stage" href="extraction.html" />
+    <link rel="prev" title="Persistence stage" href="persistence.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,10 +41,10 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="extraction.html" title="“Blind” source extraction"
+          <a href="extraction.html" title="“Blind” source extraction stage"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="persistence.html" title="Persistence"
+          <a href="persistence.html" title="Persistence stage"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
@@ -57,14 +57,18 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="quality-check">
-<span id="stage-quality"></span><h1>Quality check<a class="headerlink" href="#quality-check" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="quality-check-stage">
+<span id="stage-quality"></span><h1>Quality check stage<a class="headerlink" href="#quality-check-stage" title="Permalink to this headline">¶</a></h1>
+<p>(See also the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-quality"><em>relevant configuration parameters</em></a>.)</p>
 <p>Images are checked to ensure they meet a minimum &#8220;quality&#8221; standard such that
 useful scientific information can be extracted from them. If an image fails to
 meet quality standards, it is rejected and not included in further processing.
 However, it is still recorded in the database for book-keeping purposes.</p>
 <p>The quality check code is structured such that different sets of tests can be
-applied to images from different telescopes. Currently, only a selection of
+applied to images from different telescopes
+(see source of the <a class="reference internal" href="../../../devref/tkp/steps/index.html#tkp.steps.quality.reject_check" title="tkp.steps.quality.reject_check"><tt class="xref py py-func docutils literal"><span class="pre">tkp.steps.quality.reject_check()</span></tt></a> function for
+implementation details).
+Currently, only a selection of
 tests designed to process LOFAR images are available. Three separate tests are
 performed:</p>
 <div class="section" id="image-rms">
@@ -74,18 +78,6 @@ until it reaches a user-defined convergence. The RMS of the clipped value is
 compared to the theoretically expected image noise based on the LOFAR
 configuration in use. The image is rejected if the noise is signifcantly
 greated than expected.</p>
-<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
-<div class="section" id="section-quality-lofar">
-<h3>Section <tt class="docutils literal"><span class="pre">quality_lofar</span></tt><a class="headerlink" href="#section-quality-lofar" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">low_bound</span></tt></dt>
-<dd>Float. Reject the image if the measured RMS is less than <tt class="docutils literal"><span class="pre">low_bound</span></tt>
-times the theoretical noise.</dd>
-<dt><tt class="docutils literal"><span class="pre">high_bound</span></tt></dt>
-<dd>Float. Reject the image if the measured RMS is greater than <tt class="docutils literal"><span class="pre">high_bound</span></tt>
-times the theoretical noise.</dd>
-</dl>
-</div>
 </div>
 <div class="section" id="beam-shape">
 <h2>Beam shape<a class="headerlink" href="#beam-shape" title="Permalink to this headline">¶</a></h2>
@@ -101,16 +93,6 @@ is not oversampled).</li>
 <li>The ratio of the major to the minor axis should be lower than a user defined
 threshold (the beam is not excessively elliptical).</li>
 </ul>
-<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
-<div class="section" id="id1">
-<h3>Section <tt class="docutils literal"><span class="pre">quality_lofar</span></tt><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">oversampled_x</span></tt></dt>
-<dd>The maximum length of a beam axis.</dd>
-<dt><tt class="docutils literal"><span class="pre">elliptical_x</span></tt></dt>
-<dd>The maximum ratio of major to minor axis length.</dd>
-</dl>
-</div>
 </div>
 <div class="section" id="nearby-bright-sources">
 <h2>Nearby bright sources<a class="headerlink" href="#nearby-bright-sources" title="Permalink to this headline">¶</a></h2>
@@ -125,15 +107,6 @@ image centre. The sources checked for are:</p>
 <li>The Sun</li>
 <li>Jupiter</li>
 </ul>
-<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
-<div class="section" id="id2">
-<h3>Section <tt class="docutils literal"><span class="pre">quality_lofar</span></tt><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">min_separation</span></tt></dt>
-<dd>The minimum allowed distance from the image centre to a bright radio
-source in degrees.</dd>
-</dl>
-</div>
 </div>
 </div>
 
@@ -148,29 +121,20 @@ source in degrees.</dd>
             </a></p>
   <h3><a href="../../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Quality check</a><ul>
-<li><a class="reference internal" href="#image-rms">Image RMS</a><ul>
-<li><a class="reference internal" href="#section-quality-lofar">Section <tt class="docutils literal"><span class="pre">quality_lofar</span></tt></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#beam-shape">Beam shape</a><ul>
-<li><a class="reference internal" href="#id1">Section <tt class="docutils literal"><span class="pre">quality_lofar</span></tt></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#nearby-bright-sources">Nearby bright sources</a><ul>
-<li><a class="reference internal" href="#id2">Section <tt class="docutils literal"><span class="pre">quality_lofar</span></tt></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Quality check stage</a><ul>
+<li><a class="reference internal" href="#image-rms">Image RMS</a></li>
+<li><a class="reference internal" href="#beam-shape">Beam shape</a></li>
+<li><a class="reference internal" href="#nearby-bright-sources">Nearby bright sources</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="persistence.html"
-                        title="previous chapter">Persistence</a></p>
+                        title="previous chapter">Persistence stage</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="extraction.html"
-                        title="next chapter">&#8220;Blind&#8221; source extraction</a></p>
+                        title="next chapter">&#8220;Blind&#8221; source extraction stage</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/userref/structure/stages/quality.txt"
@@ -203,10 +167,10 @@ source in degrees.</dd>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="extraction.html" title="“Blind” source extraction"
+          <a href="extraction.html" title="“Blind” source extraction stage"
              >next</a> |</li>
         <li class="right" >
-          <a href="persistence.html" title="Persistence"
+          <a href="persistence.html" title="Persistence stage"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>

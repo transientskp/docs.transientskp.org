@@ -82,7 +82,7 @@ password = &quot;&quot; ; e.g. &#39;{% user_name %}&#39;
 host = &quot;localhost&quot;
 port =
 passphrase =
-dump_backup_copy = True
+dump_backup_copy = False
 
 [image_cache]
 copy_images = True
@@ -135,6 +135,12 @@ problems.</dd>
 </div>
 <div class="section" id="database-section">
 <span id="pipeline-cfg-database"></span><h2><tt class="docutils literal"><span class="pre">database</span></tt> Section<a class="headerlink" href="#database-section" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The database config settings can be over-ridden using environment
+variables, e.g. for configuring a unit-testing environment.
+See <a class="reference internal" href="../../devref/tkp/config/index.html#tkp.config.get_database_config" title="tkp.config.get_database_config"><tt class="xref py py-func docutils literal"><span class="pre">tkp.config.get_database_config()</span></tt></a> for details.</p>
+</div>
 <dl class="docutils">
 <dt><tt class="docutils literal"><span class="pre">engine</span></tt></dt>
 <dd>The database engine to use. Two engines are supported: <tt class="docutils literal"><span class="pre">postgresql</span></tt> and
@@ -154,7 +160,9 @@ databases.</dd>
 dumped to disk at the beginning of each pipeline run. This is not
 recommended in regular use, but can be useful if encountering
 intermittent database errors, both for recovering a working database,
-and diagnosing how errors occur.</dd>
+and diagnosing how errors occur.
+The dump is made to the job directory in a file named according to
+the pattern <tt class="docutils literal"><span class="pre">&lt;database</span> <span class="pre">host&gt;_&lt;database</span> <span class="pre">name&gt;_&lt;current</span> <span class="pre">time&gt;.dump</span></tt>.</dd>
 </dl>
 </div>
 <div class="section" id="image-cache-section">
@@ -172,6 +180,18 @@ Only used if <tt class="docutils literal"><span class="pre">copy_images</span></
 <dt><tt class="docutils literal"><span class="pre">mongo_db</span></tt></dt>
 <dd>String. Name of MongoDB database in which to store image pixel data. Only
 used if <tt class="docutils literal"><span class="pre">copy_images</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>.</dd>
+</dl>
+</div>
+<div class="section" id="parallelise-section">
+<span id="pipeline-cfg-parallelise"></span><h2><tt class="docutils literal"><span class="pre">parallelise</span></tt> Section<a class="headerlink" href="#parallelise-section" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">method</span></tt></dt>
+<dd>Determines whether the TraP is run in single-process, multi-process, or
+<a class="reference internal" href="../../getstart/installation.html#installation-distributed"><em>distributed</em></a> mode.
+<tt class="docutils literal"><span class="pre">&quot;multiproc&quot;</span></tt> should be suitable for most users.</dd>
+<dt><tt class="docutils literal"><span class="pre">cores</span></tt></dt>
+<dd>Determines the number of cores to use in multi-process mode. <tt class="docutils literal"><span class="pre">0</span></tt> will
+attempt to autodetect (and use all available cores).</dd>
 </dl>
 </div>
 </div>
@@ -192,6 +212,7 @@ used if <tt class="docutils literal"><span class="pre">copy_images</span></tt> i
 <li><a class="reference internal" href="#logging-section"><tt class="docutils literal"><span class="pre">logging</span></tt> section</a></li>
 <li><a class="reference internal" href="#database-section"><tt class="docutils literal"><span class="pre">database</span></tt> Section</a></li>
 <li><a class="reference internal" href="#image-cache-section"><tt class="docutils literal"><span class="pre">image_cache</span></tt> Section</a></li>
+<li><a class="reference internal" href="#parallelise-section"><tt class="docutils literal"><span class="pre">parallelise</span></tt> Section</a></li>
 </ul>
 </li>
 </ul>

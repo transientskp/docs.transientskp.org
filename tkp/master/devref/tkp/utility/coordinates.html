@@ -66,6 +66,16 @@
 <em class="property">class </em><tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">CoordSystem</tt><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#CoordSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.CoordSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>A container for constant strings representing different coordinate
 systems.</p>
+<dl class="attribute">
+<dt id="tkp.utility.coordinates.CoordSystem.FK4">
+<tt class="descname">FK4</tt><em class="property"> = 'B1950 (FK4)'</em><a class="headerlink" href="#tkp.utility.coordinates.CoordSystem.FK4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tkp.utility.coordinates.CoordSystem.FK5">
+<tt class="descname">FK5</tt><em class="property"> = 'J2000 (FK5)'</em><a class="headerlink" href="#tkp.utility.coordinates.CoordSystem.FK5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -80,6 +90,16 @@ home-brewed python-wcslib wrapper. It includes:</p>
 <li>Raises ValueError if coordinates are invalid.</li>
 </ul>
 </div></blockquote>
+<dl class="attribute">
+<dt id="tkp.utility.coordinates.WCS.ORIGIN">
+<tt class="descname">ORIGIN</tt><em class="property"> = 1</em><a class="headerlink" href="#tkp.utility.coordinates.WCS.ORIGIN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tkp.utility.coordinates.WCS.WCS_ATTRS">
+<tt class="descname">WCS_ATTRS</tt><em class="property"> = ('crpix', 'cdelt', 'crval', 'ctype', 'cunit', 'crota')</em><a class="headerlink" href="#tkp.utility.coordinates.WCS.WCS_ATTRS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="tkp.utility.coordinates.WCS.p2s">
 <tt class="descname">p2s</tt><big>(</big><em>pixpos</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#WCS.p2s"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.WCS.p2s" title="Permalink to this definition">¶</a></dt>
@@ -323,6 +343,13 @@ l &#8211; Direction cosine</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="tkp.utility.coordinates.lm_to_radec">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">lm_to_radec</tt><big>(</big><em>ra0</em>, <em>dec0</em>, <em>l</em>, <em>m</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#lm_to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.lm_to_radec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the l direction cosine in a radio image, given an RA and Dec and the
+field centre</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="tkp.utility.coordinates.m">
 <tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">m</tt><big>(</big><em>ra</em>, <em>dec</em>, <em>cra</em>, <em>cdec</em>, <em>incr</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#m"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.m" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a coordinate in RA,Dec into a direction cosine m</p>
@@ -332,6 +359,13 @@ cra,cdec &#8211; centre of the field
 incr &#8211; number of degrees per pixel</p>
 <p>Return value:
 m &#8211; direction cosine</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.mjd2datetime">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">mjd2datetime</tt><big>(</big><em>mjd</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#mjd2datetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.mjd2datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a Modified Julian Date to datetime via &#8216;unix time&#8217; representation.</p>
+<p>NB &#8216;unix time&#8217; is defined by the casacore/pyrap package.</p>
 </dd></dl>
 
 <dl class="function">
@@ -374,6 +408,11 @@ val1, val2, val3 (numeric): absolute values of inputs.</td>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="function">
+<dt id="tkp.utility.coordinates.radec_to_lmn">
+<tt class="descclassname">tkp.utility.coordinates.</tt><tt class="descname">radec_to_lmn</tt><big>(</big><em>ra0</em>, <em>dec0</em>, <em>ra</em>, <em>dec</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/utility/coordinates.html#radec_to_lmn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.utility.coordinates.radec_to_lmn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="tkp.utility.coordinates.ratohms">

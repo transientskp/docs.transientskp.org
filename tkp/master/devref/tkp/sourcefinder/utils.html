@@ -27,7 +27,7 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="tkp.sourcefinder – source finding and fitting" href="index.html" />
-    <link rel="next" title="tkp.testutil – helper functions for writing tests" href="../testutil.html" />
+    <link rel="next" title="tkp.steps – Define logic for each pipeline stage" href="../steps/index.html" />
     <link rel="prev" title="tkp.sourcefinder.stats – Statistics specific to source finding for radio images." href="stats.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../testutil.html" title="tkp.testutil – helper functions for writing tests"
+          <a href="../steps/index.html" title="tkp.steps – Define logic for each pipeline stage"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="stats.html" title="tkp.sourcefinder.stats – Statistics specific to source finding for radio images."
@@ -135,8 +135,19 @@ sources have been removed from the input data.</p>
 <dl class="function">
 <dt id="tkp.sourcefinder.utils.generate_subthresholds">
 <tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">generate_subthresholds</tt><big>(</big><em>min_value</em>, <em>max_value</em>, <em>num_thresholds</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#generate_subthresholds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.generate_subthresholds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a series of &#64;num_thresholds&#64; logarithmically spaced values
+<dd><p>Generate a series of <tt class="docutils literal"><span class="pre">num_thresholds</span></tt> logarithmically spaced values
 in the range (min_value, max_value) (both exclusive).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.sourcefinder.utils.get_error_radius">
+<tt class="descclassname">tkp.sourcefinder.utils.</tt><tt class="descname">get_error_radius</tt><big>(</big><em>wcs</em>, <em>x_value</em>, <em>x_error</em>, <em>y_value</em>, <em>y_error</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/utils.html#get_error_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.utils.get_error_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate an absolute angular error on the position (x_value, y_value)
+with the given errors.</p>
+<p>This is a pessimistic estimate, because we take sum of the error
+along the X and Y axes. Better might be to project them both back on
+to the major/minor axes of the elliptical fit, but this should do for
+now.</p>
 </dd></dl>
 
 <dl class="function">
@@ -171,8 +182,8 @@ is just equal to integral of the true flux^2 over the pixel area
   <p class="topless"><a href="stats.html"
                         title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.stats</span></tt> &#8211; Statistics specific to source finding for radio images.</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../testutil.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.testutil</span></tt> &#8211; helper functions for writing tests</a></p>
+  <p class="topless"><a href="../steps/index.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.steps</span></tt> &#8211; Define logic for each pipeline stage</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/devref/tkp/sourcefinder/utils.txt"
@@ -205,7 +216,7 @@ is just equal to integral of the true flux^2 over the pixel area
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../testutil.html" title="tkp.testutil – helper functions for writing tests"
+          <a href="../steps/index.html" title="tkp.steps – Define logic for each pipeline stage"
              >next</a> |</li>
         <li class="right" >
           <a href="stats.html" title="tkp.sourcefinder.stats – Statistics specific to source finding for radio images."

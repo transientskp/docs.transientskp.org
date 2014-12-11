@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Source association &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Source association stage &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
     <link rel="up" title="Pipeline Design" href="../index.html" />
-    <link rel="next" title="Forced source-fitting" href="forcedfits.html" />
-    <link rel="prev" title="“Blind” source extraction" href="extraction.html" /> 
+    <link rel="next" title="Forced source-fitting stage" href="forcedfits.html" />
+    <link rel="prev" title="“Blind” source extraction stage" href="extraction.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,10 +41,10 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="forcedfits.html" title="Forced source-fitting"
+          <a href="forcedfits.html" title="Forced source-fitting stage"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="extraction.html" title="“Blind” source extraction"
+          <a href="extraction.html" title="“Blind” source extraction stage"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
@@ -57,8 +57,9 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="source-association">
-<span id="stage-association"></span><h1>Source association<a class="headerlink" href="#source-association" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="source-association-stage">
+<span id="stage-association"></span><h1>Source association stage<a class="headerlink" href="#source-association-stage" title="Permalink to this headline">¶</a></h1>
+<p>(See also the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-association"><em>relevant configuration parameters</em></a>.)</p>
 <p>After all <a class="reference internal" href="extraction.html#stage-extraction"><em>blind</em></a>
 source measurements have been inserted into the database, they are
 &#8220;associated&#8221; with existing sources to form lightcurves. A word on the database
@@ -75,24 +76,6 @@ The association procedure is complex, taking account of multitudinous different
 ways in which sources may be related. The detailed documentation on
 <a class="reference internal" href="../../../devref/database/assoc.html#database-assoc"><em>Source Association Logic</em></a> covers all the possible association topologies and
 describes the code pathways in detail; see also <a class="reference internal" href="../../../bibliography.html#scheers-2011"><em>Scheers (2011)</em></a>.</p>
-<p>The following parameters may be configured in the <a class="reference internal" href="../../config/job_params_cfg.html#job-params-cfg"><em>job configuration file</em></a>:</p>
-<div class="section" id="section-association">
-<h2>Section <tt class="docutils literal"><span class="pre">association</span></tt><a class="headerlink" href="#section-association" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">deruiter_radius</span></tt></dt>
-<dd>Float. Defined as per <a class="reference internal" href="forcedfits.html#stage-nulldet"><em>Null detection handling</em></a>.</dd>
-</dl>
-</div>
-<div class="section" id="section-source-extraction">
-<h2>Section <tt class="docutils literal"><span class="pre">source_extraction</span></tt><a class="headerlink" href="#section-source-extraction" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">ew_sys_err</span></tt>, <tt class="docutils literal"><span class="pre">ns_sys_err</span></tt></dt>
-<dd>Floats. Systematic errors in units of arcseconds which augment the
-sourcefinder-measured errors on source positions when performing source
-association. These variables refer to an absolute angular error along an
-east-west and north-south axis respectively.</dd>
-</dl>
-</div>
 </div>
 
 
@@ -104,21 +87,12 @@ east-west and north-south axis respectively.</dd>
             <p class="logo"><a href="../../../index.html">
               <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../../../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Source association</a><ul>
-<li><a class="reference internal" href="#section-association">Section <tt class="docutils literal"><span class="pre">association</span></tt></a></li>
-<li><a class="reference internal" href="#section-source-extraction">Section <tt class="docutils literal"><span class="pre">source_extraction</span></tt></a></li>
-</ul>
-</li>
-</ul>
-
   <h4>Previous topic</h4>
   <p class="topless"><a href="extraction.html"
-                        title="previous chapter">&#8220;Blind&#8221; source extraction</a></p>
+                        title="previous chapter">&#8220;Blind&#8221; source extraction stage</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="forcedfits.html"
-                        title="next chapter">Forced source-fitting</a></p>
+                        title="next chapter">Forced source-fitting stage</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/userref/structure/stages/association.txt"
@@ -151,10 +125,10 @@ east-west and north-south axis respectively.</dd>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="forcedfits.html" title="Forced source-fitting"
+          <a href="forcedfits.html" title="Forced source-fitting stage"
              >next</a> |</li>
         <li class="right" >
-          <a href="extraction.html" title="“Blind” source extraction"
+          <a href="extraction.html" title="“Blind” source extraction stage"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
           <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>

@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.main &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.main</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Main pipeline logic is defined here.</span>
+
+<span class="sd">The science logic is a bit entwined with celery-specific functionality.</span>
+<span class="sd">This is somewhat unavoidable, since how a task is parallelised (or not) has</span>
+<span class="sd">implications for the resulting logic.</span>
+
+<span class="sd">In general, we try to keep functions elsewhere so this file is succinct.</span>
+<span class="sd">The exceptions are a couple of celery-specific subroutines.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">tkp</span> <span class="kn">import</span> <span class="n">steps</span>
+<span class="kn">from</span> <span class="nn">tkp.config</span> <span class="kn">import</span> <span class="n">initialize_pipeline_config</span><span class="p">,</span> <span class="n">get_database_config</span>
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">consistency</span> <span class="k">as</span> <span class="n">dbconsistency</span>
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">general</span> <span class="k">as</span> <span class="n">dbgen</span>
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">associations</span> <span class="k">as</span> <span class="n">dbass</span>
+<span class="kn">from</span> <span class="nn">tkp.distribute</span> <span class="kn">import</span> <span class="n">Runner</span>
+<span class="kn">from</span> <span class="nn">tkp.steps.misc</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_job_config</span><span class="p">,</span> <span class="n">dump_configs_to_logdir</span><span class="p">,</span>
+                                   <span class="n">check_job_configs_match</span><span class="p">,</span>
+                                   <span class="n">setup_log_file</span><span class="p">,</span> <span class="n">dump_database_backup</span><span class="p">,</span>
+                                <span class="n">group_per_timestep</span>
+                            <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">tkp.db.configstore</span> <span class="kn">import</span> <span class="n">store_config</span><span class="p">,</span> <span class="n">fetch_config</span>
+<span class="kn">from</span> <span class="nn">tkp.steps.persistence</span> <span class="kn">import</span> <span class="n">create_dataset</span><span class="p">,</span> <span class="n">store_images</span>
+<span class="kn">import</span> <span class="nn">tkp.steps.forced_fitting</span> <span class="kn">as</span> <span class="nn">steps_ff</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../devref/tkp/main.html#tkp.main.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">job_name</span><span class="p">,</span> <span class="n">supplied_mon_coords</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="n">pipe_config</span> <span class="o">=</span> <span class="n">initialize_pipeline_config</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s">&quot;pipeline.cfg&quot;</span><span class="p">),</span>
+        <span class="n">job_name</span><span class="p">)</span>
+
+    <span class="c"># get parallelise props. Defaults to multiproc with autodetect num cores</span>
+    <span class="n">parallelise</span> <span class="o">=</span> <span class="n">pipe_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;parallelise&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">distributor</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;TKP_PARALLELISE&#39;</span><span class="p">,</span> <span class="n">parallelise</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;method&#39;</span><span class="p">,</span>
+                                                                    <span class="s">&#39;multiproc&#39;</span><span class="p">))</span>
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="p">(</span><span class="n">distributor</span><span class="o">=</span><span class="n">distributor</span><span class="p">,</span>
+                    <span class="n">cores</span><span class="o">=</span><span class="n">parallelise</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;cores&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="n">debug</span> <span class="o">=</span> <span class="n">pipe_config</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">debug</span>
+    <span class="c">#Setup logfile before we do anything else</span>
+    <span class="n">log_dir</span> <span class="o">=</span> <span class="n">pipe_config</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">log_dir</span>
+    <span class="n">setup_log_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>
+
+    <span class="n">job_dir</span> <span class="o">=</span> <span class="n">pipe_config</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">job_directory</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;can&#39;t access job folder </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">job_dir</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Job dir: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">job_dir</span><span class="p">)</span>
+
+    <span class="n">db_config</span> <span class="o">=</span> <span class="n">get_database_config</span><span class="p">(</span><span class="n">pipe_config</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="nb">apply</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">dump_database_backup</span><span class="p">(</span><span class="n">db_config</span><span class="p">,</span> <span class="n">job_dir</span><span class="p">)</span>
+
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">load_job_config</span><span class="p">(</span><span class="n">pipe_config</span><span class="p">)</span>
+    <span class="n">se_parset</span> <span class="o">=</span> <span class="n">job_config</span><span class="o">.</span><span class="n">source_extraction</span>
+    <span class="n">deruiter_radius</span> <span class="o">=</span> <span class="n">job_config</span><span class="o">.</span><span class="n">association</span><span class="o">.</span><span class="n">deruiter_radius</span>
+    <span class="n">new_src_sigma</span> <span class="o">=</span> <span class="n">job_config</span><span class="o">.</span><span class="n">transient_search</span><span class="o">.</span><span class="n">new_source_sigma_margin</span>
+
+    <span class="n">all_images</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">load_source</span><span class="p">(</span><span class="s">&#39;images_to_process&#39;</span><span class="p">,</span>
+                                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span>
+                                              <span class="s">&#39;images_to_process.py&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">images</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;dataset </span><span class="si">%s</span><span class="s"> contains </span><span class="si">%s</span><span class="s"> images&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">job_name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_images</span><span class="p">)))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;performing database consistency check&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dbconsistency</span><span class="o">.</span><span class="n">check</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Inconsistent database found; aborting&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="n">dataset_id</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="n">job_config</span><span class="o">.</span><span class="n">persistence</span><span class="o">.</span><span class="n">dataset_id</span><span class="p">,</span>
+                                <span class="n">job_config</span><span class="o">.</span><span class="n">persistence</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">job_config</span><span class="o">.</span><span class="n">persistence</span><span class="o">.</span><span class="n">dataset_id</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">store_config</span><span class="p">(</span><span class="n">job_config</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">)</span>  <span class="c"># new data set</span>
+        <span class="k">if</span> <span class="n">supplied_mon_coords</span><span class="p">:</span>
+            <span class="n">dbgen</span><span class="o">.</span><span class="n">insert_monitor_positions</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">,</span><span class="n">supplied_mon_coords</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">job_config_from_db</span> <span class="o">=</span> <span class="n">fetch_config</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span>  <span class="c"># existing data set</span>
+        <span class="k">if</span> <span class="n">check_job_configs_match</span><span class="p">(</span><span class="n">job_config</span><span class="p">,</span> <span class="n">job_config_from_db</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Job configs from file / database match OK.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Job config file has changed since dataset was &quot;</span>
+                        <span class="s">&quot;first loaded into database. &quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Using job config settings loaded from database, see &quot;</span>
+                        <span class="s">&quot;log dir for details&quot;</span><span class="p">)</span>
+        <span class="n">job_config</span> <span class="o">=</span> <span class="n">job_config_from_db</span>
+        <span class="k">if</span> <span class="n">supplied_mon_coords</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Monitor positions supplied will be ignored. &quot;</span>
+                        <span class="s">&quot;(Previous dataset specified)&quot;</span><span class="p">)</span>
+
+    <span class="n">dump_configs_to_logdir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">job_config</span><span class="p">,</span> <span class="n">pipe_config</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;performing persistence step&quot;</span><span class="p">)</span>
+    <span class="n">image_cache_params</span> <span class="o">=</span> <span class="n">pipe_config</span><span class="o">.</span><span class="n">image_cache</span>
+    <span class="n">imgs</span> <span class="o">=</span> <span class="p">[[</span><span class="n">img</span><span class="p">]</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">all_images</span><span class="p">]</span>
+
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">job_config</span><span class="o">.</span><span class="n">persistence</span><span class="o">.</span><span class="n">sigma</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">job_config</span><span class="o">.</span><span class="n">persistence</span><span class="o">.</span><span class="n">f</span>
+    <span class="n">metadatas</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s">&quot;persistence_node_step&quot;</span><span class="p">,</span> <span class="n">imgs</span><span class="p">,</span>
+                           <span class="p">[</span><span class="n">image_cache_params</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">f</span><span class="p">])</span>
+    <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metadatas</span> <span class="k">if</span> <span class="n">m</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Storing images&quot;</span><span class="p">)</span>
+    <span class="n">image_ids</span> <span class="o">=</span> <span class="n">store_images</span><span class="p">(</span><span class="n">metadatas</span><span class="p">,</span>
+                             <span class="n">job_config</span><span class="o">.</span><span class="n">source_extraction</span><span class="o">.</span><span class="n">extraction_radius_pix</span><span class="p">,</span>
+                             <span class="n">dataset_id</span><span class="p">)</span>
+
+    <span class="n">db_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">Image</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">image_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">image_id</span> <span class="ow">in</span> <span class="n">image_ids</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;performing quality check&quot;</span><span class="p">)</span>
+    <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="n">img</span><span class="o">.</span><span class="n">url</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">db_images</span><span class="p">]</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_config</span><span class="p">]</span>
+    <span class="n">rejecteds</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s">&quot;quality_reject_check&quot;</span><span class="p">,</span> <span class="n">urls</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+    <span class="n">good_images</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">rejected</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">db_images</span><span class="p">,</span> <span class="n">rejecteds</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">rejected</span><span class="p">:</span>
+            <span class="n">reason</span><span class="p">,</span> <span class="n">comment</span> <span class="o">=</span> <span class="n">rejected</span>
+            <span class="n">steps</span><span class="o">.</span><span class="n">quality</span><span class="o">.</span><span class="n">reject_image</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">good_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">good_images</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;No good images under these quality checking criteria&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">grouped_images</span> <span class="o">=</span> <span class="n">group_per_timestep</span><span class="p">(</span><span class="n">good_images</span><span class="p">)</span>
+    <span class="n">timestep_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_images</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">timestep</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">grouped_images</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;processing </span><span class="si">%s</span><span class="s"> images in timestep </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">)&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">),</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">timestep_num</span><span class="p">))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;performing source extraction&quot;</span><span class="p">)</span>
+        <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="n">img</span><span class="o">.</span><span class="n">url</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">]</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">[</span><span class="n">se_parset</span><span class="p">]</span>
+
+        <span class="n">extraction_results</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s">&quot;extract_sources&quot;</span><span class="p">,</span> <span class="n">urls</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;storing extracted sources to database&quot;</span><span class="p">)</span>
+        <span class="c"># we also set the image max,min RMS values which calculated during</span>
+        <span class="c"># source extraction</span>
+        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">results</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">extraction_results</span><span class="p">):</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rms_min</span><span class="o">=</span><span class="n">results</span><span class="o">.</span><span class="n">rms_min</span><span class="p">,</span> <span class="n">rms_max</span><span class="o">=</span><span class="n">results</span><span class="o">.</span><span class="n">rms_max</span><span class="p">,</span>
+                <span class="n">detection_thresh</span><span class="o">=</span><span class="n">se_parset</span><span class="p">[</span><span class="s">&#39;detection_threshold&#39;</span><span class="p">],</span>
+                <span class="n">analysis_thresh</span><span class="o">=</span><span class="n">se_parset</span><span class="p">[</span><span class="s">&#39;analysis_threshold&#39;</span><span class="p">])</span>
+            <span class="n">dbgen</span><span class="o">.</span><span class="n">insert_extracted_sources</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">sources</span><span class="p">,</span> <span class="s">&#39;blind&#39;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;performing database operations&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;performing DB operations for image </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;performing source association&quot;</span><span class="p">)</span>
+            <span class="n">dbass</span><span class="o">.</span><span class="n">associate_extracted_sources</span><span class="p">(</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">deRuiter_r</span><span class="o">=</span><span class="n">deruiter_radius</span><span class="p">,</span>
+                <span class="n">new_source_sigma_margin</span><span class="o">=</span><span class="n">new_src_sigma</span><span class="p">)</span>
+
+            <span class="n">all_fit_posns</span><span class="p">,</span> <span class="n">all_fit_ids</span> <span class="o">=</span> <span class="n">steps_ff</span><span class="o">.</span><span class="n">get_forced_fit_requests</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">all_fit_posns</span><span class="p">:</span>
+                <span class="n">successful_fits</span><span class="p">,</span> <span class="n">successful_ids</span> <span class="o">=</span> <span class="n">steps_ff</span><span class="o">.</span><span class="n">perform_forced_fits</span><span class="p">(</span>
+                    <span class="n">all_fit_posns</span><span class="p">,</span> <span class="n">all_fit_ids</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">se_parset</span><span class="p">)</span>
+
+                <span class="n">steps_ff</span><span class="o">.</span><span class="n">insert_and_associate_forced_fits</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">successful_fits</span><span class="p">,</span>
+                                                          <span class="n">successful_ids</span><span class="p">)</span>
+
+
+        <span class="n">dbgen</span><span class="o">.</span><span class="n">update_dataset_process_end_ts</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

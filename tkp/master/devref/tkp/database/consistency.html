@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Configuration and startup &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>tkp.db.consistency – Database integrity checking &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
     
     <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
     <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../../index.html" />
-    <link rel="up" title="Pipeline Design" href="../index.html" />
-    <link rel="next" title="Database dump" href="dump.html" />
-    <link rel="prev" title="Pipeline Design" href="../index.html" /> 
+    <link rel="up" title="tkp.db – Database routines" href="index.html" />
+    <link rel="next" title="tkp.db.database – Database connection interface" href="database.html" />
+    <link rel="prev" title="tkp.db.configstore – Key-value record of job configuration params" href="configstore.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,14 +41,15 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="dump.html" title="Database dump"
+          <a href="database.html" title="tkp.db.database – Database connection interface"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../index.html" title="Pipeline Design"
+          <a href="configstore.html" title="tkp.db.configstore – Key-value record of job configuration params"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">Pipeline Design</a> &raquo;</li> 
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U"><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,18 +58,24 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="configuration-and-startup">
-<span id="stage-startup"></span><h1>Configuration and startup<a class="headerlink" href="#configuration-and-startup" title="Permalink to this headline">¶</a></h1>
-<p>Before starting, the <a class="reference internal" href="../../config/overview.html#config-overview"><em>project and job directories</em></a>
-should be initialized appropriately, they key configuration files &#8211;
-<tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt>, <tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt>, <tt class="docutils literal"><span class="pre">images_to_process.py</span></tt> and
-<tt class="docutils literal"><span class="pre">job_params.cfg</span></tt> &#8211; should be customized appropriately, and, if required, a
-Celery broker and one or more workers shouldbe running. The pipeline is then
-started by running:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ trap-manage.py run &lt;jobname&gt;
-</pre></div>
-</div>
-<p>from within the project directory.</p>
+  <div class="section" id="module-tkp.db.consistency">
+<span id="tkp-db-consistency-database-integrity-checking"></span><span id="database-consistency"></span><h1><a class="reference internal" href="#module-tkp.db.consistency" title="tkp.db.consistency"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.consistency</span></tt></a> &#8211; Database integrity checking<a class="headerlink" href="#module-tkp.db.consistency" title="Permalink to this headline">¶</a></h1>
+<p>check database for consistency</p>
+<dl class="function">
+<dt id="tkp.db.consistency.check">
+<tt class="descclassname">tkp.db.consistency.</tt><tt class="descname">check</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/consistency.html#check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.consistency.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for any inconsistent values in tables.</p>
+<p>Returns False if any inconsistency is found, otherwise True.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.consistency.isconsistent">
+<tt class="descclassname">tkp.db.consistency.</tt><tt class="descname">isconsistent</tt><big>(</big><em>query</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/consistency.html#isconsistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.consistency.isconsistent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counting rows should return 0, otherwise database is in an
+inconsistent state.</p>
+<p>If the database is consistent we return True, otherwise False.</p>
+</dd></dl>
+
 </div>
 
 
@@ -81,14 +88,14 @@ started by running:</p>
               <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
             </a></p>
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../index.html"
-                        title="previous chapter">Pipeline Design</a></p>
+  <p class="topless"><a href="configstore.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.configstore</span></tt> &#8211; Key-value record of job configuration params</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="dump.html"
-                        title="next chapter">Database dump</a></p>
+  <p class="topless"><a href="database.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.database</span></tt> &#8211; Database connection interface</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../../_sources/userref/structure/stages/startup.txt"
+    <li><a href="../../../_sources/devref/tkp/database/consistency.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -118,14 +125,15 @@ started by running:</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="dump.html" title="Database dump"
+          <a href="database.html" title="tkp.db.database – Database connection interface"
              >next</a> |</li>
         <li class="right" >
-          <a href="../index.html" title="Pipeline Design"
+          <a href="configstore.html" title="tkp.db.configstore – Key-value record of job configuration params"
              >previous</a> |</li>
         <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
-          <li><a href="../index.html" >Pipeline Design</a> &raquo;</li> 
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" ><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

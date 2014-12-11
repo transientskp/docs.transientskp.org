@@ -126,6 +126,14 @@ This contains all the end-user tunable parameters which are relevant to
 TraP operation. <a class="reference internal" href="job_params_cfg.html#job-params-cfg"><em>See here</em></a> for details.</dd>
 </dl>
 </div>
+<div class="section" id="running-a-job">
+<span id="config-run"></span><h2>Running a Job<a class="headerlink" href="#running-a-job" title="Permalink to this headline">¶</a></h2>
+<p>Once fully configured, you will want to run a TraP job to process your data.
+From within a project directory, you can start a job using:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ trap-manage.py run &lt;jobname&gt;
+</pre></div>
+</div>
+</div>
 <div class="section" id="configuration-file-syntax">
 <span id="configparser"></span><h2>Configuration file syntax<a class="headerlink" href="#configuration-file-syntax" title="Permalink to this headline">¶</a></h2>
 <p>Several of the TraP&#8217;s configuration files &#8211; <a class="reference internal" href="pipeline_cfg.html#pipeline-cfg"><em>pipeline.cfg</em></a>, <a class="reference internal" href="../../tools/tkp-inject.html#tkp-inject"><em>inject.cfg</em></a>, <a class="reference internal" href="job_params_cfg.html#job-params-cfg"><em>job_params.cfg</em></a> &#8211; use the Python <a class="reference external" href="http://docs.python.org/library/configparser.html#module-ConfigParser" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">ConfigParser</span></tt></a> file format. This is
@@ -171,6 +179,7 @@ for that file.</p>
 <li><a class="reference internal" href="#preamble">Preamble</a></li>
 <li><a class="reference internal" href="#creating-a-project-directory">Creating a Project Directory</a></li>
 <li><a class="reference internal" href="#creating-a-job">Creating a Job</a></li>
+<li><a class="reference internal" href="#running-a-job">Running a Job</a></li>
 <li><a class="reference internal" href="#configuration-file-syntax">Configuration file syntax</a></li>
 </ul>
 </li>
