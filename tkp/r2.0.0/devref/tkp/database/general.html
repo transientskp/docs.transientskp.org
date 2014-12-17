@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.db.general – general database functions &mdash; LOFAR Transients Pipeline 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.db – Database routines" href="index.html" />
+    <link rel="next" title="tkp.db.generic – generic data-query generation functions" href="generic.html" />
+    <link rel="prev" title="tkp.db.dump – Dump database backup to file" href="dump.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generic.html" title="tkp.db.generic – generic data-query generation functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dump.html" title="tkp.db.dump – Dump database backup to file"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U"><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.db.general">
+<span id="tkp-db-general-general-database-functions"></span><span id="database-general"></span><h1><a class="reference internal" href="#module-tkp.db.general" title="tkp.db.general: general database stuff"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.general</span></tt></a> &#8211; general database functions<a class="headerlink" href="#module-tkp.db.general" title="Permalink to this headline">¶</a></h1>
+<p>A collection of back end subroutines (mostly SQL queries).</p>
+<p>In this module we collect together various routines
+that don&#8217;t fit into a more specific collection.</p>
+<dl class="function">
+<dt id="tkp.db.general.insert_dataset">
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">insert_dataset</tt><big>(</big><em>description</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#insert_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.insert_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert dataset with description as given by argument.</p>
+<p>DB function insertDataset() sets the necessary default values.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.general.insert_extracted_sources">
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">insert_extracted_sources</tt><big>(</big><em>image_id</em>, <em>results</em>, <em>extract_type</em>, <em>ff_runcat_ids=None</em>, <em>ff_monitor_ids=None</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#insert_extracted_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.insert_extracted_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert all detections from sourcefinder into the extractedsource table.</p>
+<p>Besides the source properties from sourcefinder, we calculate additional
+attributes that are increase performance in other tasks.</p>
+<p>The strict sequence from results (the sourcefinder detections) is given below.
+Note the units between sourcefinder and database.
+(0) ra [deg], (1) dec [deg],
+(2) ra_fit_err [deg], (3) decl_fit_err [deg],
+(4) peak_flux [Jy], (5) peak_flux_err [Jy],
+(6) int_flux [Jy], (7) int_flux_err [Jy],
+(8) significance detection level,
+(9) beam major width (arcsec), (10) - minor width (arcsec), (11) - parallactic angle [deg],
+(12) ew_sys_err [arcsec], (13) ns_sys_err [arcsec],
+(14) error_radius [arcsec]
+(15) gaussian fit (bool)</p>
+<p>ra_fit_err and decl_fit_err are the 1-sigma errors from the gaussian fit,
+in degrees. Note that for a source located towards the poles the ra_fit_err
+increases with absolute declination.
+error_radius is a pessimistic on-sky error estimate in arcsec.
+ew_sys_err and ns_sys_err represent the telescope dependent systematic errors
+and are in arcsec.
+An on-sky error (declination independent, and used in de ruiter calculations)
+is then:
+uncertainty_ew^2 = ew_sys_err^2 + error_radius^2
+uncertainty_ns^2 = ns_sys_err^2 + error_radius^2
+The units of uncertainty_ew and uncertainty_ns are in degrees.
+The error on RA is given by ra_err. For a source with an RA of ra and an error
+of ra_err, its RA lies in the range [ra-ra_err, ra+ra_err].
+ra_err^2 = ra_fit_err^2 + [alpha_inflate(ew_sys_err,decl)]^2
+decl_err^2 = decl_fit_err^2 + ns_sys_err^2.
+The units of ra_err and decl_err are in degrees.
+Here alpha_inflate() is the RA inflation function, it converts an
+angular on-sky distance to a ra distance at given declination.</p>
+<p>Input argument &#8220;extract&#8221; tells whether the source detections originate from:
+&#8216;blind&#8217;: blind source extraction
+&#8216;ff_nd&#8217;: from forced fits at null detection locations
+&#8216;ff_ms&#8217;: from forced fits at monitoringlist positions</p>
+<p>Input argument ff_runcat is not empty in the case of forced fits from
+null detections. It contains the runningcatalog ids from which the
+source positions were derived for the forced fits. In that case the
+runcat ids will be inserted into the extractedsource table as well,
+to simplify further null-detection processing.
+For blind extractions this list is empty (None).</p>
+<p>For all extracted sources additional parameters are calculated,
+and appended to the sourcefinder data. Appended and converted are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>the image id to which the extracted sources belong to</li>
+<li>the zone in which an extracted source falls is calculated, based
+on its declination. We adopt a zoneheight of 1 degree, so
+the floor of the declination represents the zone.</li>
+<li>the positional errors are converted from degrees to arcsecs</li>
+<li>the Cartesian coordinates of the source position</li>
+<li>ra * cos(radians(decl)), this is very often being used in
+source-distance calculations</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.general.insert_image">
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">insert_image</tt><big>(</big><em>dataset</em>, <em>freq_eff</em>, <em>freq_bw</em>, <em>taustart_ts</em>, <em>tau_time</em>, <em>beam_smaj_pix</em>, <em>beam_smin_pix</em>, <em>beam_pa_rad</em>, <em>deltax</em>, <em>deltay</em>, <em>url</em>, <em>centre_ra</em>, <em>centre_decl</em>, <em>xtr_radius</em>, <em>rms_qc</em>, <em>rms_min</em>, <em>rms_max</em>, <em>detection_thresh</em>, <em>analysis_thresh</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#insert_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.insert_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert an image for a given dataset with the column values
+given in the argument list.</p>
+<blockquote>
+<div><blockquote>
+<div>semiminor axes in pixel values; beam_pa_rad is the position angle
+in radians.
+They all will be converted to degrees, because that is unit used in
+the database.</div></blockquote>
+<p>These define the region within <tt class="docutils literal"><span class="pre">xtr_radius</span></tt> degrees of the
+field centre, that will be used for source extraction.
+(This obviously implies a promised on behalf of the pipeline not to do
+anything else!)
+Note centre_ra, centre_decl, extracion_radius should all be in degrees.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.general.insert_monitor_positions">
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">insert_monitor_positions</tt><big>(</big><em>dataset_id</em>, <em>positions</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#insert_monitor_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.insert_monitor_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add entries to the <tt class="docutils literal"><span class="pre">monitor</span></tt> table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Positions will only be monitored when processing this
+dataset.</li>
+<li><strong>positions</strong> (<em>list of tuples</em>) &#8211; List of (RA, decl) tuples in decimal degrees.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.general.lightcurve">
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">lightcurve</tt><big>(</big><em>xtrsrcid</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain a light curve for a specific extractedsource</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xtrsrcid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the source identifier that corresponds to a point on
+the light curve. Note that the point does not have to be the start
+(first) point of the light curve.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of tuples, each containing:
+- observation start time as a datetime.datetime object
+- integration time (float)
+- integrated flux (float)
+- integrated flux error (float)
+- database ID of this particular source
+- frequency band ID
+- stokes</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.general.update_dataset_process_end_ts">
+<tt class="descclassname">tkp.db.general.</tt><tt class="descname">update_dataset_process_end_ts</tt><big>(</big><em>dataset_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/general.html#update_dataset_process_end_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.general.update_dataset_process_end_ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update dataset start-of-processing timestamp.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dump.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.dump</span></tt> &#8211; Dump database backup to file</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generic.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.generic</span></tt> &#8211; generic data-query generation functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/database/general.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generic.html" title="tkp.db.generic – generic data-query generation functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dump.html" title="tkp.db.dump – Dump database backup to file"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" ><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

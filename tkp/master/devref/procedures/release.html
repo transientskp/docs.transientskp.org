@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Release procedure &mdash; LOFAR Transients Pipeline 2.0-pre documentation</title>
+    <title>Release procedure &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
     
     <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0-pre',
+        VERSION:     '2.1-pre',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/lofar.ico"/>
-    <link rel="top" title="LOFAR Transients Pipeline 2.0-pre documentation" href="../../index.html" />
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../index.html" />
     <link rel="up" title="Development Procedure" href="index.html" />
     <link rel="next" title="The Pipeline Database" href="../database/index.html" />
     <link rel="prev" title="Code Review" href="review.html" /> 
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="review.html" title="Code Review"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Development Procedure</a> &raquo;</li> 
       </ul>
@@ -61,8 +61,16 @@
 <h1>Release procedure<a class="headerlink" href="#release-procedure" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="code-and-repository-management">
 <h2>Code and repository management<a class="headerlink" href="#code-and-repository-management" title="Permalink to this headline">¶</a></h2>
+<p>We use what is sometimes known as <a class="reference external" href="http://semver.org/">semantic release versioning</a>.
+We use branches to track major releases, and we tag all point releases,
+which makes it easy to track down the relevant git history.</p>
+<p>Versions are numbered in the format MAJOR.MINOR.PATCH,
+where major releases break backwards compatibility, minor releases add
+functionality without breaking backwards compatibility, and patch releases
+are backwards-compatible bug fixes.</p>
 <p>To make a release you should first create a new branch (if appropriate: see
-below), then set the version number in the code, then tag the new release.</p>
+below), then set the version number in the code, then tag the new release to
+note the version number.</p>
 <p>Major releases are sequentially numbered (<tt class="docutils literal"><span class="pre">1</span></tt>, <tt class="docutils literal"><span class="pre">2</span></tt>, <tt class="docutils literal"><span class="pre">N</span></tt>). They happen on
 a branch named <tt class="docutils literal"><span class="pre">releaseN</span></tt>. Create the branch as follows:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ git checkout -b &lt;releaseN&gt;
@@ -70,27 +78,19 @@ a branch named <tt class="docutils literal"><span class="pre">releaseN</span></t
 </div>
 <p>Minor releases happen on existing release branches. They are named <tt class="docutils literal"><span class="pre">N.M</span></tt>,
 where <tt class="docutils literal"><span class="pre">N</span></tt> is the major release version and <tt class="docutils literal"><span class="pre">M</span></tt> the minor version. The
-first commit on every release branch corresponds to <tt class="docutils literal"><span class="pre">N.0</span></tt>. Check
+first commit on every release branch corresponds to <tt class="docutils literal"><span class="pre">N.0.0</span></tt>. Check
 out the relevant branch:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ git checkout &lt;releaseN&gt;
 </pre></div>
 </div>
-<p>Next, edit the code to set the version number. You will need to change the
-following files:</p>
-<blockquote>
-<div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">setup.py</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">tkp/__init__.py</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">documentation/conf.py</span></tt></li>
-</ul>
-</div></blockquote>
+<p>Next, edit the code to set the version number in <tt class="docutils literal"><span class="pre">tkp/__init__.py</span></tt>.</p>
 <p>Commit your changes. This commit is the basis of the release:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ git commit -am &quot;Release N.M&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ git commit -am &quot;Release N.M.O&quot;
 </pre></div>
 </div>
 <p>Tag the release. This is important, as we use the tags to indicate which
 versions should be built and added to the documentation site:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ git tag -a &quot;rN.M&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ git tag -a &quot;rN.M.O&quot;
 </pre></div>
 </div>
 <p>Push everything, including the tag, to GitHub:</p>
@@ -160,7 +160,7 @@ versions should be built and added to the documentation site:</p>
         <li class="right" >
           <a href="review.html" title="Code Review"
              >previous</a> |</li>
-        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0-pre documentation</a> &raquo;</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
           <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
           <li><a href="index.html" >Development Procedure</a> &raquo;</li> 
       </ul>

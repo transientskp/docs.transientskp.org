@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.accessors.kat7casaimage &mdash; LOFAR Transients Pipeline 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.accessors" href="../accessors.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" accesskey="U">tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.accessors.kat7casaimage</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module implements the CASA kat7 data container format.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">pyrap.tables</span> <span class="kn">import</span> <span class="n">table</span> <span class="k">as</span> <span class="n">pyrap_table</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.casaimage</span> <span class="kn">import</span> <span class="n">CasaImage</span>
+<span class="kn">from</span> <span class="nn">tkp.utility.coordinates</span> <span class="kn">import</span> <span class="n">mjd2datetime</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Kat7CasaImage</span><span class="p">(</span><span class="n">CasaImage</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use pyrap to pull image data out of a CASA table as produced by KAT-7.</span>
+
+<span class="sd">    Note that KAT-7 does not currently include image duration in its headers,</span>
+<span class="sd">    so we use a placeholder value of 1.</span>
+
+<span class="sd">    Note also that the start time is taken from the CASA coords record, and</span>
+<span class="sd">    may not be valid if the image is composed of multiple observations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      - url: location of CASA table</span>
+<span class="sd">      - plane: if datacube, what plane to use</span>
+<span class="sd">      - beam: (optional) beam parameters in degrees, in the form</span>
+<span class="sd">        (bmaj, bmin, bpa). Will attempt to read from header if</span>
+<span class="sd">        not supplied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beam</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Kat7CasaImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">plane</span><span class="p">,</span> <span class="n">beam</span><span class="p">)</span>
+
+        <span class="n">table</span> <span class="o">=</span> <span class="n">pyrap_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_taustart_ts</span> <span class="o">=</span> <span class="n">parse_taustartts</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tau_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Placeholder value</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">taustart_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_taustart_ts</span>
+
+
+<span class="k">def</span> <span class="nf">parse_taustartts</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract image time from CASA table header.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">      - MAIN table of CASA image.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      - Time of image start as a instance of ``datetime.datetime``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obsdate</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">getkeyword</span><span class="p">(</span><span class="s">&#39;coords&#39;</span><span class="p">)[</span><span class="s">&#39;obsdate&#39;</span><span class="p">][</span><span class="s">&#39;m0&#39;</span><span class="p">][</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">mjd2datetime</span><span class="p">(</span><span class="n">obsdate</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" >tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

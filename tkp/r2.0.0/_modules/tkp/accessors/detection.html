@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.accessors.detection &mdash; LOFAR Transients Pipeline 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.accessors" href="../accessors.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" accesskey="U">tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.accessors.detection</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">pyfits</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">pyrap.tables</span> <span class="kn">import</span> <span class="n">table</span> <span class="k">as</span> <span class="n">pyrap_table</span>
+<span class="kn">from</span> <span class="nn">pyrap.images</span> <span class="kn">import</span> <span class="n">image</span> <span class="k">as</span> <span class="n">pyrap_image</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.lofarcasaimage</span> <span class="kn">import</span> <span class="n">LofarCasaImage</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.lofarhdf5image</span> <span class="kn">import</span> <span class="n">LofarHdf5Image</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.fitsimage</span> <span class="kn">import</span> <span class="n">FitsImage</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.lofarfitsimage</span> <span class="kn">import</span> <span class="n">LofarFitsImage</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.kat7casaimage</span> <span class="kn">import</span> <span class="n">Kat7CasaImage</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="c"># files that should be contained by a casa table</span>
+<span class="n">casafiles</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;table.dat&quot;</span><span class="p">,</span> <span class="s">&quot;table.f0&quot;</span><span class="p">,</span> <span class="s">&quot;table.f0_TSM0&quot;</span><span class="p">,</span> <span class="s">&quot;table.info&quot;</span><span class="p">,</span>
+             <span class="s">&quot;table.lock&quot;</span><span class="p">)</span>
+
+<span class="c"># We will take the first accessor for which the test returns True.</span>
+<span class="n">FitsTest</span>  <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;FitsTest&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;accessor&#39;</span><span class="p">,</span> <span class="s">&#39;test&#39;</span><span class="p">])</span>
+<span class="n">fits_type_mapping</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">FitsTest</span><span class="p">(</span>
+        <span class="n">accessor</span><span class="o">=</span><span class="n">LofarFitsImage</span><span class="p">,</span>
+        <span class="n">test</span><span class="o">=</span><span class="k">lambda</span> <span class="n">hdr</span><span class="p">:</span> <span class="s">&#39;TELESCOP&#39;</span> <span class="ow">in</span> <span class="n">hdr</span> <span class="ow">and</span> <span class="s">&#39;ANTENNA&#39;</span> <span class="ow">in</span> <span class="n">hdr</span> <span class="ow">and</span> <span class="n">hdr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;TELESCOP&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&quot;LOFAR&quot;</span>
+    <span class="p">)</span>
+<span class="p">]</span>
+
+<span class="n">casa_telescope_keyword_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;LOFAR&#39;</span><span class="p">:</span> <span class="n">LofarCasaImage</span><span class="p">,</span>
+    <span class="s">&#39;KAT-7&#39;</span><span class="p">:</span> <span class="n">Kat7CasaImage</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="isfits"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.isfits">[docs]</a><span class="k">def</span> <span class="nf">isfits</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns True if filename is a fits file&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;fits&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="iscasa"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.iscasa">[docs]</a><span class="k">def</span> <span class="nf">iscasa</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns True if filename is a lofar casa directory&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">casafiles</span><span class="p">:</span>
+        <span class="n">casafile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">file_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">casafile</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> doesn&#39;t contain </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">file_</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">pyrap_table</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;directory looks casacore, but cannot open: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="islofarhdf5"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.islofarhdf5">[docs]</a><span class="k">def</span> <span class="nf">islofarhdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns True if filename is a hdf5 container&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;h5&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pyrap_image</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="fits_detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.fits_detect">[docs]</a><span class="k">def</span> <span class="nf">fits_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Detect which telescope produced FITS data, return corresponding accessor.</span>
+
+<span class="sd">    Checks for known FITS image types where we expect additional metadata.</span>
+<span class="sd">    If the telescope is unknown we default to a regular FitsImage.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hdu</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">hdr</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+    <span class="k">for</span> <span class="n">fits_test</span> <span class="ow">in</span> <span class="n">fits_type_mapping</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fits_test</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">hdr</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">fits_test</span><span class="o">.</span><span class="n">accessor</span>
+    <span class="k">return</span> <span class="n">FitsImage</span>
+
+</div>
+<div class="viewcode-block" id="casa_detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.casa_detect">[docs]</a><span class="k">def</span> <span class="nf">casa_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Detect which telescope produced CASA data, return corresponding accessor.</span>
+
+<span class="sd">    Checks for known CASA table types where we expect additional metadata.</span>
+<span class="sd">    If the telescope is unknown we return nothing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">pyrap_table</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">telescope</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">getkeyword</span><span class="p">(</span><span class="s">&#39;coords&#39;</span><span class="p">)[</span><span class="s">&#39;telescope&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">casa_telescope_keyword_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">telescope</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="detect"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.detection.detect">[docs]</a><span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns the accessor class that should be used to process filename&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">isfits</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fits_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">iscasa</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">casa_detect</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">islofarhdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LofarHdf5Image</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;unsupported format: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" >tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

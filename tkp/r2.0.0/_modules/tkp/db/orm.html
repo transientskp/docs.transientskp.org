@@ -1,0 +1,645 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.db.orm &mdash; LOFAR Transients Pipeline 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.db" href="../db.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" accesskey="U">tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.db.orm</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains lightweight container objects that corresponds</span>
+<span class="sd">to a dataset, image or extracted source in the database; it is actually a</span>
+<span class="sd">mini Object Relation Mapper (ORM). The correspondence between the object</span>
+<span class="sd">and table row is matched through the private _id attributes.</span>
+
+<span class="sd">Each dataset contains several database Images; each Image contains a</span>
+<span class="sd">number of ExtractedSources. The database Images correspond to the</span>
+<span class="sd">images table in the database, *not* to sourcefinder images or actual</span>
+<span class="sd">image data files on disk (this distinction is important; while there</span>
+<span class="sd">are certainly parts in common, several are not).</span>
+
+
+<span class="sd">The current setup is done in large part to keep the database and</span>
+<span class="sd">sourcefinder (and other parts of the TKP package) separate; tightly</span>
+<span class="sd">integrated database tables/sourcefinder images/disk files make it more</span>
+<span class="sd">difficult to improve the code or distribute parts separately.</span>
+
+<span class="sd">Usage</span>
+<span class="sd">=====</span>
+
+<span class="sd">In practice, a DataSet object is created, and separate Images are</span>
+<span class="sd">created referencing that DataSet() instance; ids are automatically</span>
+<span class="sd">assigned where necessary (i.e., on creation of a new entry (row) in</span>
+<span class="sd">the database).</span>
+
+<span class="sd">Objects can also be created using an existing id; data is then taken</span>
+<span class="sd">from the corresponding table row in the database.</span>
+
+
+<span class="sd">Creating new objects</span>
+<span class="sd">====================</span>
+
+<span class="sd">The following code is an usage example, but should not be used as a</span>
+<span class="sd">doc test (since the database value can differ, and thus the test would</span>
+<span class="sd">fail)::</span>
+
+<span class="sd">    # database sets up and holds the connection to the actual database</span>
+<span class="sd">    &gt;&gt;&gt; database = tkp.db.database.Database()</span>
+
+<span class="sd">    # Each object type takes a data dictionary on creation, which for newly objects</span>
+<span class="sd">    # has some required keys (&amp; values). For a DataSet, this is only &#39;description&#39;;</span>
+<span class="sd">    # for an Image, the keys are &#39;freq_eff&#39;, &#39;freq_bw_&#39;, &#39;taustart_ts&#39;,</span>
+<span class="sd">    # &#39;tau_time&#39; &amp; &#39;url&#39;</span>
+<span class="sd">    # The required values are stored in the the REQUIRED attribute</span>
+<span class="sd">    &gt;&gt;&gt; dataset = DataSet(data={&#39;description&#39;: &#39;a dataset&#39;}, database=database)</span>
+
+<span class="sd">    # Here, dataset indirectly holds the database connection:</span>
+<span class="sd">    &gt;&gt;&gt; dataset.database</span>
+<span class="sd">    DataBase(host=heastro1, name=trap, user=trap, ...)</span>
+<span class="sd">    &gt;&gt;&gt; image1 = Image(data={&#39;freq_eff&#39;: &#39;80e6&#39;, &#39;freq_bw&#39;: 1e6, \</span>
+<span class="sd">        &#39;taustart_ts&#39;: datetime(2011, 5, 1, 0, 0, 0), &#39;tau_time&#39;: 1800.,  &#39;url&#39;: &#39;/&#39;}, dataset=dataset)  # initialize with defaults</span>
+<span class="sd">        # note the dataset kwarg, which holds the database connection</span>
+<span class="sd">    &gt;&gt;&gt; image1.tau_time</span>
+<span class="sd">    1800.</span>
+<span class="sd">    &gt;&gt;&gt; image1.taustart_ts</span>
+<span class="sd">    datetime.datetime(2011, 5, 1, 0, 0, 0)</span>
+<span class="sd">    &gt;&gt;&gt; image2 = Image(data={&#39;freq_eff&#39;: &#39;80e6&#39;, &#39;freq_bw&#39;: 1e6, \</span>
+<span class="sd">        &#39;taustart_ts&#39;: datetime(2011, 5, 1, 0, 1, 0), &#39;tau_time&#39;: 1500.,&#39;url&#39;: &#39;/&#39;}, dataset=dataset)</span>
+<span class="sd">    &gt;&gt;&gt; image2.tau_time</span>
+<span class="sd">    1500</span>
+<span class="sd">    &gt;&gt;&gt; image2.taustart_ts</span>
+<span class="sd">    datetime.datetime(2011, 5, 1, 0, 1, 0)</span>
+<span class="sd">    # Images created with a dataset object, are automatically added to that dataset:</span>
+<span class="sd">    &gt;&gt;&gt; dataset.images</span>
+<span class="sd">    set([&lt;tkp.database.dataset.Image object at 0x26fb6d0&gt;, &lt;tkp.database.dataset.Image object at 0x26fb790&gt;])</span>
+
+<span class="sd">Updating objects</span>
+<span class="sd">================</span>
+
+<span class="sd">To update objects, use the update() method.</span>
+
+<span class="sd">This method does two things, in the following order:</span>
+
+<span class="sd">1. it updates from the database to the object: if there have been</span>
+<span class="sd">changes in the database, the object will reflect that after executing</span>
+<span class="sd">update()</span>
+
+<span class="sd">2. then, it updates the object (and the database) with values supplied</span>
+<span class="sd">by the user. The latter values are optional; no supplied values simply</span>
+<span class="sd">means there aren&#39;t any updates.</span>
+
+
+<span class="sd">    &gt;&gt;&gt; image2.update(tau_time=2500)    # updates the database as well</span>
+<span class="sd">    &gt;&gt;&gt; image2.tau_time</span>
+<span class="sd">    2500</span>
+<span class="sd">    &gt;&gt;&gt; database.cursor.execute(&quot;SELECT tau_time FROM images WHERE imageid=%s&quot; % \</span>
+<span class="sd">                                 (image2.id,))</span>
+<span class="sd">    &gt;&gt;&gt; database.cursors.fetchone()[0]</span>
+<span class="sd">    2500</span>
+<span class="sd">    # Manually update the database</span>
+<span class="sd">    &gt;&gt;&gt; database.cursor.execute(&quot;UPDATE images SET tau_time=2000.0 imageid=%s&quot; % \</span>
+<span class="sd">                                 (image2.id,))</span>
+<span class="sd">    &gt;&gt;&gt; image2.tau_time   # not updated yet!</span>
+<span class="sd">    2500</span>
+<span class="sd">    &gt;&gt;&gt; image2.update()</span>
+<span class="sd">    &gt;&gt;&gt; image2.tau_time</span>
+<span class="sd">    2000</span>
+
+
+<span class="sd">Assigning objects to a table row on creation</span>
+<span class="sd">============================================</span>
+
+<span class="sd">It is also possible to create a DataSet, Image or ExtractedSource instance from the</span>
+<span class="sd">database, using the ``id`` in the initializer::</span>
+
+<span class="sd">    &gt;&gt;&gt; dataset2 = DataSet(id=dataset.id, database=database)</span>
+<span class="sd">    &gt;&gt;&gt; image3 = Image(imageid=image2.id, database=database)</span>
+<span class="sd">    &gt;&gt;&gt; image3.tau_time</span>
+<span class="sd">    2000</span>
+
+<span class="sd">If an ``id`` is supplied, ``data`` is ignored.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">tkp.db.generic</span> <span class="kn">import</span> <span class="n">columns_from_table</span><span class="p">,</span> <span class="n">set_columns_for_table</span>
+<span class="kn">from</span> <span class="nn">tkp.db.general</span> <span class="kn">import</span> <span class="p">(</span><span class="n">insert_dataset</span><span class="p">,</span> <span class="n">insert_image</span><span class="p">,</span>
+                            <span class="n">insert_extracted_sources</span><span class="p">,</span> <span class="n">lightcurve</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">tkp.db.associations</span> <span class="kn">import</span> <span class="n">associate_extracted_sources</span>
+<span class="kn">import</span> <span class="nn">tkp.db</span>
+<span class="kn">import</span> <span class="nn">tkp.db.quality</span>
+<span class="kn">from</span> <span class="nn">tkp.db.database</span> <span class="kn">import</span> <span class="n">Database</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DBObject"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DBObject">[docs]</a><span class="k">class</span> <span class="nc">DBObject</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generic mini-ORM object</span>
+
+<span class="sd">    Derived objects will need to implement __init__, which for</span>
+<span class="sd">    practical reasons is split up in __init__ and _init_data: the</span>
+<span class="sd">    latter is called at the end __init__, so a derived __init__ would</span>
+<span class="sd">    have super(Derived, self).__init__() at the start and</span>
+<span class="sd">    super(Derived, self)._init_data() at the end.</span>
+
+<span class="sd">    __init__ takes care of setting the id, the supplied `data` dictionary</span>
+<span class="sd">    and the connection to the database.</span>
+
+<span class="sd">    _init_data sets the actual data either from the database (in case</span>
+<span class="sd">    of a supplied id) or from the `data` dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Basic initialization.</span>
+
+<span class="sd">        Inherited classes need to implement any actual database action,</span>
+<span class="sd">        by calling self._init_data() at the end of their __init__</span>
+<span class="sd">        method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Call the id property to set the _id attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+
+    <span class="k">def</span> <span class="nf">_init_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set up the data, either by creating a new DBOject or</span>
+<span class="sd">        updating it from the database using the id</span>
+
+<span class="sd">        This method should only be called from __init__(), probably at the end.</span>
+
+<span class="sd">        Note that this does prevent proper (multi) inheritance,</span>
+<span class="sd">        because it would get called several times then.</span>
+
+<span class="sd">        Raises:</span>
+
+<span class="sd">            AttributeError if a required data keyword is missing.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># object created using an existing table row</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Verify required data keys</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">REQUIRED</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;missing required data key: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+
+<div class="viewcode-block" id="DBObject.__getattr__"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DBObject.__getattr__">[docs]</a>    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtain the &#39;name&#39; attribute, where &#39;name&#39; is a database column name&quot;&quot;&quot;</span>
+        <span class="c">#DEVELOPERS NOTE: if this property fails for some reason, python will</span>
+        <span class="c">#ignore it, and continue using the __getattr__ method. This is very</span>
+        <span class="c">#confusing. So if for any reason you are getting &#39;attribute not found&#39;</span>
+        <span class="c">#errors while you don&#39;t expect it, I suggest temporarily disabling the</span>
+        <span class="c">#__getattr__ method until you located the problem.</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&quot;attribute &#39;</span><span class="si">%s</span><span class="s">&#39; not found&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="DBObject.id"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DBObject.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add or obtain an id to/from the table</span>
+
+<span class="sd">        The id is generated if self._id does not exist, effectively</span>
+<span class="sd">        creating a new row in the database.</span>
+
+<span class="sd">        Several containers have their specific SQL function to create</span>
+<span class="sd">        a new object, so this property will need to overridden.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;INSERT INTO &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">TABLE</span> <span class="o">+</span> <span class="s">&quot; (&quot;</span> <span class="o">+</span>
+                     <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">())</span> <span class="o">+</span> <span class="s">&quot;) VALUES (&quot;</span> <span class="o">+</span>
+                     <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">))</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+                     <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="s">&quot;postgresql&quot;</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">query</span> <span class="o">+</span> <span class="s">&quot;RETURNING ID&quot;</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c"># Insert a default source</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">autocommit</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="s">&quot;monetdb&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">lastrowid</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="s">&quot;postgresql&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span>
+                         <span class="s">&quot;Database engine not implemented in ORM.&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;insertion into database failed: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                             <span class="p">(</span><span class="n">query</span> <span class="o">%</span> <span class="n">values</span><span class="p">))</span>
+                <span class="k">raise</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;ORM failed: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                <span class="k">raise</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+</div>
+<div class="viewcode-block" id="DBObject.update"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DBObject.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update attributes from database, and set database values to</span>
+<span class="sd">        kwargs when provided</span>
+
+<span class="sd">        This method performs two functions, the first always and the</span>
+<span class="sd">        second optionally after the first:</span>
+
+<span class="sd">            - it updates the attributes from the database. That is, it</span>
+<span class="sd">              makes sure the Python instance is synchronized with the</span>
+<span class="sd">              database.</span>
+
+<span class="sd">            - (optional): it sets the column values in the database to</span>
+<span class="sd">              the values provided through kwargs, for the associated</span>
+<span class="sd">              database row. Attributes for the instance are of course</span>
+<span class="sd">              also set to these values. Any kwargs that do not</span>
+<span class="sd">              correspond to a column name are simply ignored.</span>
+
+<span class="sd">        This function therefore first updates the instance from the</span>
+<span class="sd">        database, and then optionally the database from the instance</span>
+<span class="sd">        (with the provided keyword arguments).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_with_database</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_sync_with_database</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update object attributes from the database&quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">columns_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TABLE</span><span class="p">,</span> <span class="n">keywords</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                            <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">})</span>
+        <span class="c"># Shallow copy, but that&#39;s ok: all database values are</span>
+        <span class="c"># immutable (including datetime objects)</span>
+        <span class="k">if</span> <span class="n">results</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the database with the supplied **kwargs.</span>
+
+<span class="sd">        Supplied keywords that do not exist in the database will lead</span>
+<span class="sd">        to a database error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">set_columns_for_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TABLE</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
+                                  <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="DataSet"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DataSet">[docs]</a><span class="k">class</span> <span class="nc">DataSet</span><span class="p">(</span><span class="n">DBObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class corresponding to the dataset table in the database&quot;&quot;&quot;</span>
+
+    <span class="n">TABLE</span> <span class="o">=</span> <span class="s">&#39;dataset&#39;</span>
+    <span class="n">ID</span> <span class="o">=</span> <span class="s">&#39;id&#39;</span>
+    <span class="n">REQUIRED</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;description&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If id is supplied, the data and image arguments are ignored.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DataSet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_data</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;DataSet: &quot;</span><span class="si">%s</span><span class="s">&quot;. Database ID: </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s"> images.&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">))</span>
+
+    <span class="c"># Inserting datasets is handled a little different than normal inserts</span>
+    <span class="c"># (We make use of the SQL function insertDataset)</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="DataSet.id"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DataSet.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add or obtain an id to/from the table</span>
+
+<span class="sd">        This uses the SQL function insertDataset().</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">insert_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;ORM: error inserting dataset,  </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="k">raise</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+</div>
+<div class="viewcode-block" id="DataSet.update_images"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DataSet.update_images">[docs]</a>    <span class="k">def</span> <span class="nf">update_images</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renew the set of images by getting the images for this</span>
+<span class="sd">        dataset from the database. Implemented separately from update(),</span>
+<span class="sd">        since normally this would be too much overhead&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;SELECT id FROM image WHERE dataset = </span><span class="si">%s</span><span class="s"> ORDER BY id&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">image_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">Image</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span> <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">image_ids</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="DataSet.runcat_entries"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DataSet.runcat_entries">[docs]</a>    <span class="k">def</span> <span class="nf">runcat_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            a list of dictionarys:</span>
+<span class="sd">            representing rows in runningcatalog,</span>
+<span class="sd">            for all sources belonging to this dataset</span>
+
+<span class="sd">            Column &#39;id&#39; is returned with the key &#39;runcat&#39;</span>
+
+<span class="sd">            Currently only returns 3 columns:</span>
+<span class="sd">            [{&#39;runcat,&#39;xtrsrc&#39;,&#39;datapoints&#39;}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">columns_from_table</span><span class="p">(</span><span class="s">&#39;runningcatalog&#39;</span><span class="p">,</span>
+                                      <span class="n">keywords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">,</span> <span class="s">&#39;xtrsrc&#39;</span><span class="p">,</span> <span class="s">&#39;datapoints&#39;</span><span class="p">],</span>
+                                      <span class="n">alias</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="s">&#39;runcat&#39;</span><span class="p">},</span>
+                                      <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dataset&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+
+</div>
+<div class="viewcode-block" id="DataSet.frequency_bands"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.DataSet.frequency_bands">[docs]</a>    <span class="k">def</span> <span class="nf">frequency_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of distinct bands present in the dataset.&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">        SELECT DISTINCT(band)</span>
+<span class="s">          FROM image</span>
+<span class="s">         WHERE dataset = </span><span class="si">%s</span><span class="s"></span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">bands</span>
+
+</div></div>
+<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">(</span><span class="n">DBObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class corresponding to the images table in the database&quot;&quot;&quot;</span>
+
+    <span class="n">TABLE</span> <span class="o">=</span> <span class="s">&#39;image&#39;</span>
+    <span class="n">ID</span> <span class="o">=</span> <span class="s">&#39;id&#39;</span>
+    <span class="n">REQUIRED</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;dataset&#39;</span><span class="p">,</span> <span class="s">&#39;tau_time&#39;</span><span class="p">,</span> <span class="s">&#39;freq_eff&#39;</span><span class="p">,</span> <span class="s">&#39;freq_bw&#39;</span><span class="p">,</span> <span class="s">&#39;taustart_ts&#39;</span><span class="p">,</span>
+                <span class="s">&#39;beam_smaj_pix&#39;</span><span class="p">,</span> <span class="s">&#39;beam_smin_pix&#39;</span><span class="p">,</span> <span class="s">&#39;beam_pa_rad&#39;</span><span class="p">,</span>
+                <span class="s">&#39;deltax&#39;</span><span class="p">,</span> <span class="s">&#39;deltay&#39;</span><span class="p">,</span>
+                <span class="s">&#39;url&#39;</span><span class="p">,</span> <span class="s">&#39;centre_ra&#39;</span><span class="p">,</span> <span class="s">&#39;centre_decl&#39;</span><span class="p">,</span> <span class="s">&#39;xtr_radius&#39;</span><span class="p">,</span> <span class="s">&#39;rms_qc&#39;</span><span class="p">)</span>
+
+
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If id is supplied, the data and image arguments are ignored.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Image</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        <span class="c"># Special part to deal when a DataSet() is supplied</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rejected</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">database</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">database</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;dataset&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sources</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_data</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">DataSet</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;dataset&#39;</span><span class="p">],</span> <span class="n">database</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_rejected</span><span class="p">()</span>
+
+
+    <span class="c"># Inserting images is handled a little different than normal inserts</span>
+    <span class="c"># -- We call an SQL function &#39;insertImage&#39; which takes care of</span>
+    <span class="c">#    assigning a new image id.</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Image.id"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.Image.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add or obtain an id to/from the table</span>
+
+<span class="sd">        This uses the SQL function insertImage()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c">#if &#39;bsmaj&#39; not in self._data:</span>
+                <span class="c">#    self._data[&#39;bsmaj&#39;] = None</span>
+                <span class="c">#    self._data[&#39;bsmin&#39;] = None</span>
+                <span class="c">#    self._data[&#39;bpa&#39;] = None</span>
+                <span class="c">#    self._data[&#39;deltax&#39;] = None</span>
+                <span class="c">#    self._data[&#39;deltay&#39;] = None</span>
+                <span class="c"># Insert a default image</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">insert_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;freq_eff&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;freq_bw&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;taustart_ts&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;tau_time&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;beam_smaj_pix&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;beam_smin_pix&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;beam_pa_rad&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;deltax&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;deltay&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;url&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;centre_ra&#39;</span><span class="p">],</span> <span class="c">#Degrees J2000</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;centre_decl&#39;</span><span class="p">],</span> <span class="c">#Degrees J2000</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;xtr_radius&#39;</span><span class="p">],</span> <span class="c">#Degrees</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s">&#39;rms_qc&#39;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;rms_min&#39;</span><span class="p">,</span><span class="bp">None</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;rms_max&#39;</span><span class="p">,</span><span class="bp">None</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;detection_thresh&#39;</span><span class="p">,</span><span class="bp">None</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;analysis_thresh&#39;</span><span class="p">,</span><span class="bp">None</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;ORM: error inserting image,  </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="k">raise</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+</div>
+<div class="viewcode-block" id="Image.update_rejected"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.Image.update_rejected">[docs]</a>    <span class="k">def</span> <span class="nf">update_rejected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update self.rejected with the rejected status. Will be false</span>
+<span class="sd">        if not rejected, will be a list of reject descriptions if rejected&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rejected</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">quality</span><span class="o">.</span><span class="n">isrejected</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Image.update_sources"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.Image.update_sources">[docs]</a>    <span class="k">def</span> <span class="nf">update_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renew the set of sources by getting the sources for this</span>
+<span class="sd">        image from the database</span>
+
+<span class="sd">        This method is separately implemented, because it&#39;s not always necessary</span>
+<span class="sd">        and potentially (for an image with dozens or more sources) time &amp; memory</span>
+<span class="sd">        consuming.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;SELECT id FROM extractedsource WHERE image = </span><span class="si">%s</span><span class="s">&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,))</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;database failed on query: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ExtractedSource</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sources</span> <span class="o">=</span> <span class="n">sources</span>
+
+</div>
+<div class="viewcode-block" id="Image.insert_extracted_sources"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.Image.insert_extracted_sources">[docs]</a>    <span class="k">def</span> <span class="nf">insert_extracted_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="s">&#39;blind&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Insert a list of sources</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            results (list): list of</span>
+<span class="sd">                utility.containers.ExtractionResult objects (as</span>
+<span class="sd">                returned from</span>
+<span class="sd">                sourcefinder.image.ImageData().extract()), or a list</span>
+<span class="sd">                of data tuples with the source information as follows:</span>
+<span class="sd">                (ra, dec,</span>
+<span class="sd">                ra_fit_err, dec_fit_err,</span>
+<span class="sd">                peak, peak_err,</span>
+<span class="sd">                flux, flux_err,</span>
+<span class="sd">                significance level,</span>
+<span class="sd">                beam major width (as), beam minor width(as),</span>
+<span class="sd">                beam parallactic angle</span>
+<span class="sd">                ew_sys_err, ns_sys_err,</span>
+<span class="sd">                error_radius).</span>
+<span class="sd">            extract (str):&#39;blind&#39;, &#39;ff_nd&#39; or &#39;ff_ms&#39;</span>
+<span class="sd">                (see db.general.insert_extracted_sources)</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="c">#To do: Figure out a saner method of passing the results around</span>
+       <span class="c"># (Namedtuple, for starters?)</span>
+
+        <span class="n">insert_extracted_sources</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="n">results</span><span class="p">,</span> <span class="n">extract_type</span><span class="o">=</span><span class="n">extract</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Image.associate_extracted_sources"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.Image.associate_extracted_sources">[docs]</a>    <span class="k">def</span> <span class="nf">associate_extracted_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deRuiter_r</span><span class="p">,</span> <span class="n">new_source_sigma_margin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Associate sources from the last images with previously</span>
+<span class="sd">        extracted sources within the same dataset</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            deRuiter_r (float): The De Ruiter radius for source</span>
+<span class="sd">                association. The default value is set through the</span>
+<span class="sd">                tkp.config module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">associate_extracted_sources</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">deRuiter_r</span><span class="p">,</span>
+                                    <span class="n">new_source_sigma_margin</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ExtractedSource"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.ExtractedSource">[docs]</a><span class="k">class</span> <span class="nc">ExtractedSource</span><span class="p">(</span><span class="n">DBObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class corresponding to the extractedsource table in the database&quot;&quot;&quot;</span>
+
+    <span class="n">TABLE</span> <span class="o">=</span> <span class="s">&#39;extractedsource&#39;</span>
+    <span class="n">ID</span> <span class="o">=</span> <span class="s">&#39;id&#39;</span>
+    <span class="n">REQUIRED</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;image&#39;</span><span class="p">,</span> <span class="s">&#39;zone&#39;</span><span class="p">,</span>
+                <span class="s">&#39;ra&#39;</span><span class="p">,</span> <span class="s">&#39;decl&#39;</span><span class="p">,</span> <span class="s">&#39;ra_err&#39;</span><span class="p">,</span> <span class="s">&#39;decl_err&#39;</span><span class="p">,</span>
+                <span class="s">&#39;uncertainty_ew&#39;</span><span class="p">,</span> <span class="s">&#39;uncertainty_ns&#39;</span><span class="p">,</span>
+                <span class="s">&#39;ra_fit_err&#39;</span><span class="p">,</span> <span class="s">&#39;decl_fit_err&#39;</span><span class="p">,</span> <span class="s">&#39;ew_sys_err&#39;</span><span class="p">,</span> <span class="s">&#39;ns_sys_err&#39;</span><span class="p">,</span>
+                <span class="s">&#39;error_radius&#39;</span><span class="p">,</span>
+                <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">,</span>
+                <span class="s">&#39;racosdecl&#39;</span><span class="p">,</span> <span class="s">&#39;det_sigma&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If id is supplied, the data and image arguments are ignored.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExtractedSource</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        <span class="c"># Special part to deal when an Image() is supplied</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">image</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">database</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">database</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;image&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s">&quot;can&#39;t create ExtractedSource object without a Database() object&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_data</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ExtractedSource.lightcurve"><a class="viewcode-back" href="../../../devref/tkp/database/orm.html#tkp.db.orm.ExtractedSource.lightcurve">[docs]</a>    <span class="k">def</span> <span class="nf">lightcurve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtain the complete light curve (within the current dataset)</span>
+<span class="sd">        for this source.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (list) list of 5-tuples, each tuple being:</span>
+<span class="sd">                - observation start time as a datetime.datetime object</span>
+<span class="sd">                - integration time (float)</span>
+<span class="sd">                - integrated flux (float)</span>
+<span class="sd">                - integrated flux error (float)</span>
+<span class="sd">                - database ID of this particular source</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">lightcurve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" >tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

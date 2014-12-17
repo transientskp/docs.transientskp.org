@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.steps.forced_fitting &mdash; LOFAR Transients Pipeline 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.steps.forced_fitting</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">tkp.accessors</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors</span> <span class="kn">import</span> <span class="n">sourcefinder_image_from_accessor</span>
+<span class="kn">import</span> <span class="nn">tkp.accessors</span>
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">general</span> <span class="k">as</span> <span class="n">dbgen</span>
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">monitoringlist</span> <span class="k">as</span> <span class="n">dbmon</span>
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">nulldetections</span> <span class="k">as</span> <span class="n">dbnd</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_forced_fit_requests</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="n">nd_requested_fits</span> <span class="o">=</span> <span class="n">dbnd</span><span class="o">.</span><span class="n">get_nulldetections</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Found </span><span class="si">%s</span><span class="s"> null detections&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">nd_requested_fits</span><span class="p">))</span>
+    <span class="n">mon_entries</span> <span class="o">=</span> <span class="n">dbmon</span><span class="o">.</span><span class="n">get_monitor_entries</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="n">all_fit_positions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_fit_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">all_fit_positions</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">nd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">nd</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">nd</span> <span class="ow">in</span> <span class="n">nd_requested_fits</span><span class="p">])</span>
+    <span class="n">all_fit_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span> <span class="p">(</span><span class="s">&#39;ff_nd&#39;</span><span class="p">,</span> <span class="n">nd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">nd</span> <span class="ow">in</span> <span class="n">nd_requested_fits</span><span class="p">])</span>
+
+    <span class="n">all_fit_positions</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">ms</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">ms</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">ms</span> <span class="ow">in</span> <span class="n">mon_entries</span><span class="p">])</span>
+    <span class="n">all_fit_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="s">&#39;ff_ms&#39;</span><span class="p">,</span><span class="n">ms</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">ms</span> <span class="ow">in</span> <span class="n">mon_entries</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">all_fit_positions</span><span class="p">,</span> <span class="n">all_fit_ids</span>
+
+
+<span class="k">def</span> <span class="nf">insert_and_associate_forced_fits</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span><span class="n">successful_fits</span><span class="p">,</span><span class="n">successful_ids</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">successful_ids</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">successful_fits</span><span class="p">)</span>
+
+    <span class="n">nd_extractions</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">nd_runcats</span><span class="o">=</span><span class="p">[]</span>
+
+    <span class="n">ms_extractions</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">ms_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">successful_ids</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">id</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ff_nd&#39;</span><span class="p">:</span>
+            <span class="n">nd_extractions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">successful_fits</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">nd_runcats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">id</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ff_ms&#39;</span><span class="p">:</span>
+            <span class="n">ms_extractions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">successful_fits</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">ms_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Forced fit type id not recognised:&quot;</span> <span class="o">+</span> <span class="nb">id</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">nd_extractions</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;adding null detections&quot;</span><span class="p">)</span>
+        <span class="n">dbgen</span><span class="o">.</span><span class="n">insert_extracted_sources</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">nd_extractions</span><span class="p">,</span>
+                                       <span class="n">extract_type</span><span class="o">=</span><span class="s">&#39;ff_nd&#39;</span><span class="p">,</span>
+                                       <span class="n">ff_runcat_ids</span><span class="o">=</span><span class="n">nd_runcats</span><span class="p">)</span>
+        <span class="n">dbnd</span><span class="o">.</span><span class="n">associate_nd</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;No successful nulldetection fits&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ms_extractions</span><span class="p">:</span>
+        <span class="n">dbgen</span><span class="o">.</span><span class="n">insert_extracted_sources</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">ms_extractions</span><span class="p">,</span>
+                                       <span class="n">extract_type</span><span class="o">=</span><span class="s">&#39;ff_ms&#39;</span><span class="p">,</span>
+                                       <span class="n">ff_monitor_ids</span><span class="o">=</span><span class="n">ms_ids</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;adding monitoring sources&quot;</span><span class="p">)</span>
+        <span class="n">dbmon</span><span class="o">.</span><span class="n">associate_ms</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;No successful monitor fits&quot;</span><span class="p">)</span>
+
+
+
+<div class="viewcode-block" id="perform_forced_fits"><a class="viewcode-back" href="../../../devref/tkp/steps/index.html#tkp.steps.forced_fitting.perform_forced_fits">[docs]</a><span class="k">def</span> <span class="nf">perform_forced_fits</span><span class="p">(</span><span class="n">fit_posns</span><span class="p">,</span> <span class="n">fit_ids</span><span class="p">,</span>
+                        <span class="n">image_path</span><span class="p">,</span> <span class="n">extraction_params</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform forced source measurements on an image based on a list of</span>
+<span class="sd">    positions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fit_posns (list of (RA, Dec) tuples): Positions to be fit.</span>
+<span class="sd">        fit_ids: List of identifiers for each requested fit position.</span>
+<span class="sd">        image_path (str): path to image for measurements.</span>
+<span class="sd">        extraction_params (dict): source extraction parameters, as a dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A matched pair of lists (serialized_fits, ids), corresponding to</span>
+<span class="sd">        successfully fitted positions.</span>
+<span class="sd">        NB returned lists may be shorter than input lists</span>
+<span class="sd">        if some fits are unsuccessful.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Forced fitting in image: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image_path</span><span class="p">))</span>
+    <span class="n">fitsimage</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">accessors</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+
+    <span class="n">data_image</span> <span class="o">=</span> <span class="n">sourcefinder_image_from_accessor</span><span class="p">(</span><span class="n">fitsimage</span><span class="p">,</span>
+                    <span class="n">margin</span><span class="o">=</span><span class="n">extraction_params</span><span class="p">[</span><span class="s">&#39;margin&#39;</span><span class="p">],</span>
+                    <span class="n">radius</span><span class="o">=</span><span class="n">extraction_params</span><span class="p">[</span><span class="s">&#39;extraction_radius_pix&#39;</span><span class="p">],</span>
+                    <span class="n">back_size_x</span><span class="o">=</span><span class="n">extraction_params</span><span class="p">[</span><span class="s">&#39;back_size_x&#39;</span><span class="p">],</span>
+                    <span class="n">back_size_y</span><span class="o">=</span><span class="n">extraction_params</span><span class="p">[</span><span class="s">&#39;back_size_y&#39;</span><span class="p">])</span>
+
+
+    <span class="n">boxsize</span> <span class="o">=</span> <span class="n">extraction_params</span><span class="p">[</span><span class="s">&#39;box_in_beampix&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">data_image</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                             <span class="n">data_image</span><span class="o">.</span><span class="n">beam</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">successful_fits</span><span class="p">,</span> <span class="n">successful_ids</span> <span class="o">=</span> <span class="n">data_image</span><span class="o">.</span><span class="n">fit_fixed_positions</span><span class="p">(</span>
+                                                <span class="n">fit_posns</span><span class="p">,</span> <span class="n">boxsize</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">fit_ids</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">successful_fits</span><span class="p">:</span>
+        <span class="n">serialized</span> <span class="o">=</span><span class="p">[</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span>
+                <span class="n">extraction_params</span><span class="p">[</span><span class="s">&#39;ew_sys_err&#39;</span><span class="p">],</span> <span class="n">extraction_params</span><span class="p">[</span><span class="s">&#39;ns_sys_err&#39;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">successful_fits</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">serialized</span><span class="p">,</span> <span class="n">successful_ids</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[],[]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

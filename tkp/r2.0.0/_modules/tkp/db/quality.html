@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.db.quality &mdash; LOFAR Transients Pipeline 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.db" href="../db.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" accesskey="U">tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.db.quality</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">check image quality</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">tkp.db</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="c"># TODO: need to think of a way to sync this with tkp/db/tables/rejection.sql</span>
+<span class="n">RejectReason</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;RejectReason&#39;</span><span class="p">,</span> <span class="s">&#39;id desc&#39;</span><span class="p">)</span>
+
+<span class="n">reason</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;rms&#39;</span><span class="p">:</span> <span class="n">RejectReason</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s">&#39;RMS invalid&#39;</span><span class="p">),</span>
+    <span class="s">&#39;beam&#39;</span><span class="p">:</span> <span class="n">RejectReason</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s">&#39;beam invalid&#39;</span><span class="p">),</span>
+    <span class="s">&#39;bright_source&#39;</span><span class="p">:</span> <span class="n">RejectReason</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s">&#39;bright source near&#39;</span><span class="p">),</span>
+    <span class="s">&#39;tau_time&#39;</span><span class="p">:</span> <span class="n">RejectReason</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s">&#39;tau_time invalid&#39;</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">query_reject</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO rejection</span>
+<span class="s">  (image</span>
+<span class="s">  ,rejectreason</span>
+<span class="s">  ,comment</span>
+<span class="s">  )</span>
+<span class="s">VALUES</span>
+<span class="s">  (</span><span class="si">%(imageid)s</span><span class="s"></span>
+<span class="s">  ,</span><span class="si">%(reason)s</span><span class="s"></span>
+<span class="s">  ,&#39;</span><span class="si">%(comment)s</span><span class="s">&#39;</span>
+<span class="s">  )</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">query_unreject</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">DELETE</span>
+<span class="s">  FROM rejection</span>
+<span class="s"> WHERE image=</span><span class="si">%(image)s</span><span class="s"></span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">query_isrejected</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">SELECT rejectreason.description, rejection.comment</span>
+<span class="s">  FROM rejection, rejectreason</span>
+<span class="s"> WHERE rejection.rejectreason = rejectreason.id</span>
+<span class="s">   AND rejection.image = </span><span class="si">%(imageid)s</span><span class="s"></span>
+<span class="s">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="reject"><a class="viewcode-back" href="../../../devref/tkp/database/quality.html#tkp.db.quality.reject">[docs]</a><span class="k">def</span> <span class="nf">reject</span><span class="p">(</span><span class="n">imageid</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span> <span class="n">comment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Add a reject intro to the db for a given image</span>
+<span class="sd">    :param imageid: The image ID of the image to reject</span>
+<span class="sd">    :param reason: why is the image rejected, a defined in &#39;reason&#39;</span>
+<span class="sd">    :param comment: an optional comment with details about the reason</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;imageid&#39;</span><span class="p">:</span> <span class="n">imageid</span><span class="p">,</span> <span class="s">&#39;reason&#39;</span><span class="p">:</span> <span class="n">reason</span><span class="p">,</span> <span class="s">&#39;comment&#39;</span><span class="p">:</span> <span class="n">comment</span><span class="p">}</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query_reject</span> <span class="o">%</span> <span class="n">args</span>
+    <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="unreject"><a class="viewcode-back" href="../../../devref/tkp/database/quality.html#tkp.db.quality.unreject">[docs]</a><span class="k">def</span> <span class="nf">unreject</span><span class="p">(</span><span class="n">imageid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Remove all rejection of a given imageid</span>
+<span class="sd">    :param imageid: The image ID of the image to reject</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query_unreject</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;image&#39;</span><span class="p">:</span> <span class="n">imageid</span><span class="p">}</span>
+    <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="isrejected"><a class="viewcode-back" href="../../../devref/tkp/database/quality.html#tkp.db.quality.isrejected">[docs]</a><span class="k">def</span> <span class="nf">isrejected</span><span class="p">(</span><span class="n">imageid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Find out if an image is rejected or not</span>
+<span class="sd">    :param  imageid: The image ID of the image to reject</span>
+<span class="sd">    :returns:  False if not rejected, a list of reason id&#39;s if rejected</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query_isrejected</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;imageid&#39;</span><span class="p">:</span> <span class="n">imageid</span><span class="p">}</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">row</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" >tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

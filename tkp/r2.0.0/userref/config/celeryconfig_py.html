@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>celeryconfig.py - Task distribution via Celery &mdash; LOFAR Transients Pipeline 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.0.0 documentation" href="../../index.html" />
+    <link rel="up" title="Pipeline Configuration" href="index.html" />
+    <link rel="next" title="Pipeline Design" href="../structure/index.html" />
+    <link rel="prev" title="job_params.cfg - Job Parameters Configuration" href="job_params_cfg.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../structure/index.html" title="Pipeline Design"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="job_params_cfg.html" title="job_params.cfg - Job Parameters Configuration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Pipeline Configuration</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="celeryconfig-py-task-distribution-via-celery">
+<span id="celery-intro"></span><h1><tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> - Task distribution via Celery<a class="headerlink" href="#celeryconfig-py-task-distribution-via-celery" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">TRAP runs in parallel on a single multi-core machine by default now,
+using the standard multiprocessing functionality.
+As such, you should only try to use celery if you want to
+distribute a single job over multiple machines.</p>
+</div>
+<p><a class="reference external" href="http://celeryproject.org/">Celery</a> provides a mechanism for distributing
+tasks over a cluster of compute machines by means of an &#8220;asynchronous task
+queue&#8221;. This means that users submit jobs to a centralised queueing system (a
+&#8220;broker&#8221;), and then one or more worker processes collect and process each job
+from the queue sequentially, returning the results to the original submitter.</p>
+<p>Celery is a flexible but complex system, and the details of its configuration
+fall outside the scope of this document. The user is, instead, referred to the
+<a class="reference external" href="http://celeryproject.org/docs-and-support/">Celery documentation</a>. Here,
+we provide only some brief explanation.</p>
+<p>If you would like to take advantage of the task distribution system, you will
+need to set up a broker and one or more workers which will process tasks from
+it. There are a number of <a class="reference external" href="http://docs.celeryproject.org/en/latest/getting-started/brokers/">different brokers available</a>, each
+with their own pros and cons: <a class="reference external" href="http://www.rabbitmq.com/">RabbitMQ</a> is a fine
+default choice.</p>
+<p>Workers can be started by using the <tt class="docutils literal"><span class="pre">celery</span> <span class="pre">worker</span></tt> option to the
+<a class="reference internal" href="../trap-manage.html#trap-manage"><em>trap-manage.py</em></a> script. Indeed, <tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> provides a
+convenient way of interfacing with a variety of Celery subcommands: try
+<tt class="docutils literal"><span class="pre">trap-manage.py</span> <span class="pre">celery</span> <span class="pre">-h</span></tt> for information.</p>
+<p>When you start a worker, you will need to configure it to connect to an
+appropriate broker. If you are using the <tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> script, you can
+configure the worker through the file <a class="reference internal" href="#celeryconfig-py"><em>celeryconfig.py</em></a>
+in your <a class="reference internal" href="overview.html#config-overview"><em>project folder</em></a>: set the <tt class="docutils literal"><span class="pre">BROKER_URL</span></tt>
+variable appropriately. Note that if you are running the broker and a worker
+on the same host with a standard configuration, the default value should be
+fine.</p>
+<p>Note that a single broker and set of workers can be used by multiple different
+pipeline users. If running on a shared system, it is likely sensible to
+regard the broker and workers as a &#8220;system service&#8221; that all users can access,
+rather than having each user try to run their own Celery system.</p>
+<p>Note also that a worker loads all the necessary code to perform its
+tasks into memory when it is initalized. If the code on disk changes after
+this point (for example, if a bug is fixed in the TraP installation), the
+worker <em>will continuing executing the old version of the code</em> until it is
+stopped and restarted. If, for example, you are using a &#8220;daily build&#8221; of the
+TraP code, you will need to restart your workers after each build to ensure
+they stay up-to-date.</p>
+<p>Finally, always bear in mind that it is possible to disable the whole task
+distribution system and run the pipeline in a single process. This is simpler
+to set up, and likely simpler to debug in the event of problems. But keep in
+mind that a running broker is still required. To enable this mode, simple edit
+your <tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> file and ensure it contains the (uncommented) line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">CELERY_ALWAYS_EAGER</span> <span class="o">=</span> <span class="n">CELERY_EAGER_PROPAGATES_EXCEPTIONS</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<div class="section" id="run-celery-workers">
+<h2>Run Celery workers<a class="headerlink" href="#run-celery-workers" title="Permalink to this headline">¶</a></h2>
+<p>If you want to parallelize TraP operations using celery, you need to run a
+separate Celery worker. This worker will receive jobs from a broker, so it is
+assumed you installed and started a broker in the installation step. Start a
+Celery worker by running:</p>
+<div class="highlight-python"><div class="highlight"><pre>% trap-manage.py celery worker
+</pre></div>
+</div>
+<p>If you want to increase the log level add <tt class="docutils literal"><span class="pre">--loglevel=info</span></tt> or maybe even
+<tt class="docutils literal"><span class="pre">debug</span></tt> to the command. If you dont want to use a Celery worker (run the
+pipeline is serial mode) uncomment this line in the <tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> file in
+your pipline directory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#CELERY_ALWAYS_EAGER = CELERY_EAGER_PROPAGATES_EXCEPTIONS = True</span>
+</pre></div>
+</div>
+<p>Note that a running broker is still required.</p>
+</div>
+<div class="section" id="celery-configuration-file">
+<span id="celeryconfig-py"></span><h2>Celery Configuration File<a class="headerlink" href="#celery-configuration-file" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../trap-manage.html#trap-manage"><em>management script</em></a> may be used to start a <a class="reference internal" href="#celery-intro"><em>Celery</em></a> worker. The worker is configured using the file
+<tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> in the <a class="reference internal" href="overview.html#config-overview"><em>project directory</em></a>. The
+default contents of this file are:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># TraP Celery Configuration</span>
+
+<span class="c"># This file uses the standard Celery configuration system.</span>
+<span class="c"># Please refer to the URL below for full documentation:</span>
+<span class="c"># http://docs.celeryproject.org/en/latest/configuration.html</span>
+
+<span class="c"># Uncomment the below for local use; that is, bypassing the task distribution</span>
+<span class="c"># system and running all tasks in serial in a single process. No broker or</span>
+<span class="c"># workers are required.</span>
+<span class="c">#CELERY_ALWAYS_EAGER = CELERY_EAGER_PROPAGATES_EXCEPTIONS = True</span>
+
+<span class="c"># Prevents issues with using a separate threading.Thread in addition to Celery.</span>
+<span class="n">CELERYD_FORCE_EXECV</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="c"># Otherwise, configure the broker to which workers should connect and to which</span>
+<span class="c"># they will return results. This must be started independently of the</span>
+<span class="c"># pipeline.</span>
+<span class="n">BROKER_URL</span> <span class="o">=</span> <span class="n">CELERY_RESULT_BACKEND</span> <span class="o">=</span> <span class="s">&#39;amqp://guest@localhost//&#39;</span>
+
+<span class="c"># This is used when you run a worker.</span>
+<span class="n">CELERY_IMPORTS</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;tkp.distribute.celery.tasks&quot;</span><span class="p">,</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that this file is Python code, and will be parsed as such. In fact, it is
+a fully-fledged Celery configuration file, and the reader is referred to the
+<a class="reference external" href="http://docs.celeryproject.org/en/latest/configuration.html">main Celery documentation</a> for a complete
+reference. Here, we highlight just the important parameters defined in the
+defualt configuration.</p>
+<p>Note the line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#CELERY_ALWAYS_EAGER = CELERY_EAGER_PROPAGATES_EXCEPTIONS = True</span>
+</pre></div>
+</div>
+<p>By uncommenting this line (removing the initial <tt class="docutils literal"><span class="pre">#</span></tt>), the pipeline is forced
+to run in serial mode. That is, tasks are executed sequentially by a single
+Python process. No broker and no workers are required. This will likely have a
+significant impact on performance, but makes the system simpler and easier to
+debug in the event of problems.</p>
+<p>The line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">BROKER_URL</span> <span class="o">=</span> <span class="n">CELERY_RESULT_BACKEND</span> <span class="o">=</span> <span class="s">&#39;amqp://guest@localhost//&#39;</span>
+</pre></div>
+</div>
+<p>specifies the URL of the Celery broker, which is also the location to which
+workers will return their results. Various different types of broker are
+available (see our <a class="reference internal" href="#celery-intro"><em>introduction to Celery</em></a> for
+suggestions), and they must be configured and started independently of the
+pipeline: the appropriate URL to use will therefore depend on the
+configuration chosen for your local system.</p>
+<p>The other parameters in the file &#8211; <tt class="docutils literal"><span class="pre">CELERY_IMPORTS</span></tt> and
+<tt class="docutils literal"><span class="pre">CELERYD_HIJACK_ROOT_LOGGER</span></tt> &#8211; should be left set to their default values.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">celeryconfig.py</span></tt> - Task distribution via Celery</a><ul>
+<li><a class="reference internal" href="#run-celery-workers">Run Celery workers</a></li>
+<li><a class="reference internal" href="#celery-configuration-file">Celery Configuration File</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="job_params_cfg.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">job_params.cfg</span></tt> - Job Parameters Configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../structure/index.html"
+                        title="next chapter">Pipeline Design</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/userref/config/celeryconfig_py.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../structure/index.html" title="Pipeline Design"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="job_params_cfg.html" title="job_params.cfg - Job Parameters Configuration"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Pipeline Configuration</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2014, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>
