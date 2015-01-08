@@ -588,12 +588,12 @@ this case, the average position of <span class="math">\(f_{2,4,6,10,12}\)</span>
 with <span class="math">\(f_{14}\)</span>. However, if <span class="math">\(f_{14}\)</span> were to be inserted first, it
 would be compared for association with the average position of
 <span class="math">\(f_{2,4,10,12}\)</span>. This may well produce a different result!</p>
-<p>For obvious reasons, it is desirable for the database contents to be
-independent of the order of insertion (otherwise, its ultimate contents
-become non-deterministic given the input data). For this reason, every
-insertion at a given timestep causes the associations for <em>all</em> datapoints at
-that timestep to be revaluated, rather than simply the inserted measurement
-simply being associated with the already extant lightcurves.</p>
+<p>It is desirable for the database contents to be
+independent of the order of insertion, since this is an arbitrary choice which
+should not effect scientifically significant outcomes.
+However, in the current implementation we simply settle for a
+<em>deterministic and repeatable</em> arbitrary choice, by ingesting images in order
+of band frequency.</p>
 </div>
 </div>
 </div>
