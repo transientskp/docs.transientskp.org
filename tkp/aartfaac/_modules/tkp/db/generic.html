@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.db.generic &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.db" href="../db.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" accesskey="U">tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.db.generic</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A collection of generic functions used to generate SQL queries</span>
+<span class="sd">and return data in an easy to use format such as dictionaries.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">tkp.db</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="columns_from_table"><a class="viewcode-back" href="../../../devref/tkp/database/generic.html#tkp.db.generic.columns_from_table">[docs]</a><span class="k">def</span> <span class="nf">columns_from_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">keywords</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                       <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Obtain specific column (keywords) values from &#39;table&#39;, with</span>
+<span class="sd">    kwargs limitations.</span>
+
+<span class="sd">    A very simple helper function, that builds an SQL query to obtain</span>
+<span class="sd">    the specified columns from &#39;table&#39;, and then executes that</span>
+<span class="sd">    query. Optionally, the WHERE clause can be specified using the</span>
+<span class="sd">    where dictionary. It returns a list of a</span>
+<span class="sd">    dict (with the originally supplied keywords as dictionary keys),</span>
+<span class="sd">    which can be empty.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; columns_from_table(&#39;image&#39;, \</span>
+<span class="sd">            keywords=[&#39;taustart_ts&#39;, &#39;tau_time&#39;, &#39;freq_eff&#39;, &#39;freq_bw&#39;], where={&#39;imageid&#39;: 1})</span>
+<span class="sd">            [{&#39;freq_eff&#39;: 133984375.0, &#39;taustart_ts&#39;: datetime.datetime(2010, 10, 9, 9, 4, 2), &#39;tau_time&#39;: 14400.0, &#39;freq_bw&#39;: 1953125.0}]</span>
+
+<span class="sd">        This builds the SQL query:</span>
+<span class="sd">        &quot;SELECT taustart_ts, tau_time, freq_eff, freq_bw FROM image WHERE imageid=1&quot;</span>
+
+<span class="sd">    This function is implemented mainly to abstract and hide the SQL</span>
+<span class="sd">    functionality from the Python interface.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        conn: database connection object</span>
+
+<span class="sd">        table (string): database table name</span>
+
+<span class="sd">    Kwargs:</span>
+
+<span class="sd">        keywords (list): column names to select from the table. None indicates all (&#39;*&#39;)</span>
+
+<span class="sd">        where (dict): where clause for the query, specified as a set</span>
+<span class="sd">            of &#39;key = value&#39; comparisons. Comparisons are and-ed</span>
+<span class="sd">            together. Obviously, only &#39;is equal&#39; comparisons are</span>
+<span class="sd">            possible.</span>
+
+<span class="sd">        alias (dict): Chosen aliases for the column names,</span>
+<span class="sd">                    used when constructing the returned list of dictionaries</span>
+<span class="sd">                    </span>
+<span class="sd">        order (string): ORDER BY key.</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        (list): list of dicts. Each dict contains the given keywords,</span>
+<span class="sd">            or all if keywords=None. Each element of the list</span>
+<span class="sd">            corresponds to a table row.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">keywords</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;SELECT * FROM &quot;</span> <span class="o">+</span> <span class="n">table</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;SELECT &quot;</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keywords</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; FROM &quot;</span> <span class="o">+</span> <span class="n">table</span>
+    <span class="k">if</span> <span class="n">where</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">where_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">where</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span>
+    <span class="n">where</span> <span class="o">=</span> <span class="s">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">=</span><span class="si">%%</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">where</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()])</span>
+    <span class="k">if</span> <span class="n">where</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">+=</span> <span class="s">&quot; WHERE &quot;</span> <span class="o">+</span> <span class="n">where</span>
+    <span class="k">if</span> <span class="n">order</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">+=</span> <span class="s">&quot; ORDER BY &quot;</span> <span class="o">+</span> <span class="n">order</span>
+
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">where_args</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+    <span class="n">results_dict</span> <span class="o">=</span> <span class="n">convert_db_rows_to_dicts</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">alias</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results_dict</span>
+
+</div>
+<div class="viewcode-block" id="convert_db_rows_to_dicts"><a class="viewcode-back" href="../../../devref/tkp/database/generic.html#tkp.db.generic.convert_db_rows_to_dicts">[docs]</a><span class="k">def</span> <span class="nf">convert_db_rows_to_dicts</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">cursor_description</span><span class="p">,</span> <span class="n">alias_map</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Takes a list of rows as returned by cursor.fetchall(),</span>
+<span class="sd">        converts to a list of dictionaries.&quot;&quot;&quot;</span>
+    <span class="n">col_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cursor_description</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">alias_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>  <span class="c"># Replace column names with chosen alias</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">col_names</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">alias_map</span><span class="p">:</span>
+                <span class="n">col_names</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">alias_map</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="c">#NB enumerate generates only one loop</span>
+    <span class="c">#so store it in a list!</span>
+    <span class="n">col_index</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">col_names</span><span class="p">)]</span>
+    <span class="n">result_dicts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="n">rd</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">keyword</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">col_index</span><span class="p">)</span>
+        <span class="n">result_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rd</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result_dicts</span>
+
+</div>
+<div class="viewcode-block" id="get_db_rows_as_dicts"><a class="viewcode-back" href="../../../devref/tkp/database/generic.html#tkp.db.generic.get_db_rows_as_dicts">[docs]</a><span class="k">def</span> <span class="nf">get_db_rows_as_dicts</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">alias_map</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Grab results of cursor.fetchall(), convert to a list of dictionaries.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">convert_db_rows_to_dicts</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">(),</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                                    <span class="n">alias_map</span><span class="p">)</span>
+
+
+</div>
+<div class="viewcode-block" id="set_columns_for_table"><a class="viewcode-back" href="../../../devref/tkp/database/generic.html#tkp.db.generic.set_columns_for_table">[docs]</a><span class="k">def</span> <span class="nf">set_columns_for_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set specific columns (keywords) for &#39;table&#39;, with &#39;where&#39;</span>
+<span class="sd">    limitations.</span>
+
+<span class="sd">    A simple helper function, that builds an SQL query to update the</span>
+<span class="sd">    specified columns given by data for &#39;table&#39;, and then executes</span>
+<span class="sd">    that query. Optionally, the WHERE clause can be specified using</span>
+<span class="sd">    the &#39;where&#39; dictionary.</span>
+
+<span class="sd">    The data argument is a dictionary with the names and corresponding</span>
+<span class="sd">    values of the columns that need to be updated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;UPDATE &quot;</span> <span class="o">+</span> <span class="n">table</span> <span class="o">+</span> <span class="s">&quot; SET &quot;</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">=</span><span class="si">%%</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()])</span>
+    <span class="k">if</span> <span class="n">where</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">where_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">where</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span>
+    <span class="n">where</span> <span class="o">=</span> <span class="s">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">=</span><span class="si">%%</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">where</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()])</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">where</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">+=</span> <span class="s">&quot; WHERE &quot;</span> <span class="o">+</span> <span class="n">where</span>
+
+    <span class="n">tkp</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">values</span> <span class="o">+</span> <span class="n">where_args</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" >tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.main – Top-level pipeline logic flow &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../index.html" />
+    <link rel="up" title="TKP Package API Reference" href="index.html" />
+    <link rel="next" title="Standalone Tools" href="../../tools/index.html" />
+    <link rel="prev" title="tkp.utility.memoize – Memoization decorator" href="utility/memoize.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../tools/index.html" title="Standalone Tools"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="utility/memoize.html" title="tkp.utility.memoize – Memoization decorator"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">TKP Package API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tkp-main-top-level-pipeline-logic-flow">
+<h1><tt class="docutils literal"><span class="pre">tkp.main</span></tt> &#8211; Top-level pipeline logic flow<a class="headerlink" href="#tkp-main-top-level-pipeline-logic-flow" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-tkp.main">
+<span id="tkp-main"></span><h2><a class="reference internal" href="#module-tkp.main" title="tkp.main"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.main</span></tt></a><a class="headerlink" href="#module-tkp.main" title="Permalink to this headline">¶</a></h2>
+<p>Main pipeline logic is defined here.</p>
+<p>The science logic is a bit entwined with celery-specific functionality.
+This is somewhat unavoidable, since how a task is parallelised (or not) has
+implications for the resulting logic.</p>
+<p>In general, we try to keep functions elsewhere so this file is succinct.
+The exceptions are a couple of celery-specific subroutines.</p>
+<dl class="function">
+<dt id="tkp.main.run">
+<tt class="descclassname">tkp.main.</tt><tt class="descname">run</tt><big>(</big><em>job_name</em>, <em>supplied_mon_coords=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../../_modules/tkp/main.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.main.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tkp.main</span></tt> &#8211; Top-level pipeline logic flow</a><ul>
+<li><a class="reference internal" href="#module-tkp.main"><tt class="docutils literal"><span class="pre">tkp.main</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="utility/memoize.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.utility.memoize</span></tt> &#8211; Memoization decorator</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../tools/index.html"
+                        title="next chapter">Standalone Tools</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/tkp/main.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../tools/index.html" title="Standalone Tools"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="utility/memoize.html" title="tkp.utility.memoize – Memoization decorator"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >TKP Package API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.telescope.lofar.noise &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.telescope.lofar.noise</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">functions for calculating theoretical noise levels of LOFAR equipment.</span>
+
+<span class="sd">For more information about the math used here read the `sensitivity of the</span>
+<span class="sd">LOFAR array page</span>
+<span class="sd">&lt;http://www.astron.nl/radio-observatory/astronomers/lofar-imaging-capabilities-sensitivity/sensitivity-lofar-array/sensiti&gt;`_.</span>
+
+<span class="sd">To check the values calculated here one can use this `LOFAR image noise</span>
+<span class="sd">calculator &lt;http://www.astron.nl/~heald/test/sens.php&gt;`_.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">scipy.constants</span>
+<span class="kn">import</span> <span class="nn">scipy.interpolate</span>
+
+<span class="kn">from</span> <span class="nn">tkp.telescope.lofar</span> <span class="kn">import</span> <span class="n">antennaarrays</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">ANTENNAE_PER_TILE</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">TILES_PER_CORE_STATION</span> <span class="o">=</span> <span class="mi">24</span>
+<span class="n">TILES_PER_REMOTE_STATION</span> <span class="o">=</span> <span class="mi">48</span>
+<span class="n">TILES_PER_INTL_STATION</span> <span class="o">=</span> <span class="mi">96</span>
+
+
+<div class="viewcode-block" id="noise_level"><a class="viewcode-back" href="../../../../devref/tkp/telescope.html#tkp.telescope.lofar.noise.noise_level">[docs]</a><span class="k">def</span> <span class="nf">noise_level</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">,</span> <span class="n">tau_time</span><span class="p">,</span> <span class="n">antenna_set</span><span class="p">,</span> <span class="n">Ncore</span><span class="p">,</span> <span class="n">Nremote</span><span class="p">,</span>
+                <span class="n">Nintl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the theoretical noise level (in Jy) given the supplied array</span>
+<span class="sd">    antenna_set.</span>
+
+<span class="sd">    :param bandwidth: in Hz</span>
+<span class="sd">    :param tau_time: in seconds</span>
+<span class="sd">    :param inner: in case of LBA, inner or outer</span>
+<span class="sd">    :param antenna_set: LBA_INNER, LBA_OUTER, LBA_SPARSE, LBA or HBA</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">antenna_set</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;LBA&quot;</span><span class="p">):</span>
+        <span class="n">ds_core</span> <span class="o">=</span> <span class="n">antennaarrays</span><span class="o">.</span><span class="n">core_dipole_distances</span><span class="p">[</span><span class="n">antenna_set</span><span class="p">]</span>
+        <span class="n">Aeff_core</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ds_core</span><span class="p">])</span>
+        <span class="n">ds_remote</span> <span class="o">=</span> <span class="n">antennaarrays</span><span class="o">.</span><span class="n">remote_dipole_distances</span><span class="p">[</span><span class="n">antenna_set</span><span class="p">]</span>
+        <span class="n">Aeff_remote</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ds_remote</span><span class="p">])</span>
+        <span class="n">ds_intl</span> <span class="o">=</span> <span class="n">antennaarrays</span><span class="o">.</span><span class="n">intl_dipole_distances</span><span class="p">[</span><span class="n">antenna_set</span><span class="p">]</span>
+        <span class="n">Aeff_intl</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ds_intl</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Aeff_core</span> <span class="o">=</span> <span class="n">ANTENNAE_PER_TILE</span> <span class="o">*</span> <span class="n">TILES_PER_CORE_STATION</span> <span class="o">*</span> \
+                                                        <span class="n">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">)</span>
+        <span class="n">Aeff_remote</span> <span class="o">=</span> <span class="n">ANTENNAE_PER_TILE</span> <span class="o">*</span> <span class="n">TILES_PER_REMOTE_STATION</span> <span class="o">*</span> \
+                                                        <span class="n">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">)</span>
+        <span class="n">Aeff_intl</span> <span class="o">=</span> <span class="n">ANTENNAE_PER_TILE</span> <span class="o">*</span> <span class="n">TILES_PER_INTL_STATION</span> <span class="o">*</span> \
+                                                        <span class="n">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">)</span>
+
+    <span class="c"># c = core, r = remote, i = international</span>
+    <span class="c"># so for example cc is core-core baseline</span>
+    <span class="n">Ssys_c</span> <span class="o">=</span> <span class="n">system_sensitivity</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">Aeff_core</span><span class="p">)</span>
+    <span class="n">Ssys_r</span> <span class="o">=</span> <span class="n">system_sensitivity</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">Aeff_remote</span><span class="p">)</span>
+    <span class="n">Ssys_i</span> <span class="o">=</span> <span class="n">system_sensitivity</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">Aeff_intl</span><span class="p">)</span>
+
+    <span class="n">baselines_cc</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ncore</span> <span class="o">*</span> <span class="p">(</span><span class="n">Ncore</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">baselines_rr</span> <span class="o">=</span> <span class="p">(</span><span class="n">Nremote</span> <span class="o">*</span> <span class="p">(</span><span class="n">Nremote</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">baselines_ii</span> <span class="o">=</span> <span class="p">(</span><span class="n">Nintl</span> <span class="o">*</span> <span class="p">(</span><span class="n">Nintl</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">baselines_cr</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ncore</span> <span class="o">*</span> <span class="n">Nremote</span><span class="p">)</span>
+    <span class="n">baselines_ci</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ncore</span> <span class="o">*</span> <span class="n">Nintl</span><span class="p">)</span>
+    <span class="n">baselines_ri</span> <span class="o">=</span> <span class="p">(</span><span class="n">Nremote</span> <span class="o">*</span> <span class="n">Nintl</span><span class="p">)</span>
+
+    <span class="c">#baselines_total = baselines_cc + baselines_rr + baselines_ii +\</span>
+    <span class="c">#                    baselines_cr + baselines_ci + baselines_ri</span>
+
+    <span class="c"># baseline noise, for example cc is core-core</span>
+    <span class="n">temp_cc</span> <span class="o">=</span> <span class="n">Ssys_c</span>
+    <span class="n">temp_rr</span> <span class="o">=</span> <span class="n">Ssys_r</span>
+    <span class="n">temp_ii</span> <span class="o">=</span> <span class="n">Ssys_i</span>
+
+    <span class="c">#temp_cr = math.sqrt(SEFD_cc) * math.sqrt(SEFD_rr)</span>
+    <span class="c">#temp_ci = math.sqrt(SEFD_cc) * math.sqrt(SEFD_ii)</span>
+    <span class="c">#temp_ri = math.sqrt(SEFD_rr) * math.sqrt(SEFD_ii)</span>
+
+    <span class="c"># The noise level in a LOFAR image</span>
+    <span class="n">t_cc</span> <span class="o">=</span> <span class="n">baselines_cc</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp_cc</span> <span class="o">*</span> <span class="n">temp_cc</span><span class="p">)</span>
+    <span class="n">t_rr</span> <span class="o">=</span> <span class="n">baselines_rr</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp_rr</span> <span class="o">*</span> <span class="n">temp_cc</span><span class="p">)</span>
+    <span class="n">t_ii</span> <span class="o">=</span> <span class="n">baselines_ii</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp_ii</span> <span class="o">*</span> <span class="n">temp_ii</span><span class="p">)</span>
+    <span class="n">t_cr</span> <span class="o">=</span> <span class="n">baselines_cr</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp_cc</span> <span class="o">*</span> <span class="n">temp_rr</span><span class="p">)</span>
+    <span class="n">t_ci</span> <span class="o">=</span> <span class="n">baselines_ci</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp_cc</span> <span class="o">*</span> <span class="n">temp_ii</span><span class="p">)</span>
+    <span class="n">t_ri</span> <span class="o">=</span> <span class="n">baselines_ri</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp_rr</span> <span class="o">*</span> <span class="n">temp_ii</span><span class="p">)</span>
+
+    <span class="c"># factor for increase of noise due to the weighting scheme</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c"># taken from PHP script</span>
+
+    <span class="n">image_sens</span> <span class="o">=</span> <span class="n">W</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">bandwidth</span> <span class="o">*</span> <span class="n">tau_time</span> <span class="o">*</span>
+                               <span class="p">(</span><span class="n">t_cc</span> <span class="o">+</span> <span class="n">t_rr</span> <span class="o">+</span> <span class="n">t_ii</span> <span class="o">+</span> <span class="n">t_cr</span> <span class="o">+</span> <span class="n">t_ci</span> <span class="o">+</span> <span class="n">t_ri</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">image_sens</span>
+
+</div>
+<div class="viewcode-block" id="Aeff_dipole"><a class="viewcode-back" href="../../../../devref/tkp/telescope.html#tkp.telescope.lofar.noise.Aeff_dipole">[docs]</a><span class="k">def</span> <span class="nf">Aeff_dipole</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The effective area of each dipole in the array is determined by its</span>
+<span class="sd">    distance to the nearest dipole (d) within the full array.</span>
+
+<span class="sd">    :param freq_eff: Frequency</span>
+<span class="sd">    :param distance: Distance to nearest dipole, only required for LBA.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">wavelength</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">c</span><span class="o">/</span><span class="n">freq_eff</span>
+    <span class="k">if</span> <span class="n">wavelength</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>  <span class="c"># LBA dipole</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">distance</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Distance to nearest dipole required for LBA noise calculation&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="nb">pow</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c"># HBA dipole</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="nb">pow</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">1.5625</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="system_sensitivity"><a class="viewcode-back" href="../../../../devref/tkp/telescope.html#tkp.telescope.lofar.noise.system_sensitivity">[docs]</a><span class="k">def</span> <span class="nf">system_sensitivity</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">,</span> <span class="n">Aeff</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the SEFD of a system, given the freq_eff and effective</span>
+<span class="sd">    collecting area. Returns SEFD in Jansky&#39;s.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">wavelength</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">c</span> <span class="o">/</span> <span class="n">freq_eff</span>
+
+    <span class="c"># Ts0 = 60 +/- 20 K for Galactic latitudes between 10 and 90 degrees.</span>
+    <span class="n">Ts0</span> <span class="o">=</span> <span class="mi">60</span>
+
+    <span class="c"># system efficiency factor (~ 1.0)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c"># For all LOFAR frequencies the sky brightness temperature is dominated by</span>
+    <span class="c"># the Galactic radiation, which depends strongly on the wavelength</span>
+    <span class="n">Tsky</span> <span class="o">=</span> <span class="n">Ts0</span> <span class="o">*</span> <span class="n">wavelength</span> <span class="o">**</span> <span class="mf">2.55</span>
+
+    <span class="c">#The instrumental noise temperature follows from measurements or simulations</span>
+    <span class="c"># This is a quick &amp; dirty approach based roughly on Fig 5 here</span>
+    <span class="c">#  &lt;http://www.skatelescope.org/uploaded/59513_113_Memo_Nijboer.pdf&gt;</span>
+    <span class="n">sensitivities</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">10e6</span><span class="p">,</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">40e6</span><span class="p">,</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">50e6</span><span class="p">,</span> <span class="mf">0.85</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">55e6</span><span class="p">,</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">60e6</span><span class="p">,</span> <span class="mf">0.85</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">70e6</span><span class="p">,</span> <span class="mf">0.6</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">80e6</span><span class="p">,</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">90e6</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">110e6</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">Tsky</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">120e6</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">300e6</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">sensitivities</span><span class="p">)</span>
+    <span class="n">sensitivity</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">)</span>
+    <span class="n">Tinst</span> <span class="o">=</span> <span class="n">sensitivity</span><span class="p">(</span><span class="n">freq_eff</span><span class="p">)</span>
+
+    <span class="n">Tsys</span> <span class="o">=</span> <span class="n">Tsky</span> <span class="o">+</span> <span class="n">Tinst</span>
+
+    <span class="c"># SEFD or system sensitivity</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">k</span> <span class="o">/</span> <span class="n">Aeff</span><span class="p">)</span> <span class="o">*</span> <span class="n">Tsys</span>
+
+    <span class="c"># S is in Watts per square metre per Hertz.  One Jansky = 10**-26 Watts/sq</span>
+    <span class="c"># metre/Hz</span>
+    <span class="k">return</span> <span class="n">S</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">26</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../../index.html">
+              <img class="logo" src="../../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

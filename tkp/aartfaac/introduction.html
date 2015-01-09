@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="index.html" />
+    <link rel="next" title="Getting Started" href="getstart/index.html" />
+    <link rel="prev" title="LOFAR Transients Pipeline" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="getstart/index.html" title="Getting Started"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="LOFAR Transients Pipeline"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<span id="id1"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>The LOFAR Transients Pipeline (&#8220;TraP&#8221;) provides a means of searching a stream
+of N-dimensional (two spatial, frequency, polarization) image &#8220;cubes&#8221; for
+transient astronomical sources. The pipeline is developed specifically to
+address data produced by the <a class="reference external" href="http://www.transientskp.org">LOFAR Transients Key Science Project</a>, but may also be applicable to other
+instruments or use cases.</p>
+<p>The TraP codebase provides the pipeline definition itself, as well as a number
+of supporting routines for source finding, measurement, characterization, and
+so on. Some of these routines are also available as <a class="reference internal" href="tools/index.html#tools"><em>stand-alone tools</em></a>.</p>
+<div class="section" id="high-level-overview">
+<span id="overview"></span><h2>High-level overview<a class="headerlink" href="#high-level-overview" title="Permalink to this headline">¶</a></h2>
+<p>The TraP consists of a tightly-coupled combination of a &#8220;pipeline definition&#8221;
+&#8211; effectively a Python script that marshals the flow of data through the
+system &#8211; with a library of analysis routines written in Python and a
+database, which not only contains results but also performs a key role in data
+processing.</p>
+<p>Broadly speaking, as images are ingested by the TraP, a Python-based
+source-finding routine scans them, identifying and measuring all point-like
+sources. Those sources are ingested by the database, which <a class="reference internal" href="devref/database/assoc.html#database-assoc"><em>associates</em></a> them with previous measurements (both from earlier images
+processed by the TraP and from other catalogues) to form a lightcurve.
+Measurements are then performed at the locations of sources which were
+expected to be seen in this image but which were <em>not</em> detected. A series of
+statistical analyses are performed on the lightcurves constructed in this way,
+enabling the quick and easy identification of potential transients. This
+process results in two key data products: an <em>archival database</em> containing
+the lightcurves of all point-sources included in the dataset being processed,
+and <em>community alerts</em> of all transients which have been identified.</p>
+<p>Exploiting the results of the TraP involves understanding and analysing the
+resulting lightcurve database. The TraP itself provides no tools directly
+aimed at this. Instead, the Transients Key Science Project has developed the
+<a class="reference external" href="https://github.com/transientskp/banana">Banana</a> web interface to the
+database, which is maintained separately from the TraP. The database may also
+be interrogated by end-user developed tools using <a class="reference external" href="https://en.wikipedia.org/wiki/SQL">SQL</a>.</p>
+</div>
+<div class="section" id="documentation-layout">
+<h2>Documentation layout<a class="headerlink" href="#documentation-layout" title="Permalink to this headline">¶</a></h2>
+<p>The documentation is split into four broad sections:</p>
+<dl class="docutils">
+<dt><a class="reference internal" href="getstart/index.html#getstart"><em>Getting Started</em></a></dt>
+<dd>Provides a guide to installing the TraP and its supporting libraries on
+common platforms and some basic information to help get up and running
+quickly.</dd>
+<dt><a class="reference internal" href="userref/index.html#userref"><em>User&#8217;s Reference</em></a></dt>
+<dd>Here we provide a complete description of all the functionality available in
+the TraP and describe the various configuration and setup options available
+to the end user.</dd>
+<dt><a class="reference internal" href="devref/index.html#devref"><em>Developer&#8217;s Reference</em></a></dt>
+<dd>A guide to the structure of the codebase, the development methodologies, and
+the functionality available in the supporting libraries. This is of interest
+both to developers within the project and to those who want to build upon
+TraP functionality for their own purposes.</dd>
+<dt><a class="reference internal" href="tools/index.html#tools"><em>Stand-alone Tools</em></a></dt>
+<dd>Some functionality developed for the TraP is also available in these simple,
+end-user focused tools.</dd>
+</dl>
+<p>This documentation focuses on the technical aspects of using the TraP: all the
+pipeline components are described, together with their user-configurable
+parameters and the systems which have been developed for connecting them
+together to form a pipeline. However, it does not provide detailed rationale
+for all of the scientific choices made in the pipeline design. It is the
+position of the author that achieving high quality results requires
+understanding <em>both</em> the technical and the scientific choices made. For help
+with the latter, the reader is referred to <a class="reference internal" href="bibliography.html#swinbank-2014"><em>Swinbank et al</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#high-level-overview">High-level overview</a></li>
+<li><a class="reference internal" href="#documentation-layout">Documentation layout</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">LOFAR Transients Pipeline</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="getstart/index.html"
+                        title="next chapter">Getting Started</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/introduction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="getstart/index.html" title="Getting Started"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="LOFAR Transients Pipeline"
+             >previous</a> |</li>
+        <li><a href="index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

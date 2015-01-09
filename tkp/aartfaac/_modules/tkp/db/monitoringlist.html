@@ -1,0 +1,622 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.db.monitoringlist &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.db" href="../db.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" accesskey="U">tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.db.monitoringlist</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A collection of back end subroutines (mostly SQL queries).</span>
+
+<span class="sd">This module contains the routines to deal with the monitoring</span>
+<span class="sd">sources, provided by the user via the command line.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span><span class="o">,</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">tkp.db</span> <span class="kn">import</span> <span class="n">execute</span> <span class="k">as</span> <span class="n">execute</span>
+<span class="kn">from</span> <span class="nn">tkp.db.associations</span> <span class="kn">import</span> <span class="n">_empty_temprunningcatalog</span> <span class="k">as</span> <span class="n">_del_tempruncat</span>
+<span class="kn">from</span> <span class="nn">tkp.db.associations</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_update_1_to_1_runcat</span><span class="p">,</span>
+    <span class="n">ONE_TO_ONE_ASSOC_QUERY</span><span class="p">,</span>
+    <span class="n">_insert_1_to_1_runcat_flux</span><span class="p">,</span>
+    <span class="n">_update_1_to_1_runcat_flux</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_monitor_entries"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist.get_monitor_entries">[docs]</a><span class="k">def</span> <span class="nf">get_monitor_entries</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the ``monitor`` entries relevant to this dataset.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_id (int)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list of tuples [(monitor_id, ra, decl)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">SELECT id</span>
+<span class="s">      ,ra</span>
+<span class="s">      ,decl</span>
+<span class="s">  FROM monitor</span>
+<span class="s"> WHERE dataset = </span><span class="si">%(dataset_id)s</span><span class="s"></span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">qry_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;dataset_id&#39;</span><span class="p">:</span> <span class="n">dataset_id</span><span class="p">}</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">qry_params</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">res</span>
+</div>
+<div class="viewcode-block" id="associate_ms"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist.associate_ms">[docs]</a><span class="k">def</span> <span class="nf">associate_ms</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Associate the monitoring sources, i.e., their forced fits,</span>
+<span class="sd">    of the current image with the ones in the running catalog.</span>
+<span class="sd">    These associations are treated separately from the normal</span>
+<span class="sd">    associations and there will only be 1-to-1 associations.</span>
+
+<span class="sd">    The runcat-monitoring source pairs will be inserted in a</span>
+<span class="sd">    temporary table.</span>
+<span class="sd">    Of these, the runcat and runcat_flux tables are updated with</span>
+<span class="sd">    the new datapoints if the (monitoring) source already existed,</span>
+<span class="sd">    otherwise they are inserted as a new source.</span>
+<span class="sd">    The source pair is appended to the light-curve table</span>
+<span class="sd">    (assocxtrsource), with a type = 8 (for the first occurence)</span>
+<span class="sd">    or type = 9 (for existing runcat sources).</span>
+<span class="sd">    After all this, the temporary table is emptied again.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_del_tempruncat</span><span class="p">()</span>
+
+    <span class="n">_insert_tempruncat</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+
+    <span class="n">_insert_1_to_1_assoc</span><span class="p">()</span>
+    <span class="n">_update_1_to_1_runcat</span><span class="p">()</span>
+
+    <span class="n">n_updated</span> <span class="o">=</span> <span class="n">_update_1_to_1_runcat_flux</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">n_updated</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Updated flux for </span><span class="si">%s</span><span class="s"> monitor sources&quot;</span> <span class="o">%</span> <span class="n">n_updated</span><span class="p">)</span>
+    <span class="n">n_inserted</span> <span class="o">=</span> <span class="n">_insert_1_to_1_runcat_flux</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">n_inserted</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Inserted new-band flux measurement for </span><span class="si">%s</span><span class="s"> monitor sources&quot;</span>
+                    <span class="o">%</span> <span class="n">n_inserted</span><span class="p">)</span>
+
+    <span class="n">_insert_new_runcat</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+    <span class="n">_insert_new_runcat_flux</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+
+    <span class="n">_insert_new_1_to_1_assoc</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+
+    <span class="n">_update_monitor_runcats</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+
+    <span class="n">_del_tempruncat</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="_insert_tempruncat"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist._insert_tempruncat">[docs]</a><span class="k">def</span> <span class="nf">_insert_tempruncat</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Here the associations of forced fits of the monitoring sources</span>
+<span class="sd">    and their runningcatalog counterparts are inserted into the</span>
+<span class="sd">    temporary table.</span>
+
+<span class="sd">    We follow the implementation of the normal association procedure,</span>
+<span class="sd">    except that we don&#39;t need to match with a De Ruiter radius, since</span>
+<span class="sd">    the counterpart pairs are from the same runningcatalog source.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># The query is as follows:</span>
+    <span class="c"># t0 searches for matches between the monitoring sources</span>
+    <span class="c"># (extract_type = 2) in the current image that have</span>
+    <span class="c"># a counterpart among the runningcatalog sources. This</span>
+    <span class="c"># matching is done by zone, decl, ra (corrected for alpha</span>
+    <span class="c"># infaltion towards the poles) and the dot product by</span>
+    <span class="c"># using the Cartesian coordinates. Note that the conical</span>
+    <span class="c"># distance is not determined by the De Ruiter radius,</span>
+    <span class="c"># since all these sources have identical positions.</span>
+    <span class="c"># t0 has a left outer join with the runningcatalog_flux table,</span>
+    <span class="c"># since the image might be of a new frequency band. In that case</span>
+    <span class="c"># all the rf.values are NULL.</span>
+    <span class="c"># The select then determines all the new (statistical) properties</span>
+    <span class="c"># for the runcat-monitoring pairs, which are inserted in the</span>
+    <span class="c"># tempruncat table.</span>
+    <span class="c"># Note that a first image does not have any matches,</span>
+    <span class="c"># but that is taken into account by the second part of</span>
+    <span class="c"># the associate_ms() function.</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO temprunningcatalog</span>
+<span class="s">  (runcat</span>
+<span class="s">  ,xtrsrc</span>
+<span class="s">  ,distance_arcsec</span>
+<span class="s">  ,r</span>
+<span class="s">  ,dataset</span>
+<span class="s">  ,band</span>
+<span class="s">  ,stokes</span>
+<span class="s">  ,datapoints</span>
+<span class="s">  ,zone</span>
+<span class="s">  ,wm_ra</span>
+<span class="s">  ,wm_decl</span>
+<span class="s">  ,wm_uncertainty_ew</span>
+<span class="s">  ,wm_uncertainty_ns</span>
+<span class="s">  ,avg_ra_err</span>
+<span class="s">  ,avg_decl_err</span>
+<span class="s">  ,avg_wra</span>
+<span class="s">  ,avg_wdecl</span>
+<span class="s">  ,avg_weight_ra</span>
+<span class="s">  ,avg_weight_decl</span>
+<span class="s">  ,x</span>
+<span class="s">  ,y</span>
+<span class="s">  ,z</span>
+<span class="s">  ,f_datapoints</span>
+<span class="s">  ,avg_f_peak</span>
+<span class="s">  ,avg_f_peak_sq</span>
+<span class="s">  ,avg_f_peak_weight</span>
+<span class="s">  ,avg_weighted_f_peak</span>
+<span class="s">  ,avg_weighted_f_peak_sq</span>
+<span class="s">  ,avg_f_int</span>
+<span class="s">  ,avg_f_int_sq</span>
+<span class="s">  ,avg_f_int_weight</span>
+<span class="s">  ,avg_weighted_f_int</span>
+<span class="s">  ,avg_weighted_f_int_sq</span>
+<span class="s">  )</span>
+<span class="s">  SELECT t0.runcat_id</span>
+<span class="s">        ,t0.xtrsrc</span>
+<span class="s">        ,0 as distance_arcsec</span>
+<span class="s">        ,0 as r</span>
+<span class="s">        ,t0.dataset</span>
+<span class="s">        ,t0.band</span>
+<span class="s">        ,t0.stokes</span>
+<span class="s">        ,t0.datapoints</span>
+<span class="s">        ,t0.zone</span>
+<span class="s">        ,t0.wm_ra</span>
+<span class="s">        ,t0.wm_decl</span>
+<span class="s">        ,t0.wm_uncertainty_ew</span>
+<span class="s">        ,t0.wm_uncertainty_ns</span>
+<span class="s">        ,t0.avg_ra_err</span>
+<span class="s">        ,t0.avg_decl_err</span>
+<span class="s">        ,t0.avg_wra</span>
+<span class="s">        ,t0.avg_wdecl</span>
+<span class="s">        ,t0.avg_weight_ra</span>
+<span class="s">        ,t0.avg_weight_decl</span>
+<span class="s">        ,t0.x</span>
+<span class="s">        ,t0.y</span>
+<span class="s">        ,t0.z</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN 1</span>
+<span class="s">              ELSE rf.f_datapoints + 1</span>
+<span class="s">         END AS f_datapoints</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_peak</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_f_peak</span>
+<span class="s">                    + t0.f_peak)</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_f_peak</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_peak * t0.f_peak</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_f_peak_sq</span>
+<span class="s">                    + t0.f_peak * t0.f_peak)</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_f_peak_sq</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN 1 / (t0.f_peak_err * t0.f_peak_err)</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_f_peak_weight</span>
+<span class="s">                    + 1 / (t0.f_peak_err * t0.f_peak_err))</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_f_peak_weight</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_peak / (t0.f_peak_err * t0.f_peak_err)</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_weighted_f_peak</span>
+<span class="s">                    + t0.f_peak / (t0.f_peak_err * t0.f_peak_err))</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_weighted_f_peak</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_peak * t0.f_peak / (t0.f_peak_err * t0.f_peak_err)</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_weighted_f_peak_sq</span>
+<span class="s">                    + (t0.f_peak * t0.f_peak) / (t0.f_peak_err * t0.f_peak_err))</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_weighted_f_peak_sq</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_int</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_f_int</span>
+<span class="s">                    + t0.f_int)</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_f_int</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_int * t0.f_int</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_f_int_sq</span>
+<span class="s">                    + t0.f_int * t0.f_int)</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_f_int_sq</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN 1 / (t0.f_int_err * t0.f_int_err)</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_f_int_weight</span>
+<span class="s">                    + 1 / (t0.f_int_err * t0.f_int_err))</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_f_int_weight</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_int / (t0.f_int_err * t0.f_int_err)</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_weighted_f_int</span>
+<span class="s">                    + t0.f_int / (t0.f_int_err * t0.f_int_err))</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_weighted_f_int</span>
+<span class="s">        ,CASE WHEN rf.f_datapoints IS NULL</span>
+<span class="s">              THEN t0.f_int * t0.f_int / (t0.f_int_err * t0.f_int_err)</span>
+<span class="s">              ELSE (rf.f_datapoints * rf.avg_weighted_f_int_sq</span>
+<span class="s">                    + (t0.f_int * t0.f_int) / (t0.f_int_err * t0.f_int_err))</span>
+<span class="s">                   / (rf.f_datapoints + 1)</span>
+<span class="s">         END AS avg_weighted_f_int_sq</span>
+<span class="s">    FROM (SELECT mon.runcat AS runcat_id</span>
+<span class="s">                ,x.id AS xtrsrc</span>
+<span class="s">                ,x.f_peak</span>
+<span class="s">                ,x.f_peak_err</span>
+<span class="s">                ,x.f_int</span>
+<span class="s">                ,x.f_int_err</span>
+<span class="s">                ,i.dataset</span>
+<span class="s">                ,i.band</span>
+<span class="s">                ,i.stokes</span>
+<span class="s">                ,r.datapoints + 1 AS datapoints</span>
+<span class="s">                ,r.zone</span>
+<span class="s">                ,r.wm_ra</span>
+<span class="s">                ,r.wm_decl</span>
+<span class="s">                ,r.wm_uncertainty_ew</span>
+<span class="s">                ,r.wm_uncertainty_ns</span>
+<span class="s">                ,r.avg_ra_err</span>
+<span class="s">                ,r.avg_decl_err</span>
+<span class="s">                ,r.avg_wra</span>
+<span class="s">                ,r.avg_wdecl</span>
+<span class="s">                ,r.avg_weight_ra</span>
+<span class="s">                ,r.avg_weight_decl</span>
+<span class="s">                ,r.x</span>
+<span class="s">                ,r.y</span>
+<span class="s">                ,r.z</span>
+<span class="s">            FROM monitor mon</span>
+<span class="s">             JOIN extractedsource x</span>
+<span class="s">               ON mon.id = x.ff_monitor</span>
+<span class="s">             JOIN runningcatalog r</span>
+<span class="s">               ON mon.runcat = r.id</span>
+<span class="s">             JOIN image i</span>
+<span class="s">               ON x.image = i.id</span>
+<span class="s">           WHERE mon.runcat IS NOT NULL</span>
+<span class="s">             AND x.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">             AND x.extract_type = 2</span>
+<span class="s">         ) t0</span>
+<span class="s">         LEFT OUTER JOIN runningcatalog_flux rf</span>
+<span class="s">         ON t0.runcat_id = rf.runcat</span>
+<span class="s">         AND t0.band = rf.band</span>
+<span class="s">         AND t0.stokes = rf.stokes</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">qry_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">}</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">qry_params</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%s</span><span class="s"> monitoring-runcat pairs in tempruncat&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="_insert_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist._insert_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_runcat_flux</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Monitoring sources that were not yet fitted in this frequency band before,</span>
+<span class="sd">    will be appended to it. Those have their first f_datapoint.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO runningcatalog_flux</span>
+<span class="s">  (runcat</span>
+<span class="s">  ,band</span>
+<span class="s">  ,stokes</span>
+<span class="s">  ,f_datapoints</span>
+<span class="s">  ,avg_f_peak</span>
+<span class="s">  ,avg_f_peak_sq</span>
+<span class="s">  ,avg_f_peak_weight</span>
+<span class="s">  ,avg_weighted_f_peak</span>
+<span class="s">  ,avg_weighted_f_peak_sq</span>
+<span class="s">  ,avg_f_int</span>
+<span class="s">  ,avg_f_int_sq</span>
+<span class="s">  ,avg_f_int_weight</span>
+<span class="s">  ,avg_weighted_f_int</span>
+<span class="s">  ,avg_weighted_f_int_sq</span>
+<span class="s">  )</span>
+<span class="s">  SELECT runcat</span>
+<span class="s">        ,band</span>
+<span class="s">        ,stokes</span>
+<span class="s">        ,f_datapoints</span>
+<span class="s">        ,avg_f_peak</span>
+<span class="s">        ,avg_f_peak_sq</span>
+<span class="s">        ,avg_f_peak_weight</span>
+<span class="s">        ,avg_weighted_f_peak</span>
+<span class="s">        ,avg_weighted_f_peak_sq</span>
+<span class="s">        ,avg_f_int</span>
+<span class="s">        ,avg_f_int_sq</span>
+<span class="s">        ,avg_f_int_weight</span>
+<span class="s">        ,avg_weighted_f_int</span>
+<span class="s">        ,avg_weighted_f_int_sq</span>
+<span class="s">    FROM temprunningcatalog</span>
+<span class="s">   WHERE f_datapoints = 1</span>
+<span class="s">    &quot;&quot;&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Inserted new-band fluxes for </span><span class="si">%s</span><span class="s"> monitoring sources in runcat_flux&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
+
+
+</div>
+<div class="viewcode-block" id="_insert_new_runcat"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist._insert_new_runcat">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Insert the fits of the monitoring sources as new sources</span>
+<span class="sd">    into the runningcatalog</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO runningcatalog</span>
+<span class="s">  (xtrsrc</span>
+<span class="s">  ,dataset</span>
+<span class="s">  ,datapoints</span>
+<span class="s">  ,zone</span>
+<span class="s">  ,wm_ra</span>
+<span class="s">  ,wm_decl</span>
+<span class="s">  ,avg_ra_err</span>
+<span class="s">  ,avg_decl_err</span>
+<span class="s">  ,wm_uncertainty_ew</span>
+<span class="s">  ,wm_uncertainty_ns</span>
+<span class="s">  ,avg_wra</span>
+<span class="s">  ,avg_wdecl</span>
+<span class="s">  ,avg_weight_ra</span>
+<span class="s">  ,avg_weight_decl</span>
+<span class="s">  ,x</span>
+<span class="s">  ,y</span>
+<span class="s">  ,z</span>
+<span class="s">  ,mon_src</span>
+<span class="s">  )</span>
+<span class="s">  SELECT x.id AS xtrsrc</span>
+<span class="s">        ,i.dataset</span>
+<span class="s">        ,1 AS datapoints</span>
+<span class="s">        ,x.zone</span>
+<span class="s">        ,x.ra AS wm_ra</span>
+<span class="s">        ,x.decl AS wm_decl</span>
+<span class="s">        ,x.ra_err AS avg_ra_err</span>
+<span class="s">        ,x.decl_err AS avg_decl_err</span>
+<span class="s">        ,x.uncertainty_ew AS wm_uncertainty_ew</span>
+<span class="s">        ,x.uncertainty_ns AS wm_uncertainty_ns</span>
+<span class="s">        ,x.ra / (x.uncertainty_ew * x.uncertainty_ew) AS avg_wra</span>
+<span class="s">        ,x.decl / (x.uncertainty_ns * x.uncertainty_ns) AS avg_wdecl</span>
+<span class="s">        ,1 / (x.uncertainty_ew * x.uncertainty_ew) AS avg_weight_ra</span>
+<span class="s">        ,1 / (x.uncertainty_ns * x.uncertainty_ns) AS avg_weight_decl</span>
+<span class="s">        ,x.x</span>
+<span class="s">        ,x.y</span>
+<span class="s">        ,x.z</span>
+<span class="s">        ,TRUE</span>
+<span class="s">    FROM image i</span>
+<span class="s">         JOIN extractedsource x</span>
+<span class="s">           ON i.id = x.image</span>
+<span class="s">         JOIN monitor mon</span>
+<span class="s">           ON x.ff_monitor = mon.id</span>
+<span class="s">   WHERE i.id = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">     AND x.extract_type = 2</span>
+<span class="s">     AND mon.runcat IS NULL</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">},</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">ins</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="k">if</span> <span class="n">ins</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new monitoring sources to runningcatalog&quot;</span> <span class="o">%</span> <span class="n">ins</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="_update_monitor_runcats"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist._update_monitor_runcats">[docs]</a><span class="k">def</span> <span class="nf">_update_monitor_runcats</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update ``runcat`` col of ``monitor`` table for newly extracted positions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span><span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">UPDATE monitor</span>
+<span class="s">   SET runcat = (SELECT rc.id</span>
+<span class="s">                   FROM runningcatalog rc</span>
+<span class="s">                   JOIN extractedsource ex</span>
+<span class="s">                     ON rc.xtrsrc = ex.id</span>
+<span class="s">                  WHERE monitor.runcat is NULL</span>
+<span class="s">                    AND ex.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">                    AND ex.ff_monitor = monitor.id</span>
+<span class="s">                  )</span>
+<span class="s">    WHERE EXISTS (SELECT rc.id</span>
+<span class="s">                   FROM runningcatalog rc</span>
+<span class="s">                   JOIN extractedsource ex</span>
+<span class="s">                     ON rc.xtrsrc = ex.id</span>
+<span class="s">                  WHERE monitor.runcat is NULL</span>
+<span class="s">                    AND ex.image = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">                    AND ex.ff_monitor = monitor.id</span>
+<span class="s">                    )</span>
+
+<span class="s">    &quot;&quot;&quot;</span>
+
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">},</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">up</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Updated runcat cols for </span><span class="si">%s</span><span class="s"> newly monitored sources&quot;</span> <span class="o">%</span> <span class="n">up</span><span class="p">)</span>
+
+
+</div>
+<div class="viewcode-block" id="_insert_new_runcat_flux"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist._insert_new_runcat_flux">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_runcat_flux</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Insert the fitted fluxes of the monitoring sources as new datapoints</span>
+<span class="sd">    into the runningcatalog_flux.</span>
+
+<span class="sd">    Extractedsources for which not a counterpart was found in the</span>
+<span class="sd">    runningcatalog, i.e., those that do not have an entry in the</span>
+<span class="sd">    tempruncat table (t0) will be added as a new source in the</span>
+<span class="sd">    runningcatalog_flux table.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO runningcatalog_flux</span>
+<span class="s">  (runcat</span>
+<span class="s">  ,band</span>
+<span class="s">  ,stokes</span>
+<span class="s">  ,f_datapoints</span>
+<span class="s">  ,avg_f_peak</span>
+<span class="s">  ,avg_f_peak_sq</span>
+<span class="s">  ,avg_f_peak_weight</span>
+<span class="s">  ,avg_weighted_f_peak</span>
+<span class="s">  ,avg_weighted_f_peak_sq</span>
+<span class="s">  ,avg_f_int</span>
+<span class="s">  ,avg_f_int_sq</span>
+<span class="s">  ,avg_f_int_weight</span>
+<span class="s">  ,avg_weighted_f_int</span>
+<span class="s">  ,avg_weighted_f_int_sq</span>
+<span class="s">  )</span>
+<span class="s">  SELECT rc.id</span>
+<span class="s">        ,i.band</span>
+<span class="s">        ,i.stokes</span>
+<span class="s">        ,1 AS f_datapoints</span>
+<span class="s">        ,x.f_peak</span>
+<span class="s">        ,x.f_peak * x.f_peak</span>
+<span class="s">        ,1 / (x.f_peak_err * x.f_peak_err)</span>
+<span class="s">        ,x.f_peak / (x.f_peak_err * x.f_peak_err)</span>
+<span class="s">        ,x.f_peak * x.f_peak / (x.f_peak_err * x.f_peak_err)</span>
+<span class="s">        ,x.f_int</span>
+<span class="s">        ,x.f_int * x.f_int</span>
+<span class="s">        ,1 / (x.f_int_err * x.f_int_err)</span>
+<span class="s">        ,x.f_int / (x.f_int_err * x.f_int_err)</span>
+<span class="s">        ,x.f_int * x.f_int / (x.f_int_err * x.f_int_err)</span>
+<span class="s">  FROM image i</span>
+<span class="s">    JOIN extractedsource x</span>
+<span class="s">      ON i.id = x.image</span>
+<span class="s">    JOIN monitor mon</span>
+<span class="s">      ON x.ff_monitor = mon.id</span>
+<span class="s">    JOIN runningcatalog rc</span>
+<span class="s">      ON rc.xtrsrc = x.id</span>
+<span class="s">   WHERE i.id = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">     AND x.extract_type = 2</span>
+<span class="s">     AND mon.runcat IS NULL</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">},</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">ins</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="k">if</span> <span class="n">ins</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Added </span><span class="si">%s</span><span class="s"> new monitoring fluxes to runningcatalog_flux&quot;</span> <span class="o">%</span> <span class="n">ins</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="_insert_new_1_to_1_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist._insert_new_1_to_1_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_new_1_to_1_assoc</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The forced fits of the monitoring sources which are new</span>
+<span class="sd">    are appended to the assocxtrsource (light-curve) table</span>
+<span class="sd">    as a type = 8 datapoint.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">query</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">INSERT INTO assocxtrsource</span>
+<span class="s">  (runcat</span>
+<span class="s">  ,xtrsrc</span>
+<span class="s">  ,type</span>
+<span class="s">  ,distance_arcsec</span>
+<span class="s">  ,r</span>
+<span class="s">  ,v_int</span>
+<span class="s">  ,eta_int</span>
+<span class="s">  ,f_datapoints</span>
+<span class="s">  )</span>
+<span class="s">  SELECT rc.id</span>
+<span class="s">        ,rc.xtrsrc</span>
+<span class="s">        ,8 AS type</span>
+<span class="s">        ,0</span>
+<span class="s">        ,0</span>
+<span class="s">        ,0 AS v_int</span>
+<span class="s">        ,0 AS eta_int</span>
+<span class="s">        ,1 as f_datapoints</span>
+<span class="s">    FROM runningcatalog rc</span>
+<span class="s">    JOIN extractedsource x</span>
+<span class="s">      ON rc.xtrsrc = x.id</span>
+<span class="s">    JOIN image i</span>
+<span class="s">      on x.image = i.id</span>
+<span class="s">    JOIN monitor mon</span>
+<span class="s">      ON x.ff_monitor = mon.id</span>
+<span class="s">   WHERE i.id = </span><span class="si">%(image_id)s</span><span class="s"></span>
+<span class="s">    AND mon.runcat IS NULL</span>
+<span class="s">    AND x.extract_type = 2</span>
+<span class="s">    &quot;&quot;&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;image_id&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">},</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%s</span><span class="s"> new runcat-monitoring source pairs in assocxtrsource&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="_insert_1_to_1_assoc"><a class="viewcode-back" href="../../../devref/tkp/database/monitoringlist.html#tkp.db.monitoringlist._insert_1_to_1_assoc">[docs]</a><span class="k">def</span> <span class="nf">_insert_1_to_1_assoc</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The runcat-monitoring pairs are appended to the assocxtrsource</span>
+<span class="sd">    (light-curve) table as a type = 9 datapoint.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">ONE_TO_ONE_ASSOC_QUERY</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">},</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%s</span><span class="s"> runcat-monitoring source pairs in assocxtrsource&quot;</span> <span class="o">%</span> <span class="n">cnt</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../db.html" >tkp.db</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

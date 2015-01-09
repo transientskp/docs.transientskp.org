@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.db.monitoringlist – handling of monitoring sources &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.db – Database routines" href="index.html" />
+    <link rel="next" title="tkp.db.nulldetections – handling of null detections" href="nulldetections.html" />
+    <link rel="prev" title="tkp.db.orm – Object Relational Model interface" href="orm.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="orm.html" title="tkp.db.orm – Object Relational Model interface"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U"><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.db.monitoringlist">
+<span id="tkp-db-monitoringlist-handling-of-monitoring-sources"></span><span id="database-monitoringlist"></span><h1><a class="reference internal" href="#module-tkp.db.monitoringlist" title="tkp.db.monitoringlist: Database handling monitoring source"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.db.monitoringlist</span></tt></a> &#8211; handling of monitoring sources<a class="headerlink" href="#module-tkp.db.monitoringlist" title="Permalink to this headline">¶</a></h1>
+<p>A collection of back end subroutines (mostly SQL queries).</p>
+<p>This module contains the routines to deal with the monitoring
+sources, provided by the user via the command line.</p>
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_1_to_1_assoc">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_1_to_1_assoc</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_1_to_1_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_1_to_1_assoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>The runcat-monitoring pairs are appended to the assocxtrsource
+(light-curve) table as a type = 9 datapoint.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_new_1_to_1_assoc">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_new_1_to_1_assoc</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_new_1_to_1_assoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_new_1_to_1_assoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>The forced fits of the monitoring sources which are new
+are appended to the assocxtrsource (light-curve) table
+as a type = 8 datapoint.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_new_runcat">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_new_runcat</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_new_runcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_new_runcat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert the fits of the monitoring sources as new sources
+into the runningcatalog</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_new_runcat_flux">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_new_runcat_flux</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_new_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_new_runcat_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert the fitted fluxes of the monitoring sources as new datapoints
+into the runningcatalog_flux.</p>
+<p>Extractedsources for which not a counterpart was found in the
+runningcatalog, i.e., those that do not have an entry in the
+tempruncat table (t0) will be added as a new source in the
+runningcatalog_flux table.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_runcat_flux">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_runcat_flux</tt><big>(</big><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_runcat_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_runcat_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Monitoring sources that were not yet fitted in this frequency band before,
+will be appended to it. Those have their first f_datapoint.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._insert_tempruncat">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_insert_tempruncat</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_insert_tempruncat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._insert_tempruncat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Here the associations of forced fits of the monitoring sources
+and their runningcatalog counterparts are inserted into the
+temporary table.</p>
+<p>We follow the implementation of the normal association procedure,
+except that we don&#8217;t need to match with a De Ruiter radius, since
+the counterpart pairs are from the same runningcatalog source.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist._update_monitor_runcats">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">_update_monitor_runcats</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#_update_monitor_runcats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist._update_monitor_runcats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update <tt class="docutils literal"><span class="pre">runcat</span></tt> col of <tt class="docutils literal"><span class="pre">monitor</span></tt> table for newly extracted positions.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist.associate_ms">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">associate_ms</tt><big>(</big><em>image_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#associate_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist.associate_ms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Associate the monitoring sources, i.e., their forced fits,
+of the current image with the ones in the running catalog.
+These associations are treated separately from the normal
+associations and there will only be 1-to-1 associations.</p>
+<p>The runcat-monitoring source pairs will be inserted in a
+temporary table.
+Of these, the runcat and runcat_flux tables are updated with
+the new datapoints if the (monitoring) source already existed,
+otherwise they are inserted as a new source.
+The source pair is appended to the light-curve table
+(assocxtrsource), with a type = 8 (for the first occurence)
+or type = 9 (for existing runcat sources).
+After all this, the temporary table is emptied again.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tkp.db.monitoringlist.get_monitor_entries">
+<tt class="descclassname">tkp.db.monitoringlist.</tt><tt class="descname">get_monitor_entries</tt><big>(</big><em>dataset_id</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/db/monitoringlist.html#get_monitor_entries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.db.monitoringlist.get_monitor_entries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <tt class="docutils literal"><span class="pre">monitor</span></tt> entries relevant to this dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of tuples [(monitor_id, ra, decl)]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="orm.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.db.orm</span></tt> &#8211; Object Relational Model interface</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nulldetections.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.db.nulldetections</span></tt> &#8211; handling of null detections</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/database/monitoringlist.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nulldetections.html" title="tkp.db.nulldetections – handling of null detections"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="orm.html" title="tkp.db.orm – Object Relational Model interface"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" ><tt class="docutils literal"><span class="pre">tkp.db</span></tt> &#8211; Database routines</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

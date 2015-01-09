@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>“How-To” notes on common tasks &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../index.html" />
+    <link rel="up" title="The Pipeline Database" href="index.html" />
+    <link rel="next" title="TKP Package API Reference" href="../tkp/index.html" />
+    <link rel="prev" title="Source Association Logic" href="assoc.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../tkp/index.html" title="TKP Package API Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="assoc.html" title="Source Association Logic"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">The Pipeline Database</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="how-to-notes-on-common-tasks">
+<h1>&#8220;How-To&#8221; notes on common tasks<a class="headerlink" href="#how-to-notes-on-common-tasks" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="recover-from-disappearing-clients">
+<h2>Recover from disappearing clients<a class="headerlink" href="#recover-from-disappearing-clients" title="Permalink to this headline">¶</a></h2>
+<p>Current (as of April 2014) versions of the MonetDB server do not check for
+clients timing out. That is, if a remote client connects to the server and
+opens a transaction, then dies without shutting down cleanly for some reason
+(power failure, network glitch, ...), the transaction will remain open
+indefinitely. MonetDB logs all incremental updates during the transaction.
+Eventually, this will both cripple performance and take a huge amount of
+space.</p>
+<p>Recover by stopping and restarting the database:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ monetdb stop ${database}
+stoping database &#39;${database}&#39;... done
+</pre></div>
+</div>
+<p>Start it again and the logs will be replayed and then removed:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ monetdb start ${database}
+starting database &#39;${database}&#39;... done
+</pre></div>
+</div>
+<p>Note that this procedure may take a long time (several hours) to replay a
+large volume of logs.</p>
+<p>Future versions of MonetDB (unreleased as of April 2014) will include
+<a class="reference external" href="http://dev.monetdb.org/hg/MonetDB/rev/2efb07e174e3">a fix</a> for this issue
+by enabling <tt class="docutils literal"><span class="pre">SO_KEEPALIVE</span></tt> on the TCP socket.</p>
+</div>
+<div class="section" id="create-a-schema-diagram">
+<h2>Create a schema diagram<a class="headerlink" href="#create-a-schema-diagram" title="Permalink to this headline">¶</a></h2>
+<p>As shown in the <a class="reference internal" href="schema.html#database-schema"><em>schema documentation</em></a>.</p>
+<p><strong>documentation/devref/database/schema</strong> in the TKP tree contains a mini django
+projects that can be used to update the schema image. See the README file in
+the directory for instructions how to use and set up the django project.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">&#8220;How-To&#8221; notes on common tasks</a><ul>
+<li><a class="reference internal" href="#recover-from-disappearing-clients">Recover from disappearing clients</a></li>
+<li><a class="reference internal" href="#create-a-schema-diagram">Create a schema diagram</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="assoc.html"
+                        title="previous chapter">Source Association Logic</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../tkp/index.html"
+                        title="next chapter">TKP Package API Reference</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/database/howto.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../tkp/index.html" title="TKP Package API Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="assoc.html" title="Source Association Logic"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >The Pipeline Database</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

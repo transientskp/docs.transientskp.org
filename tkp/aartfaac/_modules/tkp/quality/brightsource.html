@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.quality.brightsource &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.quality.brightsource</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">pyrap.quanta</span> <span class="kn">as</span> <span class="nn">qa</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">pyrap.measures</span> <span class="kn">import</span> <span class="n">measures</span>
+<span class="kn">from</span> <span class="nn">tkp.utility.coordinates</span> <span class="kn">import</span> <span class="n">unix2julian</span>
+<span class="kn">from</span> <span class="nn">tkp.utility.redirect_stream</span> <span class="kn">import</span> <span class="n">redirect_stream</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="n">targets</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;CasA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;ra&#39;</span> <span class="p">:</span> <span class="mf">6.123487680622104</span><span class="p">,</span>  <span class="s">&#39;dec&#39;</span> <span class="p">:</span> <span class="mf">1.0265153995604648</span><span class="p">},</span>
+            <span class="s">&#39;CygA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;ra&#39;</span> <span class="p">:</span> <span class="mf">5.233686575770755</span><span class="p">,</span>  <span class="s">&#39;dec&#39;</span> <span class="p">:</span> <span class="mf">0.7109409582180791</span><span class="p">},</span>
+            <span class="s">&#39;TauA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;ra&#39;</span> <span class="p">:</span> <span class="mf">1.4596748493730913</span><span class="p">,</span> <span class="s">&#39;dec&#39;</span> <span class="p">:</span> <span class="mf">0.38422502335921294</span><span class="p">},</span>
+            <span class="s">&#39;HerA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;ra&#39;</span> <span class="p">:</span> <span class="mf">4.4119087330382163</span><span class="p">,</span> <span class="s">&#39;dec&#39;</span> <span class="p">:</span> <span class="mf">0.087135562905816893</span><span class="p">},</span>
+            <span class="s">&#39;VirA&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;ra&#39;</span> <span class="p">:</span> <span class="mf">3.276086511413598</span><span class="p">,</span>  <span class="s">&#39;dec&#39;</span> <span class="p">:</span> <span class="mf">0.21626589533567378</span><span class="p">},</span>
+            <span class="s">&#39;SUN&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="s">&#39;JUPITER&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="check_for_valid_ephemeris"><a class="viewcode-back" href="../../../devref/tkp/quality/index.html#tkp.quality.brightsource.check_for_valid_ephemeris">[docs]</a><span class="k">def</span> <span class="nf">check_for_valid_ephemeris</span><span class="p">(</span><span class="n">measures</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks whether the ephemeris data in use by ``measures`` is valid.</span>
+<span class="sd">    ``measures`` should already have a valid reference frame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Note that we need to catch and parse the standard error produced by</span>
+    <span class="c"># pyrap: there doesn&#39;t seem to be any other way of figuring this out.</span>
+    <span class="n">pyrap_stderr</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">redirect_stream</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span><span class="p">,</span> <span class="n">pyrap_stderr</span><span class="p">):</span>
+        <span class="c"># We assume the ephemeris is valid if it has position of the sun.</span>
+        <span class="n">measures</span><span class="o">.</span><span class="n">separation</span><span class="p">(</span>
+            <span class="n">measures</span><span class="o">.</span><span class="n">direction</span><span class="p">(</span><span class="s">&quot;SUN&quot;</span><span class="p">),</span> <span class="n">measures</span><span class="o">.</span><span class="n">direction</span><span class="p">(</span><span class="s">&quot;SUN&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="s">&quot;WARN&quot;</span> <span class="ow">in</span> <span class="n">pyrap_stderr</span><span class="o">.</span><span class="n">getvalue</span><span class="p">():</span>
+        <span class="c"># pyrap sends a warning to stderr if the ephemeris is invalid</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="is_bright_source_near"><a class="viewcode-back" href="../../../devref/tkp/quality/index.html#tkp.quality.brightsource.is_bright_source_near">[docs]</a><span class="k">def</span> <span class="nf">is_bright_source_near</span><span class="p">(</span><span class="n">accessor</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if there is any of the bright radio sources defined in targets</span>
+<span class="sd">    near the center of the image.</span>
+
+<span class="sd">    :param accessor: a TKP accessor</span>
+<span class="sd">    :param distance: maximum allowed distance of a bright source (in degrees)</span>
+<span class="sd">    :returns: False if not bright source is near, description of source if a</span>
+<span class="sd">              bright source is near</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">#TODO: this function should be split up and tested more atomically</span>
+    <span class="c"># The measures object is our interface to pyrap</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">measures</span><span class="p">()</span>
+
+    <span class="c"># First, you need to set the reference frame -- ie, the time</span>
+    <span class="c"># -- used for the calculations to come. Time as MJD in seconds.</span>
+    <span class="n">starttime</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">accessor</span><span class="o">.</span><span class="n">taustart_ts</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">))</span>
+    <span class="n">starttime_mjd</span> <span class="o">=</span> <span class="n">unix2julian</span><span class="p">(</span><span class="n">starttime</span><span class="p">)</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">do_frame</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">epoch</span><span class="p">(</span><span class="s">&quot;UTC&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="n">starttime_mjd</span><span class="p">))</span>
+
+    <span class="c"># Now check and ensure the ephemeris in use is actually valid for this</span>
+    <span class="c"># data.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_for_valid_ephemeris</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Bright source check failed due to invalid ephemeris&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&quot;Invalid ephemeris&quot;</span>
+
+    <span class="c"># Second, you need to set your image pointing.</span>
+    <span class="n">pointing</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">direction</span><span class="p">(</span>
+        <span class="s">&quot;J2000&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">deg&quot;</span> <span class="o">%</span> <span class="n">accessor</span><span class="o">.</span><span class="n">centre_ra</span><span class="p">,</span>  <span class="s">&quot;</span><span class="si">%s</span><span class="s">deg&quot;</span>  <span class="o">%</span> <span class="n">accessor</span><span class="o">.</span><span class="n">centre_decl</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">targets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">position</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">direction</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">direction</span><span class="p">(</span>
+                <span class="s">&quot;J2000&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">rad&quot;</span> <span class="o">%</span> <span class="n">position</span><span class="p">[</span><span class="s">&#39;ra&#39;</span><span class="p">],</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">rad&quot;</span> <span class="o">%</span> <span class="n">position</span><span class="p">[</span><span class="s">&#39;dec&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="n">separation</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">separation</span><span class="p">(</span><span class="n">pointing</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s">&quot;deg&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">separation</span> <span class="o">&lt;</span> <span class="n">distance</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;Pointing is </span><span class="si">%s</span><span class="s"> degrees from </span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">separation</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

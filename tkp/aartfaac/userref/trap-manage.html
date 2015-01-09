@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>trap-manage.py &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../index.html" />
+    <link rel="up" title="User’s Reference Guide" href="index.html" />
+    <link rel="next" title="Pipeline Configuration" href="config/index.html" />
+    <link rel="prev" title="User’s Reference Guide" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="config/index.html" title="Pipeline Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="User’s Reference Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">User&#8217;s Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="trap-manage-py">
+<span id="trap-manage"></span><h1>trap-manage.py<a class="headerlink" href="#trap-manage-py" title="Permalink to this headline">¶</a></h1>
+<p><tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> is the command-line tool for initialising and running the
+TraP pipeline. Different tasks are handled via the use of &#8216;subcommands&#8217;
+as detailed below.</p>
+<p>When the TraP is correctly installed on the system you can issue the
+<tt class="docutils literal"><span class="pre">trap-manage.py</span></tt> command. Documentation of subcommands is also available
+on the command line. You can use the <tt class="docutils literal"><span class="pre">--help</span></tt> flag (also per subcommand) to
+explore all possible options.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py [-h] {initproject,initjob,run,initdb,celery} ...
+
+A tool for managing TKP projects
+
+positional arguments:
+  {initproject,initjob,run,initdb,celery}
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+This is a tool for managing a TKP project. It can be used to initialize a TKP
+project and the jobs inside a project. To start using this tool you first
+create a TraP project by running:
+
+  $ trap-manage.py initproject &lt;projectname&gt;
+
+In the folder where you want to put the TraP project. To learn more about a
+specific `trap-manage.py` subcommand, run:
+
+  $ trap-manage.py &lt;subcommand&gt; -h
+
+Have a nice day!
+</pre></div>
+</div>
+<div class="section" id="subcommands">
+<h2>Subcommands<a class="headerlink" href="#subcommands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="initproject">
+<h3>initproject<a class="headerlink" href="#initproject" title="Permalink to this headline">¶</a></h3>
+<p>Initialise a pipeline environment. As an end user this is the first thing you
+want to do. It will set up a local environment which you can use to configure
+your pipeline and for creating jobs. A project can be seen as a set of
+configured jobs. When a project is initialised it is populated with a generic
+setup that hopefully works for your setup, but probably the modification of
+some of the configuration files is required.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py initproject [-h] [-t TARGET] name
+
+positional arguments:
+  name                  project folder name
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t TARGET, --target TARGET
+                        location of new TKP project
+</pre></div>
+</div>
+</div>
+<div class="section" id="initjob">
+<h3>initjob<a class="headerlink" href="#initjob" title="Permalink to this headline">¶</a></h3>
+<p>This command will initaliase a new job. It will setup a subfolder which is
+populated with a set of templates you need to modify.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py initjob [-h] name
+
+positional arguments:
+  name        Name of new job
+
+optional arguments:
+  -h, --help  show this help message and exit
+</pre></div>
+</div>
+</div>
+<div class="section" id="run">
+<span id="trap-manage-run"></span><h3>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
+<p>Run will start a job. It needs a job name as argument.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py run [-h] [-m MONITOR_COORDS] [-l MONITOR_LIST] name
+
+Run a specific job.
+
+To overwrite the database settings in pipeline.cfg you can use these
+environment variables to configure the connection:
+
+  * TKP_DBENGINE
+  * TKP_DBNAME
+  * TKP_DBUSER
+  * TKP_DBPASSWORD
+  * TKP_DBHOST
+  * TKP_DBPORT
+
+positional arguments:
+  name                  Name of job to run
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m MONITOR_COORDS, --monitor-coords MONITOR_COORDS
+                        a list of RA,DEC coordinates to monitor in JSON format, example: [[5, 6], [7, 8]]
+  -l MONITOR_LIST, --monitor-list MONITOR_LIST
+                        Specify a file containing a list of RA,DEC
+</pre></div>
+</div>
+</div>
+<div class="section" id="initdb">
+<h3>initdb<a class="headerlink" href="#initdb" title="Permalink to this headline">¶</a></h3>
+<p>Initialise a database with the TKP schema. The semantics of this command vary
+depending on the database system in use; see the <a class="reference internal" href="../getstart/tutorial.html#getstart-initdb"><em>relevant section</em></a> for details.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py initdb [-h] [-y] [-d]
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -y, --yes      don&#39;t ask for confirmation
+  -d, --destroy  remove all tables before population
+</pre></div>
+</div>
+</div>
+<div class="section" id="celery">
+<h3>celery<a class="headerlink" href="#celery" title="Permalink to this headline">¶</a></h3>
+<p>Shortcut access to celery subcommands.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: trap-manage.py celery [-h] ...
+
+shortcut for access to celery sub commands
+
+positional arguments:
+  rest        A celery subcommand
+
+optional arguments:
+  -h, --help  show this help message and exit
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">trap-manage.py</a><ul>
+<li><a class="reference internal" href="#subcommands">Subcommands</a><ul>
+<li><a class="reference internal" href="#initproject">initproject</a></li>
+<li><a class="reference internal" href="#initjob">initjob</a></li>
+<li><a class="reference internal" href="#run">run</a></li>
+<li><a class="reference internal" href="#initdb">initdb</a></li>
+<li><a class="reference internal" href="#celery">celery</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">User&#8217;s Reference Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="config/index.html"
+                        title="next chapter">Pipeline Configuration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/userref/trap-manage.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="config/index.html" title="Pipeline Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="User’s Reference Guide"
+             >previous</a> |</li>
+        <li><a href="../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="index.html" >User&#8217;s Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

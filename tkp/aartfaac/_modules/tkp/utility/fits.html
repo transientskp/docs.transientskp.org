@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.utility.fits &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.utility" href="../utility.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../utility.html" accesskey="U">tkp.utility</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.utility.fits</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">import</span> <span class="nn">pyrap</span>
+<span class="kn">import</span> <span class="nn">pyrap.images</span>
+<span class="kn">import</span> <span class="nn">pyrap.tables</span>
+<span class="kn">import</span> <span class="nn">pyfits</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+
+<span class="n">MJD0</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1858</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="fix_reference_dec"><a class="viewcode-back" href="../../../devref/tkp/utility/fits.html#tkp.utility.fits.fix_reference_dec">[docs]</a><span class="k">def</span> <span class="nf">fix_reference_dec</span><span class="p">(</span><span class="n">imagename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If the FITS file specified has a reference dec of 90 (or pi/2), make it</span>
+<span class="sd">    infinitesimally less. This works around problems with ill-defined</span>
+<span class="sd">    coordinate systems at the north celestial pole.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># TINY is an arbitrary constant which we regard as &quot;far enough&quot; away from</span>
+    <span class="c"># dec 90 (or pi/2). In theory, we ought to be able to us</span>
+    <span class="c"># sys.float_info.epsilon, but pyfits seems to round this when writing it</span>
+    <span class="c"># to a FITS file so that isn&#39;t quite generous enough.</span>
+    <span class="n">TINY</span> <span class="o">=</span> <span class="mf">1e-10</span>
+    <span class="k">with</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">imagename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;update&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ff</span><span class="p">:</span>
+        <span class="c"># The FITS standard (version 3.0, July 2008) tells us &quot;For angular</span>
+        <span class="c"># measurements given as floating-point values [...] the units should</span>
+        <span class="c"># be degrees&quot;. We therefore use that as a default, but handle radians</span>
+        <span class="c"># too, just to be on the safe side.</span>
+        <span class="n">critical_value</span> <span class="o">=</span> <span class="mf">90.0</span> <span class="c"># degrees</span>
+        <span class="k">if</span> <span class="s">&quot;CUNIT2&quot;</span> <span class="ow">in</span> <span class="n">ff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span> <span class="ow">and</span> <span class="n">ff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s">&quot;CUNIT2&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;rad&quot;</span><span class="p">:</span>
+            <span class="n">critical_value</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="c"># radians</span>
+
+        <span class="n">ref_dec</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s">&#39;CRVAL2&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">critical_value</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ref_dec</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">TINY</span><span class="p">:</span>
+            <span class="n">ff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s">&#39;CRVAL2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_dec</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">TINY</span><span class="p">)</span>
+            <span class="n">ff</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="convert"><a class="viewcode-back" href="../../../devref/tkp/utility/fits.html#tkp.utility.fits.convert">[docs]</a><span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">casa_image</span><span class="p">,</span> <span class="n">ms</span><span class="p">,</span> <span class="n">fits_filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a CASA image to FITS, taking care of header keywords</span>
+
+<span class="sd">    :argument casa_image: CASA image</span>
+<span class="sd">    :type casa_image: pyrap.images.image</span>
+<span class="sd">    :argument ms: CASA measurement set</span>
+<span class="sd">    :type ms: pyrap.tables.table</span>
+
+<span class="sd">    :keyword fits_filename: FITS output filename</span>
+<span class="sd">    :type fits_filename: str</span>
+
+<span class="sd">    :returns: None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">fits_filename</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">fits_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">casa_image</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;.fits&quot;</span>
+
+    <span class="c"># To do:</span>
+    <span class="c"># It would probably be more efficient (less IO)</span>
+    <span class="c"># to create a pyfits HDU object from the casa image data,</span>
+    <span class="c"># but I&#39;m not sure how correct the coordinate conversion</span>
+    <span class="c"># would be.</span>
+    <span class="c"># Currently using the easy way</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">pyrap</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">casa_image</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">tofits</span><span class="p">(</span><span class="n">fits_filename</span><span class="p">)</span>
+    <span class="n">hdulist</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fits_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;update&#39;</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">hdulist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+    <span class="c"># Obtain header info from original MS</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">pyrap</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">ms</span><span class="p">,</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;OBS-ID&#39;</span><span class="p">,</span> <span class="n">t0</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;OBSERVATION_ID&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">pyrap</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">t0</span><span class="o">.</span><span class="n">getkeyword</span><span class="p">(</span><span class="s">&#39;SPECTRAL_WINDOW&#39;</span><span class="p">),</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;SUBBAND&#39;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;NAME&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;REFFREQ&#39;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;REF_FREQUENCY&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;BANDWIDT&#39;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;TOTAL_BANDWIDTH&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;FREQUNIT&#39;</span><span class="p">,</span> <span class="s">&#39;MHz&#39;</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">pyrap</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">t0</span><span class="o">.</span><span class="n">getkeyword</span><span class="p">(</span><span class="s">&#39;FIELD&#39;</span><span class="p">),</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">phasedir</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;PHASE_DIR&#39;</span><span class="p">)</span>
+    <span class="n">phase_ra</span> <span class="o">=</span> <span class="n">phasedir</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">if</span> <span class="n">phase_ra</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">phase_ra</span> <span class="o">+=</span> <span class="mi">360</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;phasera&#39;</span><span class="p">,</span> <span class="n">phase_ra</span><span class="p">,</span> <span class="s">&#39;degrees&#39;</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;phasedec&#39;</span><span class="p">,</span> <span class="n">phasedir</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="s">&#39;degrees&#39;</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;field&#39;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;NAME&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># When the MS we access is actually a slice through a current MS,</span>
+    <span class="c"># we can&#39;t rely on the timing information in the header to be correct</span>
+    <span class="c"># Instead, we obtain the actual timing information from the TIME</span>
+    <span class="c"># column in the actual data table.</span>
+    <span class="n">time_table</span> <span class="o">=</span> <span class="n">t0</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">sortlist</span><span class="o">=</span><span class="s">&quot;TIME&quot;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s">&quot;TIME&quot;</span><span class="p">)</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">MJD0</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">time_table</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;TIME&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">time_table</span> <span class="o">=</span> <span class="n">t0</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">sortlist</span><span class="o">=</span><span class="s">&quot;-TIME&quot;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s">&quot;TIME&quot;</span><span class="p">)</span>
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">MJD0</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">time_table</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;TIME&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">mid_time</span>  <span class="o">=</span> <span class="n">start_time</span> <span class="o">+</span> <span class="p">(</span><span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;date-obs&#39;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&quot;</span><span class="p">),</span>
+                  <span class="s">&quot;Start time of observation&quot;</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;STARTUTC&#39;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&quot;</span><span class="p">),</span>
+                  <span class="s">&quot;Start time of observation&quot;</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;END_UTC&#39;</span><span class="p">,</span> <span class="n">end_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&quot;</span><span class="p">),</span>
+                  <span class="s">&quot;End time of observation&quot;</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;MID_UTC&#39;</span><span class="p">,</span> <span class="n">mid_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&quot;</span><span class="p">),</span>
+                  <span class="s">&quot;Mid time of observation&quot;</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">pyrap</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">t0</span><span class="o">.</span><span class="n">getkeyword</span><span class="p">(</span><span class="s">&#39;OBSERVATION&#39;</span><span class="p">),</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;OBSERVER&#39;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;OBSERVER&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;TELESCOP&#39;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;TELESCOPE_NAME&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;PIPENAME&#39;</span><span class="p">,</span> <span class="s">&#39;TRAP&#39;</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;PIPE_VER&#39;</span><span class="p">,</span> <span class="s">&#39;0.1&#39;</span><span class="p">)</span>
+
+    <span class="n">hdulist</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="combine"><a class="viewcode-back" href="../../../devref/tkp/utility/fits.html#tkp.utility.fits.combine">[docs]</a><span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">fitsfiles</span><span class="p">,</span> <span class="n">outputfile</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&quot;average&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combine a set of FITS files, taking care of header keywords</span>
+
+<span class="sd">    :argument fitsfiles: FITS filenames to combine</span>
+<span class="sd">    :type fitsfiles: list</span>
+<span class="sd">    :argument outputfile: output FITS filename</span>
+<span class="sd">    :type outputfile: str</span>
+
+<span class="sd">    :keyword method: average or sum the images</span>
+<span class="sd">    :type method: str</span>
+
+<span class="sd">    :returns: None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fitsfiles</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">fitsfiles</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">outputfile</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">hdulist0</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fitsfiles</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">header0</span> <span class="o">=</span> <span class="n">hdulist0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">hdulist0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">header0</span><span class="p">[</span><span class="s">&#39;reffreq&#39;</span><span class="p">]]</span>
+    <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;orig0&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fitsfiles</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                   <span class="s">&#39;original fitsfile&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fitsfiles</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">hdulist</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">hdulist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">data</span> <span class="o">+=</span> <span class="n">hdulist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">freqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s">&#39;reffreq&#39;</span><span class="p">])</span>
+        <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="s">&#39;orig</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span>
+            <span class="s">&#39;original fitsfile&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s">&quot;average&quot;</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">minfreq</span><span class="p">,</span> <span class="n">maxfreq</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">freqs</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">freqs</span><span class="p">)</span>
+    <span class="n">hdu</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">reffreq</span> <span class="o">=</span> <span class="p">(</span><span class="n">minfreq</span> <span class="o">+</span> <span class="n">maxfreq</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">bandwidth</span> <span class="o">=</span> <span class="n">maxfreq</span> <span class="o">-</span> <span class="n">minfreq</span>
+    <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;reffreq&#39;</span><span class="p">,</span> <span class="n">reffreq</span><span class="p">,</span>
+                  <span class="s">&#39;reference frequency&#39;</span><span class="p">)</span>
+    <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;bandwidt&#39;</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">,</span>
+                  <span class="s">&#39;estimated bandwidth&#39;</span><span class="p">)</span>
+    <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;FREQ_MIN&#39;</span><span class="p">,</span> <span class="n">minfreq</span><span class="p">,</span>
+                  <span class="s">&#39;minimum frequency&#39;</span><span class="p">)</span>
+    <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;FREQ_MAX&#39;</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">,</span>
+                  <span class="s">&#39;maximum frequency&#39;</span><span class="p">)</span>
+    <span class="c"># frequencies are stored in WCS coords (dimension 4),</span>
+    <span class="c"># but since we&#39;ve copied those from the first image,</span>
+    <span class="c"># they need to be updated</span>
+    <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;crval4&#39;</span><span class="p">,</span> <span class="n">reffreq</span><span class="p">)</span>
+    <span class="n">header0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s">&#39;cdelt4&#39;</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">)</span>
+    <span class="n">hdu</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">header0</span>
+    <span class="n">hdulist</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">([</span><span class="n">hdu</span><span class="p">])</span>
+    <span class="n">hdulist</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../utility.html" >tkp.utility</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

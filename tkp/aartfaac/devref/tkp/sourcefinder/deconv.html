@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.sourcefinder.deconv &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.sourcefinder – source finding and fitting" href="index.html" />
+    <link rel="next" title="tkp.sourcefinder.image – Image class &amp; routines" href="image.html" />
+    <link rel="prev" title="tkp.sourcefinder – source finding and fitting" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="image.html" title="tkp.sourcefinder.image – Image class &amp; routines"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="tkp.sourcefinder – source finding and fitting"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U"><tt class="docutils literal"><span class="pre">tkp.sourcefinder</span></tt> &#8211; source finding and fitting</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tkp.sourcefinder.deconv">
+<span id="tkp-sourcefinder-deconv"></span><span id="sourcefinder-deconv"></span><h1><a class="reference internal" href="#module-tkp.sourcefinder.deconv" title="tkp.sourcefinder.deconv"><tt class="xref py py-mod docutils literal"><span class="pre">tkp.sourcefinder.deconv</span></tt></a><a class="headerlink" href="#module-tkp.sourcefinder.deconv" title="Permalink to this headline">¶</a></h1>
+<p>Gaussian deconvolution.</p>
+<dl class="function">
+<dt id="tkp.sourcefinder.deconv.deconv">
+<tt class="descclassname">tkp.sourcefinder.deconv.</tt><tt class="descname">deconv</tt><big>(</big><em>fmaj</em>, <em>fmin</em>, <em>fpa</em>, <em>cmaj</em>, <em>cmin</em>, <em>cpa</em><big>)</big><a class="reference internal" href="../../../_modules/tkp/sourcefinder/deconv.html#deconv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tkp.sourcefinder.deconv.deconv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deconvolve a Gaussian &#8220;beam&#8221; from a Gaussian component.</p>
+<p>When we fit an elliptical Gaussian to a point in our image, we are
+actually fitting to a convolution of the physical shape of the source with
+the beam pattern of our instrument. This results in the fmaj/fmin/fpa
+arguments to this function.</p>
+<p>Since the shape of the (clean) beam (arguments cmaj/cmin/cpa) is known, we
+can deconvolve it from the fitted parameters to get the &#8220;real&#8221; underlying
+physical source shape, which is what this function returns.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fmaj</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Fitted major axis</li>
+<li><strong>fmin</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Fitted minor axis</li>
+<li><strong>fpa</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Fitted position angle of major axis</li>
+<li><strong>cmaj</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Clean beam major axis</li>
+<li><strong>cmin</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Clean beam minor axis</li>
+<li><strong>cpa</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Clean beam position angle of major axis</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rmaj</strong> &#8211;
+Real major axis
+rmin (float): Real minor axis
+rpa (float):  Real position angle of major axis
+ierr (int):   Number of components which failed to deconvolve</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">tkp.sourcefinder</span></tt> &#8211; source finding and fitting</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="image.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">tkp.sourcefinder.image</span></tt> &#8211; Image class &amp; routines</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/devref/tkp/sourcefinder/deconv.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="image.html" title="tkp.sourcefinder.image – Image class &amp; routines"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="tkp.sourcefinder – source finding and fitting"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="../index.html" >TKP Package API Reference</a> &raquo;</li>
+          <li><a href="index.html" ><tt class="docutils literal"><span class="pre">tkp.sourcefinder</span></tt> &#8211; source finding and fitting</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

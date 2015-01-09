@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.steps.persistence &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.steps.persistence</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This `step` is used for the storing of images and metadata</span>
+<span class="sd">to the database and image cache (mongodb).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">NamedTemporaryFile</span>
+
+<span class="kn">from</span> <span class="nn">pyrap.images</span> <span class="kn">import</span> <span class="n">image</span> <span class="k">as</span> <span class="n">pyrap_image</span>
+
+<span class="kn">import</span> <span class="nn">tkp.accessors</span>
+<span class="kn">from</span> <span class="nn">tkp.db.database</span> <span class="kn">import</span> <span class="n">Database</span>
+<span class="kn">from</span> <span class="nn">tkp.db.orm</span> <span class="kn">import</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">Image</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="image_to_mongodb"><a class="viewcode-back" href="../../../devref/tkp/steps/index.html#tkp.steps.persistence.image_to_mongodb">[docs]</a><span class="k">def</span> <span class="nf">image_to_mongodb</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Copy a file into mongodb&quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pymongo</span>
+        <span class="kn">import</span> <span class="nn">gridfs</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Could not import MongoDB modules&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+        <span class="n">gfs</span> <span class="o">=</span> <span class="n">gridfs</span><span class="o">.</span><span class="n">GridFS</span><span class="p">(</span><span class="n">connection</span><span class="p">[</span><span class="n">db</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">gfs</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;File already in database&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># This conversion should work whether the input file</span>
+            <span class="c"># is in FITS or CASA format.</span>
+            <span class="c"># temp_fits_file is removed automatically when closed.</span>
+            <span class="n">temp_fits_file</span> <span class="o">=</span> <span class="n">NamedTemporaryFile</span><span class="p">()</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">pyrap_image</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">i</span><span class="o">.</span><span class="n">tofits</span><span class="p">(</span><span class="n">temp_fits_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">new_file</span> <span class="o">=</span> <span class="n">gfs</span><span class="o">.</span><span class="n">new_file</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_fits_file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">new_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Saved local copy of </span><span class="si">%s</span><span class="s"> on </span><span class="si">%s</span><span class="s">&quot;</span>\
+                        <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">hostname</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Failed to save image to MongoDB: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c"># Only clear up things which have been created</span>
+        <span class="k">if</span> <span class="s">&quot;connection&quot;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s">&quot;temp_fits_file&quot;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
+            <span class="n">temp_fits_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="create_dataset"><a class="viewcode-back" href="../../../devref/tkp/steps/index.html#tkp.steps.persistence.create_dataset">[docs]</a><span class="k">def</span> <span class="nf">create_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Creates a dataset if it doesn&#39;t exists</span>
+<span class="sd">    Note: Should only be used in a master recipe</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      the database ID of this dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">database</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">dataset_id</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">DataSet</span><span class="p">({</span><span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="n">description</span><span class="p">},</span> <span class="n">database</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;created dataset </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                  <span class="n">dataset</span><span class="o">.</span><span class="n">description</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">DataSet</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">dataset_id</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;using dataset </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                <span class="n">dataset</span><span class="o">.</span><span class="n">description</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">dataset</span><span class="o">.</span><span class="n">id</span>
+
+</div>
+<div class="viewcode-block" id="extract_metadatas"><a class="viewcode-back" href="../../../devref/tkp/steps/index.html#tkp.steps.persistence.extract_metadatas">[docs]</a><span class="k">def</span> <span class="nf">extract_metadatas</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    returns the metadata extracted from the list of images.</span>
+
+<span class="sd">    args:</span>
+<span class="sd">        images: list of image urls</span>
+<span class="sd">        sigma: used for RMS calculation, see `tkp.quality.statistics`</span>
+<span class="sd">        f: used for RMS calculation, see `tkp.quality.statistics`</span>
+
+<span class="sd">    a list of metadata&#39;s. The metadata will be False if extraction failed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Extracting metadata from </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">image</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">accessor</span> <span class="o">=</span> <span class="n">tkp</span><span class="o">.</span><span class="n">accessors</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Can&#39;t open image </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">accessor</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+            <span class="n">accessor</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accessor</span><span class="o">.</span><span class="n">extract_metadata</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+</div>
+<div class="viewcode-block" id="store_images"><a class="viewcode-back" href="../../../devref/tkp/steps/index.html#tkp.steps.persistence.store_images">[docs]</a><span class="k">def</span> <span class="nf">store_images</span><span class="p">(</span><span class="n">images_metadata</span><span class="p">,</span> <span class="n">extraction_radius_pix</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Add images to database.</span>
+<span class="sd">    Note that all images in one dataset should be inserted in one go, since the</span>
+<span class="sd">    order is very important here. If you don&#39;t add them all in once, you should</span>
+<span class="sd">    make sure they are added in the correct order e.g. sorted by observation</span>
+<span class="sd">    time.</span>
+
+<span class="sd">    Note: Should only be used in a master recipe</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        images_metadata: list of dicts containing image metadata</span>
+<span class="sd">        extraction_radius_pix: (float) Used to calculate the &#39;skyregion&#39; </span>
+<span class="sd">        dataset_id: dataset id to be used. don&#39;t use value from parset file</span>
+<span class="sd">                    since this can be -1 (TraP way of setting auto increment)</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        the database ID of this dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">database</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">DataSet</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">dataset_id</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+    <span class="n">image_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c"># sort images by timestamp</span>
+    <span class="n">images_metadata</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="p">[</span><span class="s">&#39;taustart_ts&#39;</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="n">images_metadata</span><span class="p">:</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s">&#39;xtr_radius&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">extraction_radius_pix</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s">&#39;deltax&#39;</span><span class="p">])</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s">&#39;url&#39;</span><span class="p">]</span>
+        <span class="n">db_image</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">image_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">db_image</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;stored </span><span class="si">%s</span><span class="s"> with ID </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">db_image</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">image_ids</span>
+
+</div>
+<div class="viewcode-block" id="node_steps"><a class="viewcode-back" href="../../../devref/tkp/steps/index.html#tkp.steps.persistence.node_steps">[docs]</a><span class="k">def</span> <span class="nf">node_steps</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">image_cache_config</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    this function executes all persistence steps that should be executed on a node.</span>
+<span class="sd">    Note: Should only be used in a node recipe</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mongohost</span> <span class="o">=</span> <span class="n">image_cache_config</span><span class="p">[</span><span class="s">&#39;mongo_host&#39;</span><span class="p">]</span>
+    <span class="n">mongoport</span> <span class="o">=</span> <span class="n">image_cache_config</span><span class="p">[</span><span class="s">&#39;mongo_port&#39;</span><span class="p">]</span>
+    <span class="n">mongodb</span> <span class="o">=</span> <span class="n">image_cache_config</span><span class="p">[</span><span class="s">&#39;mongo_db&#39;</span><span class="p">]</span>
+    <span class="n">copy_images</span> <span class="o">=</span> <span class="n">image_cache_config</span><span class="p">[</span><span class="s">&#39;copy_images&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">copy_images</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+            <span class="n">image_to_mongodb</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">mongohost</span><span class="p">,</span> <span class="n">mongoport</span><span class="p">,</span> <span class="n">mongodb</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Not copying images to mongodb&quot;</span><span class="p">)</span>
+
+    <span class="n">metadatas</span> <span class="o">=</span> <span class="n">extract_metadatas</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">metadatas</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

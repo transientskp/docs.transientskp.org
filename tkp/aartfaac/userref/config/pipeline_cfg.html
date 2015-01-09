@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pipeline.cfg - Project Configuration File &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../index.html" />
+    <link rel="up" title="Pipeline Configuration" href="index.html" />
+    <link rel="next" title="job_params.cfg - Job Parameters Configuration" href="job_params_cfg.html" />
+    <link rel="prev" title="Configuration System Overview" href="overview.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="job_params_cfg.html" title="job_params.cfg - Job Parameters Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Configuration System Overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Pipeline Configuration</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pipeline-cfg-project-configuration-file">
+<span id="pipeline-cfg"></span><h1><tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt> - Project Configuration File<a class="headerlink" href="#pipeline-cfg-project-configuration-file" title="Permalink to this headline">¶</a></h1>
+<p>The project configuration file provides a common configuration to all pipeline
+runs which are part of a particular <a class="reference internal" href="overview.html#config-overview"><em>project</em></a>. Through
+this file, it is possible to configure the database used for pipeline runs,
+the location in which jobs are stored, and the amount and storage location for
+logging.</p>
+<p>The default <tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt> file is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>[DEFAULT]
+runtime_directory = %(cwd)s
+job_directory = %(runtime_directory)s/%(job_name)s
+
+[logging]
+#log_dir contains output log, plus a copy of the config files used.
+log_dir = %(job_directory)s/logs/%(start_time)s
+debug = False
+
+[database]
+engine = ;(monetdb or postgresql)
+database = &quot;&quot; ; e.g. &#39;{% user_name %}&#39;
+user =  &quot;&quot; ; e.g. &#39;{% user_name %}&#39;, or &#39;postgres&#39;
+password = &quot;&quot; ; e.g. &#39;{% user_name %}&#39;
+host = &quot;localhost&quot;
+port =
+passphrase =
+dump_backup_copy = False
+
+[image_cache]
+copy_images = True
+mongo_host = &quot;localhost&quot;
+mongo_port = 27017
+mongo_db = &quot;tkp&quot;
+
+
+[parallelise]
+method = &quot;multiproc&quot;  ; or celery, or serial
+cores = 0  ; the number of cores to use. Set to 0 for autodetect
+</pre></div>
+</div>
+<p>The file follows the <a class="reference internal" href="overview.html#configparser"><em>standard ConfigParser syntax</em></a>.
+Three special variables which may be used in expansions are provided provided
+by the TraP: <tt class="docutils literal"><span class="pre">cwd</span></tt>, the current working directory, <tt class="docutils literal"><span class="pre">start_time</span></tt>, the time
+at which the current pipeline job is started and <tt class="docutils literal"><span class="pre">job_name</span></tt>, the name of the
+job currently being executed.</p>
+<div class="section" id="default-section">
+<h2><tt class="docutils literal"><span class="pre">DEFAULT</span></tt> section<a class="headerlink" href="#default-section" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">DEFAULT</span></tt> section provides a location for defining parameters which may
+be referred to be other sections. The following parameters may be defined:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">runtime_directory</span></tt></dt>
+<dd>This is the root directory for the project. The default value, <tt class="docutils literal"><span class="pre">%(cwd)s</span></tt>,
+means that the pipeline.cfg refers to the project in the directory in which
+it is stored: this is almost always correct.</dd>
+<dt><tt class="docutils literal"><span class="pre">job_directory</span></tt></dt>
+<dd>This is the directory under which new jobs will be created. The default is
+to create a directory named after the job as a subdirectory of the project
+directory. This is almost always correct.</dd>
+</dl>
+</div>
+<div class="section" id="logging-section">
+<h2><tt class="docutils literal"><span class="pre">logging</span></tt> section<a class="headerlink" href="#logging-section" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">log_dir</span></tt></dt>
+<dd>The full path to a directory into which the pipeline will write logging
+information as it progresses, and also make a record of the parameters used
+for a job. The log file provides a record of pipeline
+activity, and, in particular, any errors or problems encountered, while the
+parameter files record the configuration that produced these results.
+This folder is therefore important for reproducibility and debugging
+purposes.</dd>
+<dt><tt class="docutils literal"><span class="pre">debug</span></tt></dt>
+<dd>A boolean (True or False) value. If True, extra information will be written
+to the log file, which might be helpful in diagnosing hard-to-find
+problems.</dd>
+</dl>
+</div>
+<div class="section" id="database-section">
+<span id="pipeline-cfg-database"></span><h2><tt class="docutils literal"><span class="pre">database</span></tt> Section<a class="headerlink" href="#database-section" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The database config settings can be over-ridden using environment
+variables, e.g. for configuring a unit-testing environment.
+See <a class="reference internal" href="../../devref/tkp/config/index.html#tkp.config.get_database_config" title="tkp.config.get_database_config"><tt class="xref py py-func docutils literal"><span class="pre">tkp.config.get_database_config()</span></tt></a> for details.</p>
+</div>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">engine</span></tt></dt>
+<dd>The database engine to use. Two engines are supported: <tt class="docutils literal"><span class="pre">postgresql</span></tt> and
+<tt class="docutils literal"><span class="pre">monetdb</span></tt>. See the <a class="reference internal" href="../../getstart/concepts/database.html#database-intro"><em>introductory material on databases</em></a> for details.</dd>
+<dt><tt class="docutils literal"><span class="pre">host</span></tt>, <tt class="docutils literal"><span class="pre">port</span></tt></dt>
+<dd>The host and port on the network at which the database server is listening.</dd>
+<dt><tt class="docutils literal"><span class="pre">database</span></tt>, <tt class="docutils literal"><span class="pre">user</span></tt>, <tt class="docutils literal"><span class="pre">password</span></tt></dt>
+<dd>The name of the database to use, and the username and password required to
+connect to it.</dd>
+<dt><tt class="docutils literal"><span class="pre">passphrase</span></tt></dt>
+<dd>A passphrase which provides administrative access to the database server.
+Only applicable to the <tt class="docutils literal"><span class="pre">monetdb</span></tt> engine. This is not required for normal
+operation, but enables the user to (for example) create and destroy
+databases.</dd>
+<dt><tt class="docutils literal"><span class="pre">dump_backup_copy</span></tt></dt>
+<dd>A boolean value. If True, a copy of the configured database will be
+dumped to disk at the beginning of each pipeline run. This is not
+recommended in regular use, but can be useful if encountering
+intermittent database errors, both for recovering a working database,
+and diagnosing how errors occur.
+The dump is made to the job directory in a file named according to
+the pattern <tt class="docutils literal"><span class="pre">&lt;database</span> <span class="pre">host&gt;_&lt;database</span> <span class="pre">name&gt;_&lt;current</span> <span class="pre">time&gt;.dump</span></tt>.</dd>
+</dl>
+</div>
+<div class="section" id="image-cache-section">
+<span id="pipeline-cfg-image-cache"></span><h2><tt class="docutils literal"><span class="pre">image_cache</span></tt> Section<a class="headerlink" href="#image-cache-section" title="Permalink to this headline">¶</a></h2>
+<p>This section configures the
+<a class="reference internal" href="../../getstart/concepts/mongodb.html#mongodb-intro"><em>image caching or &#8216;pixel store&#8217;</em></a> functionality.</p>
+<p>See also: the &#8216;optional dependencies&#8217; section of your relevant
+<a class="reference internal" href="../../getstart/installation.html#installation"><em>installation</em></a> guide.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">copy_images</span></tt></dt>
+<dd>Boolean. If <tt class="docutils literal"><span class="pre">True</span></tt>, image pixel data will be stored to a MongoDB database.</dd>
+<dt><tt class="docutils literal"><span class="pre">mongo_host</span></tt>, <tt class="docutils literal"><span class="pre">mongo_port</span></tt></dt>
+<dd>String, integer. Network hostname and port to use to connect to MongoDB.
+Only used if <tt class="docutils literal"><span class="pre">copy_images</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">mongo_db</span></tt></dt>
+<dd>String. Name of MongoDB database in which to store image pixel data. Only
+used if <tt class="docutils literal"><span class="pre">copy_images</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>.</dd>
+</dl>
+</div>
+<div class="section" id="parallelise-section">
+<span id="pipeline-cfg-parallelise"></span><h2><tt class="docutils literal"><span class="pre">parallelise</span></tt> Section<a class="headerlink" href="#parallelise-section" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">method</span></tt></dt>
+<dd>Determines whether the TraP is run in single-process, multi-process, or
+<a class="reference internal" href="../../getstart/installation.html#installation-distributed"><em>distributed</em></a> mode.
+<tt class="docutils literal"><span class="pre">&quot;multiproc&quot;</span></tt> should be suitable for most users.</dd>
+<dt><tt class="docutils literal"><span class="pre">cores</span></tt></dt>
+<dd>Determines the number of cores to use in multi-process mode. <tt class="docutils literal"><span class="pre">0</span></tt> will
+attempt to autodetect (and use all available cores).</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">pipeline.cfg</span></tt> - Project Configuration File</a><ul>
+<li><a class="reference internal" href="#default-section"><tt class="docutils literal"><span class="pre">DEFAULT</span></tt> section</a></li>
+<li><a class="reference internal" href="#logging-section"><tt class="docutils literal"><span class="pre">logging</span></tt> section</a></li>
+<li><a class="reference internal" href="#database-section"><tt class="docutils literal"><span class="pre">database</span></tt> Section</a></li>
+<li><a class="reference internal" href="#image-cache-section"><tt class="docutils literal"><span class="pre">image_cache</span></tt> Section</a></li>
+<li><a class="reference internal" href="#parallelise-section"><tt class="docutils literal"><span class="pre">parallelise</span></tt> Section</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">Configuration System Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="job_params_cfg.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">job_params.cfg</span></tt> - Job Parameters Configuration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/userref/config/pipeline_cfg.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="job_params_cfg.html" title="job_params.cfg - Job Parameters Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Configuration System Overview"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >User&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Pipeline Configuration</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

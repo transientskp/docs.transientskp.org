@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Accessing the Code &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../index.html" />
+    <link rel="up" title="Development Procedure" href="index.html" />
+    <link rel="next" title="Testing &amp; Continuous Integration" href="testing.html" />
+    <link rel="prev" title="Development Procedure" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testing.html" title="Testing &amp; Continuous Integration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Development Procedure"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Development Procedure</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="accessing-the-code">
+<h1>Accessing the Code<a class="headerlink" href="#accessing-the-code" title="Permalink to this headline">¶</a></h1>
+<p>All code relating to the core TraP functionality is hosted in the
+<a class="reference external" href="https://github.com/transientskp/tkp">transientskp/tkp</a> <tt class="docutils literal"><span class="pre">git</span></tt> repository
+on <a class="reference external" href="https://github.com/">GitHub</a>.</p>
+<p>The repository is currently only available to authorized project members. If
+you require access, contact <tt class="docutils literal"><span class="pre">git&#64;transientskp.org</span></tt> for help. Please <em>do
+not</em> redistribute the code without authorization.</p>
+<p>You will need to be familiar with basic <tt class="docutils literal"><span class="pre">git</span></tt> operation before you can work
+with the codebase. There are many excellent tutorials available: start at the
+<a class="reference external" href="http://www.git-scm.com/">Git front page</a>.</p>
+</div>
+<div class="section" id="planning">
+<h1>Planning<a class="headerlink" href="#planning" title="Permalink to this headline">¶</a></h1>
+<p>We aim to make releases of the TraP at the cadence of a few per year. Broadly,
+the plan is to alternate technically focused releases, which clean up the
+codebase and make behind-the-scenes improvements, with science based releases,
+which provide new functionality to end users. Technical releases have odd
+numbers; science releases even. We will provide bugfixes, but no new
+development, for the most recent release; support for earlier releases is on a
+&#8220;best efforts&#8221; basis only.</p>
+<p>At the start of a release cycle, the developers and commissioners will meet to
+discuss the issues which will be addressed in the upcoming release. Having
+agreed upon a set of goals, a roadmap for the release will be created on the
+<a class="reference internal" href="#issue-tracker"><em>Issue Tracker</em></a>.</p>
+<p>It is generally acceptable to submit minor changes and tweaks, as well as
+bugfixes, to the codebase at any time. However, if you are planning a major
+change which will have significant repercussions for other developers, or
+which causes end-user visible changes, it should be included in the goals for
+a particular release and there should be a broad consensus about the plan for
+implementation before you begin coding.</p>
+</div>
+<div class="section" id="issue-tracker">
+<span id="id1"></span><h1>Issue Tracker<a class="headerlink" href="#issue-tracker" title="Permalink to this headline">¶</a></h1>
+<p>We keep track of bug reports and feature requests using the
+<a class="reference external" href="https://github.com/transientskp/tkp/issues">Github repository issue tracker</a>.</p>
+<p>We use the issue tracker extensively for project planning and managing
+releases. It is not a <em>hard</em> requirement that every commit to the repository
+refers to a particular issue, but you are strongly encouraged to record your
+activities on the tracker and to refer to it in commit messages as
+appropriate.</p>
+</div>
+<div class="section" id="coding-standards">
+<h1>Coding Standards<a class="headerlink" href="#coding-standards" title="Permalink to this headline">¶</a></h1>
+<p>We do not rigorously enforce a set of coding style rules, with the sole
+exception that all indents in Python code should consist of 4 spaces. However,
+all code is expected to be considerately written, appropriately (but not
+excessively) commented, and as easy to read as possible. Please read <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP 8</a>
+carefully and bear it in mind as you work.</p>
+<p>You may wish to run <tt class="docutils literal"><span class="pre">pylint</span></tt> or similar tools on the codebase. Occasionally,
+such tools can provide useful hints about how to make your code clearer: by
+all means act upon these. However, much of the output of such tools is
+subjective: be sure you understand and agree with their recommendations, and
+be very reluctant to apply them to pre-existing code without fully considering
+the implications.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Accessing the Code</a></li>
+<li><a class="reference internal" href="#planning">Planning</a></li>
+<li><a class="reference internal" href="#issue-tracker">Issue Tracker</a></li>
+<li><a class="reference internal" href="#coding-standards">Coding Standards</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Development Procedure</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="testing.html"
+                        title="next chapter">Testing &amp; Continuous Integration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/devref/procedures/basics.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testing.html" title="Testing &amp; Continuous Integration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Development Procedure"
+             >previous</a> |</li>
+        <li><a href="../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Developer&#8217;s Reference Guide</a> &raquo;</li>
+          <li><a href="index.html" >Development Procedure</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

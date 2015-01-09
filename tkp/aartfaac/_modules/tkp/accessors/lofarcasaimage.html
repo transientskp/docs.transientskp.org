@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.accessors.lofarcasaimage &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.accessors" href="../accessors.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" accesskey="U">tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.accessors.lofarcasaimage</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module implements the CASA LOFAR data container format, described in this</span>
+<span class="sd">document:</span>
+
+<span class="sd">http://www.lofar.org/operations/lib/exe/fetch.php?media=:public:documents:casa_image_for_lofar_0.03.00.pdf</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">pyrap.tables</span> <span class="kn">import</span> <span class="n">table</span> <span class="k">as</span> <span class="n">pyrap_table</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.casaimage</span> <span class="kn">import</span> <span class="n">CasaImage</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.lofaraccessor</span> <span class="kn">import</span> <span class="n">LofarAccessor</span>
+<span class="kn">from</span> <span class="nn">tkp.utility.coordinates</span> <span class="kn">import</span> <span class="n">julian2unix</span>
+<span class="kn">from</span> <span class="nn">tkp.accessors.common</span> <span class="kn">import</span> <span class="n">unique_column_values</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">subtable_names</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s">&#39;LOFAR_FIELD&#39;</span><span class="p">,</span>
+    <span class="s">&#39;LOFAR_ANTENNA&#39;</span><span class="p">,</span>
+    <span class="s">&#39;LOFAR_HISTORY&#39;</span><span class="p">,</span>
+    <span class="s">&#39;LOFAR_ORIGIN&#39;</span><span class="p">,</span>
+    <span class="s">&#39;LOFAR_QUALITY&#39;</span><span class="p">,</span>
+    <span class="s">&#39;LOFAR_STATION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;LOFAR_POINTING&#39;</span><span class="p">,</span>
+    <span class="s">&#39;LOFAR_OBSERVATION&#39;</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">non_overlapping_time</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the sum of total ranges without overlap.</span>
+
+<span class="sd">    series: a list of 2 item tuples representing ranges.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">series</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">overlap</span> <span class="o">=</span> <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">nextstart</span><span class="p">,</span> <span class="n">nextend</span><span class="p">)</span> <span class="ow">in</span> <span class="n">series</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">if</span> <span class="n">nextstart</span> <span class="o">&gt;=</span> <span class="n">end</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">overlapstart</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">nextstart</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+            <span class="n">overlapend</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nextend</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="n">overlap</span> <span class="o">+=</span> <span class="n">overlapend</span> <span class="o">-</span> <span class="n">overlapstart</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">overlapend</span>
+    <span class="k">return</span> <span class="n">total</span> <span class="o">-</span> <span class="n">overlap</span>
+
+
+<span class="k">class</span> <span class="nc">LofarCasaImage</span><span class="p">(</span><span class="n">CasaImage</span><span class="p">,</span> <span class="n">LofarAccessor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use pyrap to pull image data out of an Casa table.</span>
+
+<span class="sd">    This accessor assumes the casatable contains the values described in the</span>
+<span class="sd">    CASA Image description for LOFAR. 0.03.00.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      - url: location of CASA table</span>
+<span class="sd">      - plane: if datacube, what plane to use</span>
+<span class="sd">      - beam: (optional) beam parameters in degrees, in the form</span>
+<span class="sd">        (bmaj, bmin, bpa). Will attempt to read from header if</span>
+<span class="sd">        not supplied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">antenna_set</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">ncore</span> <span class="o">=</span> <span class="n">nremote</span> <span class="o">=</span> <span class="n">nintl</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">subbands</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">subbandwidth</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">subtables</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">taustart_ts</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">tau_time</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beam</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LofarCasaImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">plane</span><span class="p">,</span> <span class="n">beam</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">pyrap_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open_subtables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_taustartts</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_tautime</span><span class="p">()</span>
+
+        <span class="c"># Additional, LOFAR-specific metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_antennaset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_stations</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_subbandwidth</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_subbands</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">open_subtables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;open all subtables defined in the LOFAR format</span>
+<span class="sd">        args:</span>
+<span class="sd">            table: a pyrap table handler to a LOFAR CASA table</span>
+<span class="sd">        returns:</span>
+<span class="sd">            a dict containing all LOFAR CASA subtables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">subtable</span> <span class="ow">in</span> <span class="n">subtable_names</span><span class="p">:</span>
+            <span class="n">subtable_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">getkeyword</span><span class="p">(</span><span class="s">&quot;ATTRGROUPS&quot;</span><span class="p">)[</span><span class="n">subtable</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="n">subtable</span><span class="p">]</span> <span class="o">=</span> <span class="n">pyrap_table</span><span class="p">(</span><span class="n">subtable_location</span><span class="p">,</span> <span class="n">ack</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parse_antennaset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">observation_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="s">&#39;LOFAR_OBSERVATION&#39;</span><span class="p">]</span>
+        <span class="n">antennasets</span> <span class="o">=</span> <span class="n">unique_column_values</span><span class="p">(</span><span class="n">observation_table</span><span class="p">,</span> <span class="s">&quot;ANTENNA_SET&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">antennasets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">antenna_set</span> <span class="o">=</span> <span class="n">antennasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Cannot handle multiple antenna sets in image&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parse_stations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract number of specific LOFAR stations used</span>
+<span class="sd">        returns:</span>
+<span class="sd">            (number of core stations, remote stations, international stations)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">observation_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="s">&#39;LOFAR_OBSERVATION&#39;</span><span class="p">]</span>
+        <span class="n">antenna_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="s">&#39;LOFAR_ANTENNA&#39;</span><span class="p">]</span>
+        <span class="n">nvis_used</span> <span class="o">=</span> <span class="n">observation_table</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;NVIS_USED&#39;</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">antenna_table</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="s">&#39;NAME&#39;</span><span class="p">))</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nvis_used</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">used</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nremote</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nintl</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">used</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">station</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;CS&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">station</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;RS&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nremote</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nintl</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">parse_subbands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">origin_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="s">&#39;LOFAR_ORIGIN&#39;</span><span class="p">]</span>
+        <span class="n">num_chans</span> <span class="o">=</span> <span class="n">unique_column_values</span><span class="p">(</span><span class="n">origin_table</span><span class="p">,</span> <span class="s">&quot;NUM_CHAN&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_chans</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subbands</span> <span class="o">=</span> <span class="n">num_chans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Cannot handle varying numbers of channels in image&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parse_subbandwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># subband</span>
+        <span class="c"># see http://www.lofar.org/operations/doku.php?id=operator:background_to_observations&amp;s[]=subband&amp;s[]=width&amp;s[]=clock&amp;s[]=frequency</span>
+        <span class="n">freq_units</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;Hz&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;kHz&#39;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;MHz&#39;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">6</span><span class="p">,</span>
+            <span class="s">&#39;GHz&#39;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">9</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">observation_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="s">&#39;LOFAR_OBSERVATION&#39;</span><span class="p">]</span>
+        <span class="n">clockcol</span> <span class="o">=</span> <span class="n">observation_table</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s">&#39;CLOCK_FREQUENCY&#39;</span><span class="p">)</span>
+        <span class="n">clock_values</span> <span class="o">=</span> <span class="n">unique_column_values</span><span class="p">(</span><span class="n">observation_table</span><span class="p">,</span> <span class="s">&quot;CLOCK_FREQUENCY&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">clock_values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">clock</span> <span class="o">=</span> <span class="n">clock_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">clockcol</span><span class="o">.</span><span class="n">getkeyword</span><span class="p">(</span><span class="s">&#39;QuantumUnits&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">trueclock</span> <span class="o">=</span> <span class="n">freq_units</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span> <span class="o">*</span> <span class="n">clock</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subbandwidth</span> <span class="o">=</span> <span class="n">trueclock</span> <span class="o">/</span> <span class="mi">1024</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Cannot handle varying clocks in image&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parse_taustartts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; extract image start time from CASA table header</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Note that we sort the table in order of ascending start time then choose</span>
+        <span class="c"># the first value to ensure we get the earliest possible starting time.</span>
+        <span class="n">observation_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="s">&#39;LOFAR_OBSERVATION&#39;</span><span class="p">]</span>
+        <span class="n">julianstart</span> <span class="o">=</span> <span class="n">observation_table</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">sortlist</span><span class="o">=</span><span class="s">&quot;OBSERVATION_START&quot;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">getcell</span><span class="p">(</span>
+            <span class="s">&quot;OBSERVATION_START&quot;</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">unixstart</span> <span class="o">=</span> <span class="n">julian2unix</span><span class="p">(</span><span class="n">julianstart</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taustart_ts</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">unixstart</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parse_tautime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the total on-sky time for this image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">origin_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtables</span><span class="p">[</span><span class="s">&#39;LOFAR_ORIGIN&#39;</span><span class="p">]</span>
+        <span class="n">startcol</span> <span class="o">=</span> <span class="n">origin_table</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s">&#39;START&#39;</span><span class="p">)</span>
+        <span class="n">endcol</span> <span class="o">=</span> <span class="n">origin_table</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s">&#39;END&#39;</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">startcol</span><span class="p">,</span> <span class="n">endcol</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_time</span> <span class="o">=</span> <span class="n">non_overlapping_time</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" >tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>

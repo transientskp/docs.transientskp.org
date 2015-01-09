@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tkp.accessors.common &mdash; LOFAR Transients Pipeline 2.1-pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.1-pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/lofar.ico"/>
+    <link rel="top" title="LOFAR Transients Pipeline 2.1-pre documentation" href="../../../index.html" />
+    <link rel="up" title="tkp.accessors" href="../accessors.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" accesskey="U">tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tkp.accessors.common</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Parsing functions used by multiple DataAccessor sub-classes</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">cos</span>
+
+
+<div class="viewcode-block" id="parse_pixelsize"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.parse_pixelsize">[docs]</a><span class="k">def</span> <span class="nf">parse_pixelsize</span><span class="p">(</span><span class="n">wcs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Arguments:</span>
+<span class="sd">      - wcs: A tkp.coordinates.wcs.WCS object</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      - deltax: pixel size along the x axis in degrees</span>
+<span class="sd">      - deltay: pixel size along the x axis in degrees</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#Would have to be pretty strange data for this not to be the case</span>
+    <span class="k">assert</span> <span class="n">wcs</span><span class="o">.</span><span class="n">cunit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">wcs</span><span class="o">.</span><span class="n">cunit</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">wcs</span><span class="o">.</span><span class="n">cunit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;deg&quot;</span><span class="p">:</span>
+        <span class="n">deltax</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">cdelt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">deltay</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">cdelt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">wcs</span><span class="o">.</span><span class="n">cunit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;rad&quot;</span><span class="p">:</span>
+        <span class="n">deltax</span> <span class="o">=</span> <span class="n">degrees</span><span class="p">(</span><span class="n">wcs</span><span class="o">.</span><span class="n">cdelt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">deltay</span> <span class="o">=</span> <span class="n">degrees</span><span class="p">(</span><span class="n">wcs</span><span class="o">.</span><span class="n">cdelt</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Unrecognised WCS co-ordinate system&quot;</span><span class="p">)</span>
+
+    <span class="c">#NB. What&#39;s a reasonable epsilon here?</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-7</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">deltax</span><span class="p">)</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">deltay</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Image WCS header suggests non-square pixels.&quot;</span>
+                 <span class="s">&quot;This is an untested use case, and may break things -&quot;</span>
+                 <span class="s">&quot;specifically the skyregion tracking but possibly other stuff too.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">deltax</span><span class="p">,</span> <span class="n">deltay</span>
+
+</div>
+<div class="viewcode-block" id="degrees2pixels"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.degrees2pixels">[docs]</a><span class="k">def</span> <span class="nf">degrees2pixels</span><span class="p">(</span><span class="n">bmaj</span><span class="p">,</span> <span class="n">bmin</span><span class="p">,</span> <span class="n">bpa</span><span class="p">,</span> <span class="n">deltax</span><span class="p">,</span> <span class="n">deltay</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert beam in degrees to beam in pixels and radians.</span>
+<span class="sd">    For example Fits beam parameters are in degrees.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">      - bmaj:   Beam semi-major axis in degrees</span>
+<span class="sd">      - bmin:   Beam semi-minor axis in degrees</span>
+<span class="sd">      - bpa:    Beam position angle in degrees</span>
+<span class="sd">      - deltax: Pixel size along the x axis in degrees</span>
+<span class="sd">      - deltay: Pixel size along the y axis in degrees</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      - semimaj: Beam semi-major axis in pixels</span>
+<span class="sd">      - semimin: Beam semi-minor axis in pixels</span>
+<span class="sd">      - theta:   Beam position angle in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">semimaj</span> <span class="o">=</span> <span class="p">(</span><span class="n">bmaj</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">bpa</span> <span class="o">/</span> <span class="mf">180.</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">deltax</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span>
+        <span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">bpa</span> <span class="o">/</span> <span class="mf">180.</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">deltay</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">semimin</span> <span class="o">=</span> <span class="p">(</span><span class="n">bmin</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">bpa</span> <span class="o">/</span> <span class="mf">180.</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">deltax</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span>
+        <span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">bpa</span> <span class="o">/</span> <span class="mf">180.</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">deltay</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">bpa</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">semimaj</span><span class="p">,</span> <span class="n">semimin</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="arcsec2degrees"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.arcsec2degrees">[docs]</a><span class="k">def</span> <span class="nf">arcsec2degrees</span><span class="p">(</span><span class="n">bmaj</span><span class="p">,</span> <span class="n">bmin</span><span class="p">,</span> <span class="n">bpa</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts beam parameters from arcsec to degrees.</span>
+<span class="sd">    For example CASAtable beam parameters are in arcsec.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">      - bmaj: Beam semi-major axis in arcsec</span>
+<span class="sd">      - bmin: Beam semi-minor axis in arcsec</span>
+<span class="sd">      - bpa:  Beam position angle in arbitrary units</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      - tuple of (semi-major in degrees, semi-minor in degrees, bpa as above)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">bmaj</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">bmin</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">bpa</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="unique_column_values"><a class="viewcode-back" href="../../../devref/tkp/accessors/api.html#tkp.accessors.common.unique_column_values">[docs]</a><span class="k">def</span> <span class="nf">unique_column_values</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find all the unique values in a particular column of a CASA table.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">      - table:       ``pyrap.tables.table``</span>
+<span class="sd">      - column_name: ``str``</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      - ``numpy.ndarray`` containing unique values in column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+        <span class="n">columns</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">sortlist</span><span class="o">=</span><span class="s">&quot;unique </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">column_name</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">getcol</span><span class="p">(</span><span class="n">column_name</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/lofar.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">LOFAR Transients Pipeline 2.1-pre documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../accessors.html" >tkp.accessors</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006—2015, LOFAR Transients Key Science Project.
+    </div>
+  </body>
+</html>
